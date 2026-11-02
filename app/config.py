@@ -29,6 +29,7 @@ class CryptoShieldConfig:
     SNAPSHOTS_DIR: Path = RUNTIME_DIR / "snapshots"
     LOGS_DIR: Path = RUNTIME_DIR / "logs"
     REPORTS_DIR: Path = RUNTIME_DIR / "reports"
+    INCIDENTS_DIR: Path = RUNTIME_DIR / "incidents"
 
     # Identification & Safety
     LAB_MARKER_FILENAME: str = ".cryptoshield_lab_marker"
@@ -109,6 +110,64 @@ class CryptoShieldConfig:
     MONITOR_IGNORED_FILENAMES: List[str] = field(
         default_factory=lambda: [".cryptoshield_lab_marker", "baseline_manifest.json"]
     )
+
+    # Detection & Threat Scoring Engine Parameters (Phase 3)
+    DETECTION_ENABLED: bool = True
+    DETECTION_SLIDING_WINDOWS: List[float] = field(
+        default_factory=lambda: [1.0, 5.0, 10.0, 30.0]
+    )
+    DETECTION_PRIMARY_WINDOW: float = 5.0
+
+    # Behavioral Thresholds
+    BURST_MODERATE_MODIFICATION_THRESHOLD: int = 15
+    BURST_LARGE_MODIFICATION_THRESHOLD: int = 40
+    BURST_RAPID_RENAME_THRESHOLD: int = 10
+    BURST_DELETION_THRESHOLD: int = 15
+    MULTI_DEPARTMENT_THRESHOLD: int = 3
+    MULTI_EXTENSION_THRESHOLD: int = 3
+
+    # Threat Scoring Weights (Total capped at 100)
+    WEIGHT_MODERATE_MODIFICATIONS: int = 20
+    WEIGHT_LARGE_MODIFICATIONS: int = 40
+    WEIGHT_RAPID_RENAMING: int = 20
+    WEIGHT_LARGE_DELETIONS: int = 20
+    WEIGHT_MULTI_DEPARTMENT: int = 10
+    WEIGHT_MULTI_EXTENSION: int = 10
+    WEIGHT_MULTIPLE_PATTERNS: int = 10
+    WEIGHT_FIRST_CANARY: int = 50
+    WEIGHT_ADDITIONAL_CANARY: int = 15
+    WEIGHT_CANARY_TAMPERING: int = 60
+
+    # Severity Score Thresholds
+    SEVERITY_THRESHOLDS: Dict[str, int] = field(
+        default_factory=lambda: {
+            "NORMAL": 0,
+            "LOW": 20,
+            "MEDIUM": 40,
+            "HIGH": 60,
+            "CRITICAL": 80,
+        }
+    )
+
+    # Incident Management & False-Positive Cooldown
+    INCIDENT_AUTO_CREATE_THRESHOLD: int = 40
+    INCIDENT_MERGE_WINDOW_SECONDS: float = 60.0
+    DETECTION_COOLDOWN_SECONDS: float = 1.0
+    DEDUPLICATION_CACHE_MAX_SIZE: int = 20000
+    DEDUPLICATION_CACHE_TTL_SECONDS: float = 120.0
+
+    # Explicitly configured classifications permitted for verified legitimate bulk workloads
+    VERIFIED_LEGITIMATE_SOURCES: List[str] = field(
+        default_factory=lambda: [
+            "CRYPTO_SHIELD_TEST_HARNESS_LEGITIMATE",
+            "CONFIGURED_BACKUP_SERVICE",
+            "CONFIGURED_DATASET_GENERATOR",
+        ]
+    )
+
+    @property
+    def incidents_dir(self) -> Path:
+        return self.INCIDENTS_DIR
 
     @property
     def lab_marker_path(self) -> Path:

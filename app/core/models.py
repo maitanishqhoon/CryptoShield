@@ -29,6 +29,7 @@ class DataClassification(str, Enum):
 
 class ThreatLevel(str, Enum):
     """Threat severity levels emitted by the detection engine."""
+    NORMAL = "NORMAL"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -244,6 +245,203 @@ class MonitoringEvent:
             process_attribution=data.get("process_attribution", ProcessAttribution.UNKNOWN.value),
             operation=data.get("operation", FileAction.ACCESS.value),
             priority=data.get("priority", EventPriority.NORMAL.value),
+            metadata=data.get("metadata", {}),
+        )
+
+
+class IncidentStatus(str, Enum):
+    """Lifecycle statuses for security incidents."""
+    OPEN = "OPEN"
+    INVESTIGATING = "INVESTIGATING"
+    RESOLVED = "RESOLVED"
+
+
+class DetectionReason(str, Enum):
+    """Standardized reasons describing ransomware-like behavioural indicators."""
+    MASS_FILE_MODIFICATION = "MASS_FILE_MODIFICATION"
+    RAPID_FILE_RENAMING = "RAPID_FILE_RENAMING"
+    LARGE_SCALE_DELETION = "LARGE_SCALE_DELETION"
+    MULTI_DEPARTMENT_TARGETING = "MULTI_DEPARTMENT_TARGETING"
+    MULTI_EXTENSION_TARGETING = "MULTI_EXTENSION_TARGETING"
+    UNUSUAL_BURST_ACTIVITY = "UNUSUAL_BURST_ACTIVITY"
+    CANARY_FILE_ACCESS = "CANARY_FILE_ACCESS"
+    MULTIPLE_CANARIES_ACCESSED = "MULTIPLE_CANARIES_ACCESSED"
+    CANARY_FILE_TAMPERED = "CANARY_FILE_TAMPERED"
+    LEGITIMATE_BULK_ACTIVITY = "LEGITIMATE_BULK_ACTIVITY"
+
+
+class AssessmentType(str, Enum):
+    """High-level risk assessments for detection outcomes."""
+    NORMAL_ACTIVITY = "NORMAL_ACTIVITY"
+    LOW_RISK_ACTIVITY = "LOW_RISK_ACTIVITY"
+    SUSPICIOUS_FILE_ACTIVITY = "SUSPICIOUS_FILE_ACTIVITY"
+    SUSPICIOUS_CANARY_ACCESS = "SUSPICIOUS_CANARY_ACCESS"
+    STRONG_RANSOMWARE_INDICATORS = "STRONG_RANSOMWARE_INDICATORS"
+    CONFIRMED_SIMULATED_ATTACK = "CONFIRMED_SIMULATED_ATTACK"
+
+
+@dataclass
+class ContributingIndicator:
+    """Detailed attribution metric for a single scoring rule."""
+    indicator_name: str
+    score_contribution: int
+    description: str
+    observed_value: Any = None
+    threshold: Any = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ContributingIndicator:
+        return cls(
+            indicator_name=data["indicator_name"],
+            score_contribution=data["score_contribution"],
+            description=data["description"],
+            observed_value=data.get("observed_value"),
+            threshold=data.get("threshold"),
+        )
+
+
+@dataclass
+class DetectionResult:
+    """
+    Standardized result emitted by the threat detection and scoring engine.
+    Fully explainable with contributing indicators, unique file counts, and process attribution.
+    """
+    detection_id: str
+    timestamp: str
+    threat_score: int
+    severity: str
+    assessment: str
+    reasons: List[str]
+    affected_files_count: int
+    canary_access_count: int
+    process_attribution: str = ProcessAttribution.UNKNOWN.value
+    process_id: Optional[int] = None
+    process_name: Optional[str] = None
+    incident_id: Optional[str] = None
+    window_seconds: float = 5.0
+    contributing_indicators: List[ContributingIndicator] = field(default_factory=list)
+    affected_files: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        d = asdict(self)
+        d["contributing_indicators"] = [
+            i.to_dict() if hasattr(i, "to_dict") else i for i in self.contributing_indicators
+        ]
+        return d
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> DetectionResult:
+        indicators = [
+            ContributingIndicator.from_dict(i) if isinstance(i, dict) else i
+            for i in data.get("contributing_indicators", [])
+        ]
+        return cls(
+            detection_id=data["detection_id"],
+            timestamp=data["timestamp"],
+            threat_score=data["threat_score"],
+            severity=data["severity"],
+            assessment=data["assessment"],
+            reasons=list(data.get("reasons", [])),
+            affected_files_count=data.get("affected_files_count", 0),
+            canary_access_count=data.get("canary_access_count", 0),
+            process_attribution=data.get("process_attribution", ProcessAttribution.UNKNOWN.value),
+            process_id=data.get("process_id"),
+            process_name=data.get("process_name"),
+            incident_id=data.get("incident_id"),
+            window_seconds=data.get("window_seconds", 5.0),
+            contributing_indicators=indicators,
+            affected_files=list(data.get("affected_files", [])),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass
+class SecurityAlert:
+    """Immediate high-priority alert for critical events (such as canary trip or critical threat)."""
+    alert_id: str
+    timestamp: str
+    priority: str
+    alert_type: str
+    message: str
+    source_event_id: str
+    target_path: Optional[str] = None
+    detection_id: Optional[str] = None
+    process_attribution: str = ProcessAttribution.UNKNOWN.value
+    process_id: Optional[int] = None
+    process_name: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> SecurityAlert:
+        return cls(
+            alert_id=data["alert_id"],
+            timestamp=data["timestamp"],
+            priority=data["priority"],
+            alert_type=data["alert_type"],
+            message=data["message"],
+            source_event_id=data["source_event_id"],
+            target_path=data.get("target_path"),
+            detection_id=data.get("detection_id"),
+            process_attribution=data.get("process_attribution", ProcessAttribution.UNKNOWN.value),
+            process_id=data.get("process_id"),
+            process_name=data.get("process_name"),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass
+class SecurityIncident:
+    """
+    Security incident record maintained by the IncidentManager.
+    Tracks state, lifecycle transitions, affected resources, and a chronological timeline.
+    """
+    incident_id: str
+    first_detected_at: str
+    last_updated_at: str
+    status: str
+    threat_score: int
+    severity: str
+    assessment: str
+    detection_reasons: List[str] = field(default_factory=list)
+    contributing_event_ids: List[str] = field(default_factory=list)
+    affected_paths: List[str] = field(default_factory=list)
+    canary_events: List[Dict[str, Any]] = field(default_factory=list)
+    process_attribution: str = ProcessAttribution.UNKNOWN.value
+    process_id: Optional[int] = None
+    process_name: Optional[str] = None
+    assessment_history: List[Dict[str, Any]] = field(default_factory=list)
+    timeline: List[Dict[str, Any]] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> SecurityIncident:
+        return cls(
+            incident_id=data["incident_id"],
+            first_detected_at=data["first_detected_at"],
+            last_updated_at=data["last_updated_at"],
+            status=data["status"],
+            threat_score=data["threat_score"],
+            severity=data["severity"],
+            assessment=data["assessment"],
+            detection_reasons=list(data.get("detection_reasons", [])),
+            contributing_event_ids=list(data.get("contributing_event_ids", [])),
+            affected_paths=list(data.get("affected_paths", [])),
+            canary_events=list(data.get("canary_events", [])),
+            process_attribution=data.get("process_attribution", ProcessAttribution.UNKNOWN.value),
+            process_id=data.get("process_id"),
+            process_name=data.get("process_name"),
+            assessment_history=list(data.get("assessment_history", [])),
+            timeline=list(data.get("timeline", [])),
             metadata=data.get("metadata", {}),
         )
 

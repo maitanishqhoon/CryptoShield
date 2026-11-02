@@ -1,0 +1,64 @@
+{
+  "incident_id": "INC-5F553F8A",
+  "first_detected_at": "2026-11-02T13:01:41.945311+00:00",
+  "last_updated_at": "2026-11-02T13:01:41.945311+00:00",
+  "status": "OPEN",
+  "threat_score": 50,
+  "severity": "MEDIUM",
+  "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+  "detection_reasons": [
+    "CANARY_FILE_ACCESS"
+  ],
+  "contributing_event_ids": [
+    "3a2dd571-bba5-4720-ab09-cf20b908dbeb"
+  ],
+  "affected_paths": [
+    "Finance/canary_accounts_receivable.csv"
+  ],
+  "canary_events": [
+    {
+      "event_id": "3a2dd571-bba5-4720-ab09-cf20b908dbeb",
+      "timestamp": "2026-11-02T13:01:41.945311+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Finance/canary_accounts_receivable.csv",
+      "is_canary": true,
+      "canary_id": "Finance/canary_accounts_receivable.csv",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Finance"
+      }
+    }
+  ],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-02T13:01:41.945311+00:00",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "reasons": [
+        "CANARY_FILE_ACCESS"
+      ],
+      "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-02T13:01:41.945311+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "description": "Incident opened with assessment: MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+      "detection_id": "4e2d8ae3-744e-45cb-b369-7769eabe0356"
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "4e2d8ae3-744e-45cb-b369-7769eabe0356"
+  }
+}

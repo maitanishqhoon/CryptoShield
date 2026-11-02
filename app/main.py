@@ -388,6 +388,212 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_detect(args: argparse.Namespace) -> int:
+    """Start real-time monitoring and detection engine."""
+    from app.detection.detection_coordinator import DetectionCoordinator
+    from app.monitoring.coordinator import MonitoringCoordinator
+
+    mgr = LabManager()
+    is_valid, msg = mgr.validate_lab()
+    if not is_valid:
+        print(f"[-] Lab validation failed: {msg}")
+        return 1
+
+    monitoring_coord = MonitoringCoordinator()
+    detection_coord = DetectionCoordinator(manifest=monitoring_coord.manifest)
+
+    def on_detection(det):
+        if det.threat_score > 0 or det.canary_access_count > 0:
+            pfx = f"[{det.severity} ALERT]" if det.threat_score >= 40 else f"[{det.severity}]"
+            reasons_str = ", ".join(det.reasons) if det.reasons else "Normal"
+            proc_str = f" | Process: {det.process_attribution}"
+            if det.process_id:
+                proc_str += f" ({det.process_id} {det.process_name})"
+            print(f"    {pfx:<18} Score: {det.threat_score:>3}/100 | Files: {det.affected_files_count:>2} | {reasons_str}{proc_str}")
+
+    detection_coord.add_listener(on_detection)
+
+    print(f"[*] Starting CryptoShield Ransomware Detection & Threat Scoring Engine...")
+    print(f"    - Target Laboratory : {monitoring_coord.lab_dir}")
+    print(f"    - Correlation Window: {detection_coord.primary_window:.1f} seconds")
+    print(f"    - Threat Scoring    : Heuristic Rule-Based (0-100 scale)")
+    print(f"    - Canary Decoys     : Registered Manifest Tracking")
+    if args.duration:
+        print(f"    - Run Duration      : {args.duration} seconds")
+    else:
+        print(f"    - Mode              : Continuous (Press Ctrl+C to stop)")
+    print("--------------------------------------------------------------------------------")
+
+    try:
+        detection_coord.start()
+        monitoring_coord.start()
+        if args.duration:
+            time.sleep(args.duration)
+        else:
+            while True:
+                time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("\n[*] Stopping detection engine upon user interrupt...")
+    finally:
+        monitoring_coord.stop()
+        detection_coord.stop()
+
+    mon_status = monitoring_coord.get_status()
+    det_metrics = detection_coord.get_metrics()
+
+    print("\n================ DETECTION SESSION SUMMARY ================")
+    print(f"Session Uptime          : {det_metrics['uptime_seconds']} seconds")
+    print(f"Telemetry Events Seen   : {mon_status['total_events_observed']:,}")
+    print(f"Telemetry Published     : {mon_status['total_events_published']:,}")
+    print(f"Events Analyzed         : {det_metrics['events_processed']:,}")
+    print(f"Duplicates Deduplicated : {det_metrics['duplicate_events_ignored']:,}")
+    print(f"Detection Latency (Avg) : {det_metrics['average_detection_latency_ms']:.3f} ms")
+    print(f"Detection Latency (Max) : {det_metrics['max_detection_latency_ms']:.3f} ms")
+    print(f"Security Alerts Raised  : {det_metrics['alerts_generated_count']:,}")
+    print(f"Incidents Created       : {det_metrics['incidents_created_count']:,}")
+    print(f"Incidents Updated       : {det_metrics['incidents_updated_count']:,}")
+    print("===========================================================\n")
+    return 0
+
+
+def cmd_detection_demo(args: argparse.Namespace) -> int:
+    """Run controlled harmless detection scenarios."""
+    from app.detection.test_harness import ControlledDetectionHarness
+
+    print("\n[*] Executing CryptoShield Controlled Ransomware Detection Scenarios...")
+    print("    - Synthetic event streams over sliding windows.")
+    print("    - Non-destructive execution: zero modifications to baseline files.")
+    print("--------------------------------------------------------------------------------")
+
+    harness = ControlledDetectionHarness()
+    results = harness.run_all_scenarios()
+
+    for r in results:
+        status_tag = "[PASS]" if r.passed else "[FAIL]"
+        print(f"\n{status_tag} Scenario {r.scenario_id}: {r.name}")
+        print(f"       Description   : {r.description}")
+        print(f"       Events/Window : {r.events_count} events")
+        print(f"       Threat Score  : {r.threat_score}/100 ({r.severity})")
+        print(f"       Assessment    : {r.assessment}")
+        if r.reasons:
+            print(f"       Reasons       : {', '.join(r.reasons)}")
+        if r.alerts_count > 0:
+            print(f"       Alerts Raised : {r.alerts_count} security alert(s)")
+        if r.incidents_count > 0:
+            print(f"       Incidents     : {r.incidents_count} security incident(s)")
+        print(f"       Outcome Note  : {r.notes}")
+
+    passed_count = sum(1 for r in results if r.passed)
+    print("\n================ CONTROLLED SCENARIOS SUMMARY ================")
+    print(f"Total Scenarios Evaluated: {len(results)}")
+    print(f"Passed                   : {passed_count}/{len(results)}")
+    print(f"Status                   : {'ALL SCENARIOS PASSED [100%]' if passed_count == len(results) else 'SOME SCENARIOS FAILED'}")
+    print("Laboratory baseline and 20,000 files remain 100% unaltered.")
+    print("==============================================================\n")
+    return 0 if passed_count == len(results) else 1
+
+
+def cmd_detections(args: argparse.Namespace) -> int:
+    """Show recent detection results and security incidents."""
+    import json
+    incidents_dir = CONFIG.incidents_dir
+    if not incidents_dir.exists():
+        print("[*] No security incidents directory found.")
+        return 0
+
+    incident_files = sorted(incidents_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not incident_files:
+        print("[*] No security incidents recorded yet.")
+        return 0
+
+    print(f"\n--- Recorded Security Incidents ({len(incident_files)} found) ---")
+    print(f"{'Incident ID':<16} {'Severity':<10} {'Score':<7} {'Status':<14} {'Last Updated'}")
+    print("-" * 75)
+    for f in incident_files[:20]:
+        try:
+            with open(f, "r", encoding="utf-8") as fp:
+                data = json.load(fp)
+            print(
+                f"{data.get('incident_id', f.stem):<16} "
+                f"{data.get('severity', 'UNKNOWN'):<10} "
+                f"{data.get('threat_score', 0):>3}/100 "
+                f"{data.get('status', 'OPEN'):<14} "
+                f"{data.get('last_updated_at', '')[:19]}"
+            )
+        except Exception:
+            continue
+    print("-" * 75)
+    print("Use 'python -m app.main incident --id <incident-id>' to view detailed audit trail.\n")
+    return 0
+
+
+def cmd_incident(args: argparse.Namespace) -> int:
+    """Show detailed timeline and attribution for a specific security incident."""
+    import json
+    from app.core.models import SecurityIncident
+
+    inc_file = CONFIG.incidents_dir / f"{args.id}.json"
+    if not inc_file.exists():
+        matches = [f for f in CONFIG.incidents_dir.glob("*.json") if f.stem.lower() == args.id.lower()]
+        if matches:
+            inc_file = matches[0]
+        else:
+            print(f"[-] Incident '{args.id}' not found at {CONFIG.incidents_dir}.")
+            return 1
+
+    with open(inc_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if args.resolve:
+        from app.detection.incident_manager import IncidentManager
+        mgr = IncidentManager()
+        mgr._incidents[data["incident_id"]] = SecurityIncident.from_dict(data)
+        mgr.resolve_incident(data["incident_id"], resolution_notes=args.resolve)
+        print(f"[+] Incident {data['incident_id']} has been marked RESOLVED.")
+        return 0
+
+    print("\n================ SECURITY INCIDENT DOSSIER ================")
+    print(f"Incident ID        : {data.get('incident_id')}")
+    print(f"Status             : {data.get('status')}")
+    print(f"Current Severity   : {data.get('severity')}")
+    print(f"Current Threat Score: {data.get('threat_score')}/100")
+    print(f"Assessment         : {data.get('assessment')}")
+    print(f"First Detected     : {data.get('first_detected_at')}")
+    print(f"Last Updated       : {data.get('last_updated_at')}")
+    print(f"Process Attribution: {data.get('process_attribution')} (PID: {data.get('process_id')} {data.get('process_name') or ''})")
+    print(f"Affected Files     : {len(data.get('affected_paths', []))} file(s)")
+    print(f"Canary Breaches    : {len(data.get('canary_events', []))} decoy(s)")
+
+    print("\nDetection Reasons Triggered:")
+    for r in data.get("detection_reasons", []):
+        print(f"  - {r}")
+
+    if data.get("affected_paths"):
+        print("\nAffected File Paths (Sample up to 5):")
+        for p in data.get("affected_paths")[:5]:
+            print(f"  - {p}")
+
+    print("\nChronological Timeline:")
+    for t in data.get("timeline", []):
+        ts = t.get("timestamp", "")[:19]
+        action = t.get("action", "")
+        desc = t.get("description", "")
+        print(f"  [{ts}] {action:<22} : {desc}")
+    print("===========================================================\n")
+    return 0
+
+
+def cmd_detection_benchmark(args: argparse.Namespace) -> int:
+    """Run high-throughput detection benchmark."""
+    from app.detection.benchmark import print_detection_benchmark_report, run_detection_benchmark
+
+    burst = args.events if hasattr(args, "events") and args.events else 1000
+    print(f"[*] Executing CryptoShield Detection Engine Benchmark ({burst:,} events)...")
+    res = run_detection_benchmark(event_count=burst)
+    print_detection_benchmark_report(res)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -435,6 +641,25 @@ def build_parser() -> argparse.ArgumentParser:
     bench_parser = subparsers.add_parser("benchmark", help="Execute reproducible telemetry performance benchmark")
     bench_parser.add_argument("--events", type=int, default=200, help="Number of event bursts to generate (default: 200)")
 
+    # detect (Phase 3)
+    detect_parser = subparsers.add_parser("detect", help="Start real-time monitoring and ransomware detection engine")
+    detect_parser.add_argument("--duration", type=int, default=None, help="Duration to run detection in seconds")
+
+    # detection-demo (Phase 3)
+    subparsers.add_parser("detection-demo", help="Run controlled harmless ransomware detection scenarios")
+
+    # detections (Phase 3)
+    subparsers.add_parser("detections", help="Show recent detection results and recorded incidents")
+
+    # incident (Phase 3)
+    inc_parser = subparsers.add_parser("incident", help="Show detailed dossier and timeline for a security incident")
+    inc_parser.add_argument("--id", type=str, required=True, help="Incident ID (e.g. INC-XXXXXXXX)")
+    inc_parser.add_argument("--resolve", type=str, default=None, help="Mark incident RESOLVED with resolution notes")
+
+    # detection-benchmark (Phase 3)
+    det_bench_parser = subparsers.add_parser("detection-benchmark", help="Execute high-throughput detection engine benchmark")
+    det_bench_parser.add_argument("--events", type=int, default=1000, help="Number of telemetry events to evaluate (default: 1000)")
+
     return parser
 
 
@@ -464,6 +689,16 @@ def main() -> int:
         return cmd_demo(args)
     elif args.command == "benchmark":
         return cmd_benchmark(args)
+    elif args.command == "detect":
+        return cmd_detect(args)
+    elif args.command == "detection-demo":
+        return cmd_detection_demo(args)
+    elif args.command == "detections":
+        return cmd_detections(args)
+    elif args.command == "incident":
+        return cmd_incident(args)
+    elif args.command == "detection-benchmark":
+        return cmd_detection_benchmark(args)
     else:
         parser.print_help()
         return 1
