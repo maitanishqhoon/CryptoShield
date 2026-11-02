@@ -234,6 +234,160 @@ def cmd_clean(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_monitor(args: argparse.Namespace) -> int:
+    """Run live File Activity Monitoring and Telemetry Engine."""
+    from app.monitoring.coordinator import MonitoringCoordinator
+    from app.monitoring.event_normalizer import EventPriority
+
+    mgr = LabManager()
+    is_valid, msg = mgr.validate_lab()
+    if not is_valid:
+        print(f"[-] Lab validation failed: {msg}")
+        return 1
+
+    coordinator = MonitoringCoordinator()
+
+    def print_event(ev) -> None:
+        pfx = "[CANARY ALERT]" if ev.is_canary else f"[{ev.event_type}]"
+        path_str = f" -> {ev.relative_path}" if ev.relative_path else ""
+        proc_str = f" (PID: {ev.process_id} {ev.process_name})" if ev.process_id else ""
+        print(f"    {pfx:<18} {ev.source:<12} {path_str}{proc_str}")
+
+    coordinator.add_listener(print_event)
+
+    print(f"[*] Starting CryptoShield Telemetry Engine...")
+    print(f"    - Target Laboratory : {coordinator.lab_dir}")
+    print(f"    - Filesystem Watch  : Watchdog recursive")
+    print(f"    - Process Telemetry : psutil (poll interval: {coordinator.process_poll_interval}s)")
+    print(f"    - Debounce Window   : {coordinator.debounce_seconds * 1000:.0f} ms")
+    print(f"    - Queue Capacity    : {coordinator.queue_capacity:,} events")
+    if args.duration:
+        print(f"    - Run Duration      : {args.duration} seconds")
+    else:
+        print(f"    - Mode              : Continuous (Press Ctrl+C to stop)")
+    print("--------------------------------------------------------------------------------")
+
+    try:
+        coordinator.start()
+        start_t = time.time()
+        if args.duration:
+            time.sleep(args.duration)
+        else:
+            while True:
+                time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("\n[*] Stopping monitoring upon user interrupt...")
+    finally:
+        coordinator.stop()
+
+    status = coordinator.get_status()
+    print("\n================ MONITORING SESSION SUMMARY ================")
+    print(f"Session Uptime       : {status['uptime_seconds']} seconds")
+    print(f"Total Events Observed: {status['total_events_observed']:,}")
+    print(f"Total Events Queued  : {status['total_events_published']:,}")
+    print(f"Canary Decoy Trips   : {status['canary_trips_count']:,}")
+    print("Events By Category   :")
+    for etype, cnt in sorted(status["events_by_type"].items()):
+        print(f"  - {etype:<20}: {cnt:,}")
+    print("============================================================\n")
+    return 0
+
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    """Run controlled laboratory monitoring demonstration."""
+    import shutil
+    from app.monitoring.coordinator import MonitoringCoordinator
+
+    mgr = LabManager()
+    is_valid, msg = mgr.validate_lab()
+    if not is_valid:
+        print(f"[-] Lab validation failed: {msg}")
+        return 1
+
+    coordinator = MonitoringCoordinator()
+    demo_dir = coordinator.lab_dir / "Controlled_Demo_Fixture"
+    demo_dir.mkdir(parents=True, exist_ok=True)
+
+    events_captured = []
+
+    def on_demo_event(ev) -> None:
+        events_captured.append(ev)
+        flag = " [CANARY TRIPPED!]" if ev.is_canary else ""
+        print(f"    [EVENT] {ev.event_type:<16} | Source: {ev.source:<18} | Path: {ev.relative_path or ''}{flag}")
+
+    coordinator.add_listener(on_demo_event)
+
+    print("\n[*] Initializing controlled laboratory monitoring demonstration...")
+    coordinator.start()
+    time.sleep(0.2)
+
+    try:
+        print("\n--- Step 1: Harmless File Creation ---")
+        demo_file = demo_dir / "demo_financial_memo.txt"
+        demo_file.write_text("CryptoShield Phase 2 safe telemetry demonstration document.\n", encoding="utf-8")
+        time.sleep(0.2)
+
+        print("\n--- Step 2: Harmless File Modification ---")
+        with open(demo_file, "a", encoding="utf-8") as f:
+            f.write("Appended telemetry verification line.\n")
+        time.sleep(0.2)
+
+        print("\n--- Step 3: Controlled File-Read Instrumentation ---")
+        content = coordinator.access_monitor.read_file(demo_file)
+        print(f"    [Read OK] Read {len(content)} bytes via access monitor instrumentation.")
+        time.sleep(0.2)
+
+        print("\n--- Step 4: Canary Decoy File Access Recording ---")
+        # Find authentic registered canary from manifest
+        if coordinator.manifest:
+            canaries = [e for e in coordinator.manifest.entries.values() if e.is_canary]
+            if canaries:
+                canary_entry = canaries[0]
+                canary_path = coordinator.lab_dir / canary_entry.relative_path
+                if canary_path.exists():
+                    print(f"    Targeting registered canary: {canary_entry.relative_path}")
+                    canary_content = coordinator.access_monitor.read_file(canary_path)
+                    print(f"    [Decoy Read OK] Canary access successfully recorded without altering content.")
+                else:
+                    print("    [!] Canary path from manifest not found on disk.")
+            else:
+                print("    [!] No canaries found in manifest.")
+        time.sleep(0.2)
+
+        print("\n--- Step 5: File Rename / Move ---")
+        renamed_file = demo_dir / "demo_financial_memo_archived.txt"
+        demo_file.rename(renamed_file)
+        time.sleep(0.2)
+
+        print("\n--- Step 6: File Deletion ---")
+        if renamed_file.exists():
+            renamed_file.unlink()
+        time.sleep(0.3)
+
+    finally:
+        coordinator.stop()
+        if demo_dir.exists():
+            shutil.rmtree(demo_dir)
+
+    print("\n================ DEMONSTRATION COMPLETE ================")
+    print(f"Total Telemetry Events Logged : {len(events_captured)}")
+    print(f"Canary Tripped Decoys Recorded: {coordinator.access_monitor.canary_trips_count}")
+    print("Baseline enterprise files and manifest remain completely unaltered.")
+    print("=========================================================\n")
+    return 0
+
+
+def cmd_benchmark(args: argparse.Namespace) -> int:
+    """Run reproducible telemetry benchmark."""
+    from app.monitoring.benchmark import print_benchmark_report, run_monitoring_benchmark
+
+    burst = args.events if hasattr(args, "events") and args.events else 200
+    print(f"[*] Executing CryptoShield Telemetry Benchmark ({burst} burst events)...")
+    results = run_monitoring_benchmark(burst_count=burst)
+    print_benchmark_report(results)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -270,6 +424,17 @@ def build_parser() -> argparse.ArgumentParser:
     clean_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
     clean_parser.add_argument("--all", action="store_true", help="Also remove safety marker")
 
+    # monitor (Phase 2)
+    monitor_parser = subparsers.add_parser("monitor", help="Start real-time File Activity Monitoring & Telemetry Engine")
+    monitor_parser.add_argument("--duration", type=int, default=None, help="Duration to run monitoring in seconds")
+
+    # demo (Phase 2)
+    subparsers.add_parser("demo", help="Run controlled harmless laboratory monitoring demonstration")
+
+    # benchmark (Phase 2)
+    bench_parser = subparsers.add_parser("benchmark", help="Execute reproducible telemetry performance benchmark")
+    bench_parser.add_argument("--events", type=int, default=200, help="Number of event bursts to generate (default: 200)")
+
     return parser
 
 
@@ -293,6 +458,12 @@ def main() -> int:
         return cmd_status(args)
     elif args.command == "clean":
         return cmd_clean(args)
+    elif args.command == "monitor":
+        return cmd_monitor(args)
+    elif args.command == "demo":
+        return cmd_demo(args)
+    elif args.command == "benchmark":
+        return cmd_benchmark(args)
     else:
         parser.print_help()
         return 1
@@ -300,3 +471,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

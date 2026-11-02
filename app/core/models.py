@@ -180,3 +180,70 @@ class IntegrityVerificationResult:
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+class EventPriority(str, Enum):
+    """Telemetry event priority levels."""
+    LOW = "LOW"
+    NORMAL = "NORMAL"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class ProcessAttribution(str, Enum):
+    """Confidence level of process attribution for an observed event."""
+    CONFIRMED = "CONFIRMED"
+    INFERRED = "INFERRED"
+    UNKNOWN = "UNKNOWN"
+
+
+@dataclass
+class MonitoringEvent:
+    """
+    Standardized telemetry event model for filesystem, process, and file access observations.
+    Consistently consumable by Phase 3 detection and threat-scoring engine.
+    """
+    event_id: str
+    timestamp: str
+    event_type: str
+    source: str
+    relative_path: Optional[str] = None
+    is_canary: bool = False
+    canary_id: Optional[str] = None
+    process_id: Optional[int] = None
+    process_name: Optional[str] = None
+    process_attribution: str = ProcessAttribution.UNKNOWN.value
+    operation: str = FileAction.ACCESS.value
+    priority: str = EventPriority.NORMAL.value
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def to_bus_event(self) -> Any:
+        from app.core.event_bus import Event
+        return Event(
+            event_type=self.event_type,
+            data=self.to_dict(),
+            source=self.source,
+            timestamp=self.timestamp,
+        )
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MonitoringEvent:
+        return cls(
+            event_id=data["event_id"],
+            timestamp=data["timestamp"],
+            event_type=data["event_type"],
+            source=data["source"],
+            relative_path=data.get("relative_path"),
+            is_canary=bool(data.get("is_canary", False)),
+            canary_id=data.get("canary_id"),
+            process_id=data.get("process_id"),
+            process_name=data.get("process_name"),
+            process_attribution=data.get("process_attribution", ProcessAttribution.UNKNOWN.value),
+            operation=data.get("operation", FileAction.ACCESS.value),
+            priority=data.get("priority", EventPriority.NORMAL.value),
+            metadata=data.get("metadata", {}),
+        )
+

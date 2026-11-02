@@ -96,6 +96,20 @@ class CryptoShieldConfig:
         }
     )
 
+    # Telemetry and Monitoring Parameters (Phase 2)
+    MONITORING_ENABLED: bool = True
+    MONITOR_EVENT_QUEUE_CAPACITY: int = 10000
+    MONITOR_DEBOUNCE_SECONDS: float = 0.05
+    MONITOR_OBSERVER_TIMEOUT_SECONDS: float = 0.05
+    PROCESS_POLL_INTERVAL_SECONDS: float = 1.0
+    CANARY_EVENT_PRIORITY: str = "HIGH"
+    MONITOR_IGNORED_DIRS: List[str] = field(
+        default_factory=lambda: [".git", "__pycache__", ".pytest_cache", ".demo_tmp"]
+    )
+    MONITOR_IGNORED_FILENAMES: List[str] = field(
+        default_factory=lambda: [".cryptoshield_lab_marker", "baseline_manifest.json"]
+    )
+
     @property
     def lab_marker_path(self) -> Path:
         return self.LAB_DIR / self.LAB_MARKER_FILENAME
