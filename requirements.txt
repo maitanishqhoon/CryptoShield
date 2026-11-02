@@ -1,0 +1,20 @@
+# CryptoShield: An Intelligent Ransomware Detection, Containment, Data Exfiltration Prevention and Cryptographic Recovery Framework
+# Core Dependencies
+
+# Cryptographic Operations
+cryptography>=42.0.0
+
+# Filesystem Event Monitoring
+watchdog>=4.0.0
+
+# Process and System Monitoring
+psutil>=5.9.0
+
+# Desktop GUI Framework
+PySide6>=6.6.0
+
+# Automated Testing
+pytest>=8.0.0
+
+# Visualization and Analytics (Optional / Performance graphs)
+matplotlib>=3.8.0
