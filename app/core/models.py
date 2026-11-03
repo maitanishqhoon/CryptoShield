@@ -445,3 +445,167 @@ class SecurityIncident:
             metadata=data.get("metadata", {}),
         )
 
+
+class ContainmentAction(str, Enum):
+    """Actions recommended or taken by the containment policy engine."""
+    NONE = "NONE"
+    MONITOR = "MONITOR"
+    ALERT_REVIEW = "ALERT_REVIEW"
+    CONTAINMENT_RECOMMENDED = "CONTAINMENT_RECOMMENDED"
+    CONTAIN_SIMULATION = "CONTAIN_SIMULATION"
+
+
+class ContainmentStatus(str, Enum):
+    """Lifecycle status of a containment operation."""
+    REQUESTED = "REQUESTED"
+    VALIDATING = "VALIDATING"
+    IN_PROGRESS = "IN_PROGRESS"
+    CONTAINED = "CONTAINED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+    CONTAINMENT_RECOMMENDED = "CONTAINMENT_RECOMMENDED"
+
+
+class WriteGateState(str, Enum):
+    """Application-level write gate states for controlled simulation runs."""
+    OPEN = "OPEN"
+    CLOSING = "CLOSING"
+    CLOSED = "CLOSED"
+
+
+class ProcessLifecycleStatus(str, Enum):
+    """Lifecycle status of a registered controlled simulation process."""
+    REGISTERED = "REGISTERED"
+    RUNNING = "RUNNING"
+    STOP_REQUESTED = "STOP_REQUESTED"
+    EXITED = "EXITED"
+    TERMINATED = "TERMINATED"
+    FAILED = "FAILED"
+
+
+@dataclass
+class ContainmentDecision:
+    """
+    Strongly typed containment decision emitted by ContainmentPolicy.
+    Explains the score, severity, reasoning, authorization, and recommended action.
+    """
+    decision_id: str
+    timestamp: str
+    threat_score: int
+    severity: str
+    decision_reason: str
+    recommended_action: str
+    auto_containment_authorized: bool
+    explanation: str
+    related_incident_id: Optional[str] = None
+    related_detection_id: Optional[str] = None
+    simulation_run_id: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ContainmentDecision:
+        return cls(
+            decision_id=data["decision_id"],
+            timestamp=data["timestamp"],
+            threat_score=data["threat_score"],
+            severity=data["severity"],
+            decision_reason=data["decision_reason"],
+            recommended_action=data["recommended_action"],
+            auto_containment_authorized=bool(data["auto_containment_authorized"]),
+            explanation=data["explanation"],
+            related_incident_id=data.get("related_incident_id"),
+            related_detection_id=data.get("related_detection_id"),
+            simulation_run_id=data.get("simulation_run_id"),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass
+class ControlledProcessRecord:
+    """
+    Record of an explicitly registered controlled simulation process.
+    Guarantees PID reuse protection and launcher verification.
+    """
+    simulation_run_id: str
+    pid: int
+    process_creation_time: str
+    executable_path: str
+    expected_identity: str
+    parent_pid: int
+    registered_at: str
+    lifecycle_status: str = ProcessLifecycleStatus.RUNNING.value
+    associated_lab_target: str = ""
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ControlledProcessRecord:
+        return cls(
+            simulation_run_id=data["simulation_run_id"],
+            pid=data["pid"],
+            process_creation_time=data["process_creation_time"],
+            executable_path=data["executable_path"],
+            expected_identity=data["expected_identity"],
+            parent_pid=data["parent_pid"],
+            registered_at=data["registered_at"],
+            lifecycle_status=data.get("lifecycle_status", ProcessLifecycleStatus.RUNNING.value),
+            associated_lab_target=data.get("associated_lab_target", ""),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass
+class ContainmentRecord:
+    """
+    Complete audit dossier of a containment operation.
+    Persisted to disk and published to EventBus.
+    """
+    containment_id: str
+    simulation_run_id: Optional[str]
+    start_timestamp: str
+    initial_threat_score: int
+    severity: str
+    actions_taken: List[str] = field(default_factory=list)
+    process_identity_verification_outcome: str = "UNKNOWN"
+    write_gate_status: str = WriteGateState.OPEN.value
+    shutdown_method: str = "NONE"
+    final_status: str = ContainmentStatus.REQUESTED.value
+    completion_timestamp: Optional[str] = None
+    incident_id: Optional[str] = None
+    detection_id: Optional[str] = None
+    failure_explanation: Optional[str] = None
+    operations_prevented_count: int = 0
+    timeline: List[Dict[str, Any]] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ContainmentRecord:
+        return cls(
+            containment_id=data["containment_id"],
+            simulation_run_id=data.get("simulation_run_id"),
+            start_timestamp=data["start_timestamp"],
+            initial_threat_score=data["initial_threat_score"],
+            severity=data["severity"],
+            actions_taken=list(data.get("actions_taken", [])),
+            process_identity_verification_outcome=data.get("process_identity_verification_outcome", "UNKNOWN"),
+            write_gate_status=data.get("write_gate_status", WriteGateState.OPEN.value),
+            shutdown_method=data.get("shutdown_method", "NONE"),
+            final_status=data.get("final_status", ContainmentStatus.REQUESTED.value),
+            completion_timestamp=data.get("completion_timestamp"),
+            incident_id=data.get("incident_id"),
+            detection_id=data.get("detection_id"),
+            failure_explanation=data.get("failure_explanation"),
+            operations_prevented_count=data.get("operations_prevented_count", 0),
+            timeline=list(data.get("timeline", [])),
+            metadata=data.get("metadata", {}),
+        )
+
+

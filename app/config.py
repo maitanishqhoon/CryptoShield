@@ -165,6 +165,26 @@ class CryptoShieldConfig:
         ]
     )
 
+    # Threat Containment & Controlled Process Isolation Parameters (Phase 4)
+    CONTAINMENT_DIR: Path = RUNTIME_DIR / "containment"
+    CONTAINMENT_DEMO_DIR: Path = LAB_DIR / "containment_demo"
+    AUTO_CONTAINMENT_ENABLED: bool = True
+    AUTO_CONTAINMENT_THRESHOLD: int = 80
+    CONTAINMENT_HIGH_THRESHOLD: int = 60
+    GRACEFUL_SHUTDOWN_TIMEOUT_SECONDS: float = 3.0
+    FORCED_TERMINATION_FALLBACK_ENABLED: bool = True
+    CONTAINMENT_VERIFICATION_INTERVAL_SECONDS: float = 0.1
+    SIMULATOR_MAX_DURATION_SECONDS: float = 10.0
+    SIMULATOR_MAX_OPERATIONS: int = 100
+
+    @property
+    def containment_dir(self) -> Path:
+        return self.CONTAINMENT_DIR
+
+    @property
+    def containment_demo_dir(self) -> Path:
+        return self.CONTAINMENT_DEMO_DIR
+
     @property
     def incidents_dir(self) -> Path:
         return self.INCIDENTS_DIR

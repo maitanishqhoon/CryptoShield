@@ -1,0 +1,71 @@
+{
+  "incident_id": "INC-A475C5F4",
+  "first_detected_at": "2026-11-03T12:10:42.067257+00:00",
+  "last_updated_at": "2026-11-03T12:10:42.073389+00:00",
+  "status": "RESOLVED",
+  "threat_score": 50,
+  "severity": "MEDIUM",
+  "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+  "detection_reasons": [
+    "CANARY_FILE_ACCESS"
+  ],
+  "contributing_event_ids": [
+    "ece85ae9-4ce5-45eb-bae1-42f488aa70e3"
+  ],
+  "affected_paths": [
+    "Finance/canary_accounts_receivable.csv"
+  ],
+  "canary_events": [
+    {
+      "event_id": "ece85ae9-4ce5-45eb-bae1-42f488aa70e3",
+      "timestamp": "2026-11-03T12:10:42.067257+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Finance/canary_accounts_receivable.csv",
+      "is_canary": true,
+      "canary_id": "Finance/canary_accounts_receivable.csv",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Finance"
+      }
+    }
+  ],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-03T12:10:42.067257+00:00",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "reasons": [
+        "CANARY_FILE_ACCESS"
+      ],
+      "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-03T12:10:42.067257+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "description": "Incident opened with assessment: MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+      "detection_id": "3d42882f-d0ea-44db-8dbb-9fb00d52e2e3"
+    },
+    {
+      "timestamp": "2026-11-03T12:10:42.073389+00:00",
+      "action": "INCIDENT_RESOLVED",
+      "resolver": "operator",
+      "notes": "Controlled demonstration sequence 1 concluded; telemetry assessment and incident audit recorded.",
+      "description": "Incident marked resolved: Controlled demonstration sequence 1 concluded; telemetry assessment and incident audit recorded."
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "3d42882f-d0ea-44db-8dbb-9fb00d52e2e3"
+  }
+}

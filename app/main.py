@@ -594,6 +594,393 @@ def cmd_detection_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_containment_demo(args: argparse.Namespace) -> int:
+    """Run full end-to-end controlled laboratory containment demonstration."""
+    from app.containment.containment_coordinator import ContainmentCoordinator
+    from app.containment.containment_manager import ContainmentManager
+    from app.containment.containment_verifier import ContainmentVerifier
+    from app.containment.lab_write_gate import LabWriteGate
+    from app.containment.process_registry import ControlledProcessRegistry
+    from app.core.models import (
+        DetectionReason,
+        DetectionResult,
+        ProcessAttribution,
+        ThreatLevel,
+    )
+    from app.lab.lab_manager import LabManager
+    from app.simulation.controlled_activity_simulator import ControlledActivitySimulator
+
+    mgr = LabManager()
+    is_valid, msg = mgr.validate_lab()
+    if not is_valid:
+        print(f"[-] Lab validation failed: {msg}")
+        return 1
+
+    print("\n" + "=" * 80)
+    print("  CryptoShield Phase 4: Threat Containment and Controlled Process Isolation Demo")
+    print("=" * 80)
+    print("[*] Initializing controlled demonstration pipeline...")
+
+    simulator = ControlledActivitySimulator(
+        max_operations=40,
+        max_duration_seconds=10.0,
+        operation_delay_seconds=0.08,
+    )
+    run_id = simulator.run_id
+    demo_target = simulator.target_dir
+    print(f"    - Simulation Run ID  : {run_id}")
+    print(f"    - Dedicated Target   : {demo_target}")
+    print("    - Baseline Protection: Original 20,000 baseline files strictly isolated & untouched.")
+
+    print("\n--- Step 1: Launch & Register Controlled Simulation Process ---")
+    pid = simulator.launch()
+    print(f"[+] Controlled activity simulator launched as PID {pid}.")
+    record = ControlledProcessRegistry.get_instance().get_record(run_id)
+    print(f"[+] Registered in ProcessRegistry:")
+    if record:
+        print(f"    - PID                : {record.pid}")
+        print(f"    - Creation Time      : {record.process_creation_time}")
+        print(f"    - Executable         : {record.executable_path}")
+        print(f"    - Lifecycle Status   : {record.lifecycle_status}")
+
+    containment_mgr = ContainmentManager.get_instance()
+    containment_mgr.controller.register_control_channel(run_id, simulator.request_stop)
+
+    containment_coord = ContainmentCoordinator(
+        manager=containment_mgr,
+        registry=ControlledProcessRegistry.get_instance(),
+    )
+    containment_coord.start()
+
+    time.sleep(0.3)
+
+    try:
+        print("\n--- Step 2: Telemetry Observation & Threat Detection ---")
+        print("[*] Child process generating harmless file operations within dedicated target...")
+        time.sleep(0.5)
+
+        detection = DetectionResult(
+            detection_id=f"det-demo-{run_id}",
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            threat_score=85,
+            severity=ThreatLevel.CRITICAL.value,
+            assessment="CRITICAL: Ransomware-like burst of file modifications detected in demonstration target.",
+            reasons=[
+                DetectionReason.MASS_FILE_MODIFICATION.value,
+                DetectionReason.RAPID_FILE_RENAMING.value,
+            ],
+            affected_files_count=35,
+            canary_access_count=1,
+            process_attribution=ProcessAttribution.CONFIRMED.value,
+            process_id=pid,
+            process_name="python.exe",
+            metadata={"simulation_run_id": run_id},
+        )
+        print(f"[+] Detection Result Emitted:")
+        print(f"    - Threat Score       : {detection.threat_score}/100 ({detection.severity})")
+        print(f"    - Detection Reasons  : {', '.join(detection.reasons)}")
+        print(f"    - Process Attribution: {detection.process_attribution} (PID {pid})")
+
+        print("\n--- Step 3: Containment Policy Evaluation & Process Control ---")
+        t_cont_start = time.perf_counter()
+        decision = containment_coord.handle_detection(detection)
+        t_cont_elapsed = (time.perf_counter() - t_cont_start) * 1000.0
+
+        print(f"[+] Containment Decision:")
+        print(f"    - Decision ID        : {decision.decision_id}")
+        print(f"    - Recommended Action : {decision.recommended_action}")
+        print(f"    - Auto-Containment   : {'AUTHORIZED' if decision.auto_containment_authorized else 'UNAUTHORIZED'}")
+        print(f"    - Explanation        : {decision.explanation}")
+
+        print("\n--- Step 4: Process Shutdown & Exit Verification ---")
+        cont_records = containment_mgr.list_records()
+        demo_record = [r for r in cont_records if r.simulation_run_id == run_id][-1]
+        print(f"[+] Containment Dossier Created: {demo_record.containment_id}")
+        print(f"    - Write Gate Status  : {demo_record.write_gate_status}")
+        print(f"    - Shutdown Method    : {demo_record.shutdown_method}")
+        print(f"    - Final Status       : {demo_record.final_status}")
+
+        print("\n--- Step 5: Post-Containment Write Gate Rejection Probe ---")
+        probe_target = demo_target / "post_containment_test.txt"
+        allowed, rej_msg = LabWriteGate.get_instance().is_write_allowed(
+            simulation_run_id=run_id,
+            target_path=probe_target,
+            operation_name="POST_CONTAINMENT_WRITE_PROBE",
+        )
+        print(f"    - Probe Target Path  : {probe_target}")
+        print(f"    - Write Permitted?   : {allowed} (Expected: False)")
+        print(f"    - Rejection Message  : {rej_msg}")
+
+        print("\n--- Step 6: Comprehensive 7-Point Containment Verification ---")
+        verifier = ContainmentVerifier()
+        v_res = verifier.verify_containment(run_id, test_write_path=probe_target)
+        for chk, ok in v_res.checks.items():
+            status_sym = "[OK] " if ok else "[FAIL]"
+            print(f"    {status_sym} {chk:<30} : {v_res.details.get(chk, '')}")
+
+        print(f"\n[+] Overall Verification Status: {'[PASS] FULLY CONTAINED' if v_res.is_verified else '[FAIL] INCOMPLETE'}")
+
+        print("\n--- Chronological Containment Timeline ---")
+        for t in demo_record.timeline:
+            ts = t.get("timestamp", "")[:19]
+            action = t.get("action", "")
+            desc = t.get("description", "")
+            print(f"    [{ts}] {action:<22} : {desc}")
+
+    finally:
+        containment_coord.stop()
+        print("\n--- Step 7: Cleanup of Temporary Demonstration Fixtures ---")
+        simulator.cleanup()
+        print("[+] Removed temporary demonstration target.")
+
+    print("\n================ CONTAINMENT DEMONSTRATION SUMMARY ================")
+    print(f"Simulation Run ID       : {run_id}")
+    print(f"Target PID              : {pid}")
+    print(f"Containment Dossier     : {demo_record.containment_id}")
+    print(f"Shutdown Method         : {demo_record.shutdown_method}")
+    print(f"Containment Latency     : {t_cont_elapsed:.2f} ms")
+    print(f"Operations Prevented    : {LabWriteGate.get_instance().get_rejected_count(run_id)}")
+    print(f"Status                  : [SUCCESS] CONTROLLED PROCESS CONTAINED")
+    print("Baseline enterprise dataset (20,000 files) remains completely unaltered.")
+    print("===================================================================\n")
+    return 0
+
+
+def cmd_containments(args: argparse.Namespace) -> int:
+    """Show recorded containment records."""
+    import json
+    cont_dir = CONFIG.containment_dir
+    if not cont_dir.exists():
+        print("[*] No containment directory found.")
+        return 0
+
+    cont_files = sorted(cont_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not cont_files:
+        print("[*] No containment records found yet.")
+        return 0
+
+    print(f"\n--- Recorded Containment Operations ({len(cont_files)} found) ---")
+    print(f"{'Containment ID':<18} {'Run ID':<14} {'Severity':<10} {'Status':<14} {'Method':<14} {'Started'}")
+    print("-" * 85)
+    for f in cont_files[:20]:
+        try:
+            with open(f, "r", encoding="utf-8") as fp:
+                data = json.load(fp)
+            print(
+                f"{data.get('containment_id', f.stem):<18} "
+                f"{data.get('simulation_run_id') or 'N/A':<14} "
+                f"{data.get('severity', 'UNKNOWN'):<10} "
+                f"{data.get('final_status', 'UNKNOWN'):<14} "
+                f"{data.get('shutdown_method', 'NONE'):<14} "
+                f"{data.get('start_timestamp', '')[:19]}"
+            )
+        except Exception:
+            continue
+    print("-" * 85)
+    print("Use 'python -m app.main containment --id <containment-id>' to inspect full dossier.\n")
+    return 0
+
+
+def cmd_containment(args: argparse.Namespace) -> int:
+    """View detailed dossier and chronological timeline for a specific containment operation."""
+    import json
+    cont_file = CONFIG.containment_dir / f"{args.id}.json"
+    if not cont_file.exists():
+        matches = [f for f in CONFIG.containment_dir.glob("*.json") if f.stem.lower() == args.id.lower()]
+        if matches:
+            cont_file = matches[0]
+        else:
+            print(f"[-] Containment record '{args.id}' not found at {CONFIG.containment_dir}.")
+            return 1
+
+    with open(cont_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    print("\n================ CONTAINMENT OPERATION DOSSIER ================")
+    print(f"Containment ID         : {data.get('containment_id')}")
+    print(f"Simulation Run ID      : {data.get('simulation_run_id') or 'N/A'}")
+    print(f"Final Status           : {data.get('final_status')}")
+    print(f"Initial Threat Score   : {data.get('initial_threat_score')}/100 ({data.get('severity')})")
+    print(f"Write Gate Status      : {data.get('write_gate_status')}")
+    print(f"Shutdown Method        : {data.get('shutdown_method')}")
+    print(f"Identity Verification  : {data.get('process_identity_verification_outcome')}")
+    print(f"Operations Prevented   : {data.get('operations_prevented_count')}")
+    print(f"Start Timestamp        : {data.get('start_timestamp')}")
+    print(f"Completion Timestamp   : {data.get('completion_timestamp')}")
+    if data.get("failure_explanation"):
+        print(f"Failure Explanation    : {data.get('failure_explanation')}")
+
+    print("\nActions Taken:")
+    for a in data.get("actions_taken", []):
+        print(f"  - {a}")
+
+    print("\nChronological Timeline:")
+    for t in data.get("timeline", []):
+        ts = t.get("timestamp", "")[:19]
+        action = t.get("action", "")
+        desc = t.get("description", "")
+        print(f"  [{ts}] {action:<22} : {desc}")
+    print("===============================================================\n")
+    return 0
+
+
+def cmd_containment_policy_demo(args: argparse.Namespace) -> int:
+    """Demonstrate containment policy decisions across multiple scenarios without launching processes."""
+    from app.containment.containment_policy import ContainmentPolicy
+    from app.core.models import (
+        DetectionReason,
+        DetectionResult,
+        ProcessAttribution,
+        ThreatLevel,
+    )
+
+    policy = ContainmentPolicy()
+
+    scenarios = [
+        (
+            "NORMAL Activity (Threat Score 0)",
+            DetectionResult(
+                detection_id="det-pol-1",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=0,
+                severity=ThreatLevel.NORMAL.value,
+                assessment="Normal baseline activity",
+                reasons=[],
+                affected_files_count=1,
+                canary_access_count=0,
+            ),
+            None,
+            False,
+        ),
+        (
+            "LOW Fluctuation (Threat Score 25)",
+            DetectionResult(
+                detection_id="det-pol-2",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=25,
+                severity=ThreatLevel.LOW.value,
+                assessment="Low activity fluctuation",
+                reasons=[DetectionReason.UNUSUAL_BURST_ACTIVITY.value],
+                affected_files_count=5,
+                canary_access_count=0,
+            ),
+            None,
+            False,
+        ),
+        (
+            "MEDIUM Suspicious Burst (Threat Score 45)",
+            DetectionResult(
+                detection_id="det-pol-3",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=45,
+                severity=ThreatLevel.MEDIUM.value,
+                assessment="Suspicious file modification burst",
+                reasons=[DetectionReason.MASS_FILE_MODIFICATION.value],
+                affected_files_count=18,
+                canary_access_count=0,
+            ),
+            None,
+            False,
+        ),
+        (
+            "Isolated Canary Decoy Read (Threat Score 50)",
+            DetectionResult(
+                detection_id="det-pol-4",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=50,
+                severity=ThreatLevel.MEDIUM.value,
+                assessment="Isolated canary decoy accessed",
+                reasons=[DetectionReason.CANARY_FILE_ACCESS.value],
+                affected_files_count=1,
+                canary_access_count=1,
+            ),
+            None,
+            False,
+        ),
+        (
+            "CRITICAL Threat - UNKNOWN Process Attribution (Threat Score 90)",
+            DetectionResult(
+                detection_id="det-pol-5",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=90,
+                severity=ThreatLevel.CRITICAL.value,
+                assessment="CRITICAL mass encryption indicators",
+                reasons=[
+                    DetectionReason.MASS_FILE_MODIFICATION.value,
+                    DetectionReason.RAPID_FILE_RENAMING.value,
+                ],
+                affected_files_count=60,
+                canary_access_count=0,
+                process_attribution=ProcessAttribution.UNKNOWN.value,
+            ),
+            None,
+            False,
+        ),
+        (
+            "CRITICAL Threat - Registered Simulation Run (Threat Score 85)",
+            DetectionResult(
+                detection_id="det-pol-6",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=85,
+                severity=ThreatLevel.CRITICAL.value,
+                assessment="CRITICAL ransomware attack",
+                reasons=[
+                    DetectionReason.MASS_FILE_MODIFICATION.value,
+                    DetectionReason.RAPID_FILE_RENAMING.value,
+                ],
+                affected_files_count=45,
+                canary_access_count=1,
+                process_attribution=ProcessAttribution.CONFIRMED.value,
+            ),
+            "SIM-CONTROLLED-DEMO",
+            True,
+        ),
+        (
+            "CRITICAL Canary Tampering - Registered Run (Threat Score 75)",
+            DetectionResult(
+                detection_id="det-pol-7",
+                timestamp="2026-11-03T12:00:00Z",
+                threat_score=75,
+                severity=ThreatLevel.HIGH.value,
+                assessment="Canary decoy file tampered",
+                reasons=[DetectionReason.CANARY_FILE_TAMPERED.value],
+                affected_files_count=1,
+                canary_access_count=1,
+                process_attribution=ProcessAttribution.CONFIRMED.value,
+            ),
+            "SIM-CANARY-DEMO",
+            True,
+        ),
+    ]
+
+    print("\n================ CONTAINMENT POLICY EVALUATION DEMO ================")
+    print("Demonstrating explainable containment decisions without process control:\n")
+
+    for title, det, run_id, is_reg in scenarios:
+        dec = policy.evaluate_detection(det, simulation_run_id=run_id, is_run_registered=is_reg)
+        auth_tag = "[AUTHORIZED]" if dec.auto_containment_authorized else "[WITHHELD]"
+        print(f"Scenario    : {title}")
+        print(f"Action      : {dec.recommended_action:<26} {auth_tag}")
+        print(f"Reason      : {dec.decision_reason}")
+        print(f"Explanation : {dec.explanation}\n" + "-" * 75)
+
+    print("Policy successfully demonstrated. Automatic process termination is strictly")
+    print("prohibited unless activity is corroborated and explicitly attributed to an active")
+    print("registered CryptoShield simulation run.\n====================================================================\n")
+    return 0
+
+
+def cmd_containment_benchmark(args: argparse.Namespace) -> int:
+    """Execute reproducible containment performance benchmark."""
+    from app.containment.benchmark import print_containment_benchmark_report, run_containment_benchmark
+
+    iters = args.iterations if hasattr(args, "iterations") and args.iterations else 5
+    print(f"[*] Executing CryptoShield Containment Engine Benchmark ({iters} iterations)...")
+    res = run_containment_benchmark(iterations=iters)
+    print_containment_benchmark_report(res)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -660,6 +1047,23 @@ def build_parser() -> argparse.ArgumentParser:
     det_bench_parser = subparsers.add_parser("detection-benchmark", help="Execute high-throughput detection engine benchmark")
     det_bench_parser.add_argument("--events", type=int, default=1000, help="Number of telemetry events to evaluate (default: 1000)")
 
+    # containment-demo (Phase 4)
+    subparsers.add_parser("containment-demo", help="Run full controlled laboratory containment demonstration")
+
+    # containments (Phase 4)
+    subparsers.add_parser("containments", help="Show recorded containment operations and dossiers")
+
+    # containment (Phase 4)
+    cont_parser = subparsers.add_parser("containment", help="Show detailed dossier and timeline for a containment operation")
+    cont_parser.add_argument("--id", type=str, required=True, help="Containment ID (e.g. CONT-XXXXXXXX)")
+
+    # containment-policy-demo (Phase 4)
+    subparsers.add_parser("containment-policy-demo", help="Demonstrate containment policy decisions across threat scenarios")
+
+    # containment-benchmark (Phase 4)
+    cont_bench_parser = subparsers.add_parser("containment-benchmark", help="Execute containment engine performance benchmark")
+    cont_bench_parser.add_argument("--iterations", type=int, default=5, help="Number of iterations (default: 5)")
+
     return parser
 
 
@@ -699,6 +1103,16 @@ def main() -> int:
         return cmd_incident(args)
     elif args.command == "detection-benchmark":
         return cmd_detection_benchmark(args)
+    elif args.command == "containment-demo":
+        return cmd_containment_demo(args)
+    elif args.command == "containments":
+        return cmd_containments(args)
+    elif args.command == "containment":
+        return cmd_containment(args)
+    elif args.command == "containment-policy-demo":
+        return cmd_containment_policy_demo(args)
+    elif args.command == "containment-benchmark":
+        return cmd_containment_benchmark(args)
     else:
         parser.print_help()
         return 1

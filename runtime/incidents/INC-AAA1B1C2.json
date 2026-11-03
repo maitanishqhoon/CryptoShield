@@ -1,0 +1,219 @@
+{
+  "incident_id": "INC-AAA1B1C2",
+  "first_detected_at": "2026-11-03T11:56:45.272620+00:00",
+  "last_updated_at": "2026-11-03T11:56:45.279872+00:00",
+  "status": "OPEN",
+  "threat_score": 40,
+  "severity": "MEDIUM",
+  "assessment": "MEDIUM: Suspicious file modification or renaming burst observed.",
+  "detection_reasons": [
+    "MASS_FILE_MODIFICATION"
+  ],
+  "contributing_event_ids": [
+    "81ffe946-7c3b-4a8a-b785-792c7a244b24",
+    "59b124fb-3251-41b9-93ed-c20a41b3c028",
+    "4f0ee256-44da-481f-9667-d42b07e206ce",
+    "4666044d-4556-4664-9d55-ef082e45685a",
+    "f9ba98c4-2621-4278-8916-75e7efc0cd59",
+    "5b4e7f8a-9717-4a62-a5b4-033cf04612ef",
+    "3312b735-b930-4f8a-bb87-a6652cfec82c",
+    "aab7a213-eba0-4413-b19c-d8a21efb86e3",
+    "c3db1364-186e-4ad1-8daf-040ae05534f7",
+    "790ff724-93f3-419d-ad72-cd2a4be1ef38",
+    "5120030f-07b3-40d6-9af5-d0e00e50be9d",
+    "a230c9ff-ad80-46ef-9bbf-b61ed0cf1634",
+    "6774cf61-fb96-4a88-8c40-564516c5eb26",
+    "16bd7c07-34ca-4c95-b07d-16ae97aa45bf",
+    "c77ea57b-e677-4f5c-a715-d3a0152f107c",
+    "00d2ac47-26e7-4e3a-95d5-918083ab30c3",
+    "611cf74f-03e8-43f9-9bc9-19d93431fd1f",
+    "c2ac1bbd-3847-43eb-b1c9-26cda58a99cc",
+    "bb5290b5-ea74-44e4-ac24-a06ad806f4f3",
+    "2d54386b-51dc-434b-9f1c-b2c8c3e246ef",
+    "82b240c9-ea5a-4969-b6b0-358f193d31eb",
+    "9baa3b87-6e7c-4bc7-aeb4-4be4e3e90de7",
+    "c5e67ac9-e4d4-4d99-8da3-6402983f0c1e",
+    "838cbe44-5c07-4375-a026-bf9fd97ae440",
+    "5a13c434-e786-4e19-b410-cb2865ef4a03",
+    "2cafc3c4-4df3-446c-a5c2-8a055c4b42e4",
+    "af197fb3-ab1b-4625-ad93-9484961c5e7f",
+    "049316a0-89b2-47ef-a340-ae0d40721916",
+    "e13befa5-327e-4fb5-901c-89949f1573eb",
+    "a61bf97c-f05f-4508-ab18-3bc671b0eebb",
+    "86cd8421-1572-453a-8e10-b804c76e9b6c",
+    "a84b1bb9-9276-453f-b543-253d7dba58de",
+    "3032745b-56e6-45de-959d-88e867c28f05",
+    "c28314f2-d928-400b-9ede-6e5086f14f3e",
+    "9073c2d0-e270-4eea-93de-89b7204a7102",
+    "eab45a4e-7c71-4c91-8ac5-61d662cdc09a",
+    "324a5f1e-3759-4add-bd4b-77a333582a65",
+    "1d713029-0fd5-441a-a57a-63a88870c8ba",
+    "36f2c053-a1e1-4d92-a1fb-043e9c1a154d",
+    "117c29e9-3963-4205-bc79-1fe30c7295e8",
+    "021ad90c-d56e-48c1-ac3d-271476060990",
+    "7920d7a8-797b-44bb-8504-1fb242f3f6ba",
+    "f70dbe79-b21d-4e7d-8ef9-8128118f8441",
+    "15aaa543-8d19-4a65-b12d-350d955b5bcb",
+    "dd045725-fbed-4f31-9f5a-beeaec3c6fbd"
+  ],
+  "affected_paths": [
+    "Finance/quarterly_0.xlsx",
+    "Finance/quarterly_1.xlsx",
+    "Finance/quarterly_10.xlsx",
+    "Finance/quarterly_11.xlsx",
+    "Finance/quarterly_12.xlsx",
+    "Finance/quarterly_13.xlsx",
+    "Finance/quarterly_14.xlsx",
+    "Finance/quarterly_15.xlsx",
+    "Finance/quarterly_16.xlsx",
+    "Finance/quarterly_17.xlsx",
+    "Finance/quarterly_18.xlsx",
+    "Finance/quarterly_19.xlsx",
+    "Finance/quarterly_2.xlsx",
+    "Finance/quarterly_20.xlsx",
+    "Finance/quarterly_21.xlsx",
+    "Finance/quarterly_22.xlsx",
+    "Finance/quarterly_23.xlsx",
+    "Finance/quarterly_24.xlsx",
+    "Finance/quarterly_25.xlsx",
+    "Finance/quarterly_26.xlsx",
+    "Finance/quarterly_27.xlsx",
+    "Finance/quarterly_28.xlsx",
+    "Finance/quarterly_29.xlsx",
+    "Finance/quarterly_3.xlsx",
+    "Finance/quarterly_30.xlsx",
+    "Finance/quarterly_31.xlsx",
+    "Finance/quarterly_32.xlsx",
+    "Finance/quarterly_33.xlsx",
+    "Finance/quarterly_34.xlsx",
+    "Finance/quarterly_35.xlsx",
+    "Finance/quarterly_36.xlsx",
+    "Finance/quarterly_37.xlsx",
+    "Finance/quarterly_38.xlsx",
+    "Finance/quarterly_39.xlsx",
+    "Finance/quarterly_4.xlsx",
+    "Finance/quarterly_40.xlsx",
+    "Finance/quarterly_41.xlsx",
+    "Finance/quarterly_42.xlsx",
+    "Finance/quarterly_43.xlsx",
+    "Finance/quarterly_44.xlsx",
+    "Finance/quarterly_5.xlsx",
+    "Finance/quarterly_6.xlsx",
+    "Finance/quarterly_7.xlsx",
+    "Finance/quarterly_8.xlsx",
+    "Finance/quarterly_9.xlsx"
+  ],
+  "canary_events": [],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-03T11:56:45.272620+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.273621+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.274615+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.276612+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.277867+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.279872+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-03T11:56:45.272620+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "Incident opened with assessment: MEDIUM: Suspicious file modification or renaming burst observed.",
+      "detection_id": "7ef4fd3a-25b9-4ef0-a94a-83ed10afe5c4"
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.273621+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 1 reasons triggered.",
+      "detection_id": "d645ff34-ca79-4ab8-8028-2141553c457b"
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.274615+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 1 reasons triggered.",
+      "detection_id": "ead88092-7c70-4193-97c5-725af95fbd53"
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.276612+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 1 reasons triggered.",
+      "detection_id": "d282d7cb-67bf-46e4-b99a-9eab56f6ba76"
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.277867+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 1 reasons triggered.",
+      "detection_id": "2ee1d192-5b30-4b9f-8e17-a564bcc94f4f"
+    },
+    {
+      "timestamp": "2026-11-03T11:56:45.279872+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 1 reasons triggered.",
+      "detection_id": "be64f5f2-3291-41d2-9336-a75fe960975c"
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "7ef4fd3a-25b9-4ef0-a94a-83ed10afe5c4"
+  }
+}
