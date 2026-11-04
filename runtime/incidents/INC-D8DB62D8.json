@@ -1,0 +1,85 @@
+{
+  "incident_id": "INC-D8DB62D8",
+  "first_detected_at": "2026-11-04T12:30:47.429569+00:00",
+  "last_updated_at": "2026-11-04T12:30:47.429569+00:00",
+  "status": "OPEN",
+  "threat_score": 65,
+  "severity": "HIGH",
+  "assessment": "HIGH: Suspicious canary breach coupled with anomalous file operations.",
+  "detection_reasons": [
+    "CANARY_FILE_ACCESS",
+    "MULTIPLE_CANARIES_ACCESSED"
+  ],
+  "contributing_event_ids": [
+    "adf07f5d-d84f-4936-9428-2bbe5a1b0041",
+    "9b025d86-55d8-4380-8742-d9605df84533"
+  ],
+  "affected_paths": [
+    "Finance/canary_accounts_receivable.csv",
+    "Legal/canary_merger_confidential.docx"
+  ],
+  "canary_events": [
+    {
+      "event_id": "adf07f5d-d84f-4936-9428-2bbe5a1b0041",
+      "timestamp": "2026-11-04T12:30:47.424110+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Finance/canary_accounts_receivable.csv",
+      "is_canary": true,
+      "canary_id": "Finance/canary_accounts_receivable.csv",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Finance"
+      }
+    },
+    {
+      "event_id": "9b025d86-55d8-4380-8742-d9605df84533",
+      "timestamp": "2026-11-04T12:30:47.429569+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Legal/canary_merger_confidential.docx",
+      "is_canary": true,
+      "canary_id": "Legal/canary_merger_confidential.docx",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Legal"
+      }
+    }
+  ],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-04T12:30:47.429569+00:00",
+      "threat_score": 65,
+      "severity": "HIGH",
+      "reasons": [
+        "CANARY_FILE_ACCESS",
+        "MULTIPLE_CANARIES_ACCESSED"
+      ],
+      "assessment": "HIGH: Suspicious canary breach coupled with anomalous file operations."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-04T12:30:47.429569+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 65,
+      "severity": "HIGH",
+      "description": "Incident opened with assessment: HIGH: Suspicious canary breach coupled with anomalous file operations.",
+      "detection_id": "12f690c8-a68b-4e6a-bea1-39cb74277e9c"
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "12f690c8-a68b-4e6a-bea1-39cb74277e9c"
+  }
+}

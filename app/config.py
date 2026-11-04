@@ -26,10 +26,35 @@ class CryptoShieldConfig:
     # Laboratory and subsystem directories
     LAB_DIR: Path = RUNTIME_DIR / "lab"
     VAULT_DIR: Path = RUNTIME_DIR / "vault"
+    KEYS_DIR: Path = RUNTIME_DIR / "keys"
     SNAPSHOTS_DIR: Path = RUNTIME_DIR / "snapshots"
     LOGS_DIR: Path = RUNTIME_DIR / "logs"
     REPORTS_DIR: Path = RUNTIME_DIR / "reports"
     INCIDENTS_DIR: Path = RUNTIME_DIR / "incidents"
+
+    # Cryptographic Vault Parameters (Phase 5)
+    PRIVATE_KEY_FILENAME: str = "cryptoshield_private.pem"
+    PUBLIC_KEY_FILENAME: str = "cryptoshield_public.pem"
+    KEY_METADATA_FILENAME: str = "key_metadata.json"
+    VAULT_OBJECT_EXT: str = ".cso"
+    VAULT_MAGIC: bytes = b"CSO1"
+    VAULT_FORMAT_VERSION: str = "1.0.0"
+    VAULT_BINARY_VERSION: int = 1
+    AES_KEY_SIZE_BYTES: int = 32          # 256 bits
+    AES_GCM_NONCE_SIZE_BYTES: int = 12    # 96 bits
+    AES_GCM_TAG_SIZE_BYTES: int = 16      # 128 bits
+    RSA_KEY_SIZE_BITS: int = 3072         # 3072 bits
+    RSA_PUBLIC_EXPONENT: int = 65537
+    STREAMING_CHUNK_SIZE_BYTES: int = 1024 * 1024  # 1 MiB chunk size
+
+    # Private-Key Protection Envelope & Argon2id Hardening (Phase 5)
+    KEY_ENVELOPE_VERSION: int = 2
+    ARGON2_SALT_BYTES: int = 32           # >= 16 bytes
+    ARGON2_ITERATIONS: int = 3            # OWASP recommended time cost
+    ARGON2_MEMORY_COST_KIB: int = 65536   # 64 MiB (OWASP High Security)
+    ARGON2_LANES: int = 4                 # Parallelism threads
+    ARGON2_KEY_LENGTH_BYTES: int = 64     # 32B AES key + 32B HMAC verifier key
+    ARGON2_CIPHER: str = "AES-256-GCM"
 
     # Identification & Safety
     LAB_MARKER_FILENAME: str = ".cryptoshield_lab_marker"
@@ -180,6 +205,26 @@ class CryptoShieldConfig:
     @property
     def containment_dir(self) -> Path:
         return self.CONTAINMENT_DIR
+
+    @property
+    def vault_dir(self) -> Path:
+        return self.VAULT_DIR
+
+    @property
+    def keys_dir(self) -> Path:
+        return self.KEYS_DIR
+
+    @property
+    def private_key_path(self) -> Path:
+        return self.KEYS_DIR / self.PRIVATE_KEY_FILENAME
+
+    @property
+    def public_key_path(self) -> Path:
+        return self.KEYS_DIR / self.PUBLIC_KEY_FILENAME
+
+    @property
+    def key_metadata_path(self) -> Path:
+        return self.KEYS_DIR / self.KEY_METADATA_FILENAME
 
     @property
     def containment_demo_dir(self) -> Path:

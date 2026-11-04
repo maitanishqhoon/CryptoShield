@@ -56,6 +56,8 @@ runtime/lab/*
 !runtime/lab/baseline_manifest.json
 runtime/vault/*
 !runtime/vault/.gitkeep
+runtime/keys/*
+!runtime/keys/.gitkeep
 runtime/snapshots/*
 !runtime/snapshots/.gitkeep
 runtime/logs/*

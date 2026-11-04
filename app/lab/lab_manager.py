@@ -39,6 +39,7 @@ class LabManager:
         for path in [
             CONFIG.LAB_DIR,
             CONFIG.VAULT_DIR,
+            CONFIG.KEYS_DIR,
             CONFIG.SNAPSHOTS_DIR,
             CONFIG.LOGS_DIR,
             CONFIG.REPORTS_DIR,

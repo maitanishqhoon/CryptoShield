@@ -1,0 +1,64 @@
+{
+  "incident_id": "INC-34DA5717",
+  "first_detected_at": "2026-11-04T11:26:12.293607+00:00",
+  "last_updated_at": "2026-11-04T11:26:12.293607+00:00",
+  "status": "OPEN",
+  "threat_score": 50,
+  "severity": "MEDIUM",
+  "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+  "detection_reasons": [
+    "CANARY_FILE_ACCESS"
+  ],
+  "contributing_event_ids": [
+    "c7623685-816d-4ef0-a774-fa4ff1abba88"
+  ],
+  "affected_paths": [
+    "Finance/canary_accounts_receivable.csv"
+  ],
+  "canary_events": [
+    {
+      "event_id": "c7623685-816d-4ef0-a774-fa4ff1abba88",
+      "timestamp": "2026-11-04T11:26:12.293607+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Finance/canary_accounts_receivable.csv",
+      "is_canary": true,
+      "canary_id": "Finance/canary_accounts_receivable.csv",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Finance"
+      }
+    }
+  ],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-04T11:26:12.293607+00:00",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "reasons": [
+        "CANARY_FILE_ACCESS"
+      ],
+      "assessment": "MEDIUM: Suspicious canary decoy access detected without widespread mass file activity."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-04T11:26:12.293607+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 50,
+      "severity": "MEDIUM",
+      "description": "Incident opened with assessment: MEDIUM: Suspicious canary decoy access detected without widespread mass file activity.",
+      "detection_id": "4eed7b64-f561-4931-96b8-ab36e1c4e5d2"
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "4eed7b64-f561-4931-96b8-ab36e1c4e5d2"
+  }
+}

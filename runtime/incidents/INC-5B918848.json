@@ -1,0 +1,913 @@
+{
+  "incident_id": "INC-5B918848",
+  "first_detected_at": "2026-11-04T10:45:42.512240+00:00",
+  "last_updated_at": "2026-11-04T10:45:42.593074+00:00",
+  "status": "OPEN",
+  "threat_score": 100,
+  "severity": "CRITICAL",
+  "assessment": "CRITICAL: Strong evidence of ransomware-like activity; exfiltration assessment pending.",
+  "detection_reasons": [
+    "MASS_FILE_MODIFICATION",
+    "MULTI_DEPARTMENT_TARGETING",
+    "UNUSUAL_BURST_ACTIVITY",
+    "RAPID_FILE_RENAMING",
+    "CANARY_FILE_ACCESS"
+  ],
+  "contributing_event_ids": [
+    "b1da71f6-bc56-47d8-aa4c-6fdffb6f4754",
+    "0f26c7e2-e9ff-47c2-9e5f-c5eb60ce2d00",
+    "484e13db-5f56-4aa4-b3ab-1c88eb950979",
+    "826369e9-c63a-467d-bd9b-671b8302297f",
+    "6e01c51a-d431-4712-8c07-adae4220acb9",
+    "45e27a16-e8a2-4178-af6b-bd8ce0f87e15",
+    "551601d2-0c4c-4885-9c45-2c93fe113109",
+    "a99e689c-3eb2-4741-b71f-de052c2af983",
+    "ae31cada-6d2e-474f-9cb0-e41762c7b91e",
+    "5a26e4ce-1b1e-45b3-aab3-6825c7f4413d",
+    "8e314dbc-5a1c-4523-ac5c-355370345ba2",
+    "fad56fa1-fd3a-4267-8ce3-b8fa2c57946b",
+    "9d5b79f6-47f5-4349-8a4f-02c2d8bc04ad",
+    "13d7bc1c-6804-4c1f-88e4-a46bd436b57b",
+    "e9e270a6-d01d-4fe2-a795-8f69c42a16a4",
+    "e7fa1303-abb8-484f-b9bd-f62c7400c981",
+    "8988635f-8427-49dd-a317-2b4226917ba9",
+    "9be784e1-8a7c-4738-b961-42f7f55507b4",
+    "259a3a22-89e7-4d6c-b1fb-8d6e402c4de4",
+    "8ba1ddaa-ee10-4848-b99d-ddf85450ad76",
+    "47db3243-eaad-47bf-96aa-56a617ca75c8",
+    "7535d3d6-f083-43a2-a033-6eb828be7ef5",
+    "5a0f6b62-21d9-4c7e-a300-2892ade73880",
+    "13d1c1b2-a055-4d38-b678-dede2f3946e2",
+    "05cbcfc0-1689-4ec5-bd51-8c2f7e17afbc",
+    "e2e35549-d240-419b-b413-19cd338826c1",
+    "0be57c5e-7339-4a1e-9ad0-e0707afbad3a",
+    "4feb868f-719b-4522-81be-4768f47066ea",
+    "1230fcdc-f5d5-4a03-a0ab-77d1537deab2",
+    "c84cc546-71bd-4c93-89c4-854a6347ca71",
+    "e44d6880-3323-4658-8391-c163b6d4cca2",
+    "83b89651-4456-4844-8938-ebc5ca5cfbe5",
+    "718ea7ca-92c9-4c9a-af93-d4a9e80658ab",
+    "bdb3bcc9-a7f4-407f-b16c-6ce378d0ff91",
+    "a5db99b4-da9a-4fe7-be06-5e412810436a",
+    "5cb8170d-06b7-4d31-a350-a737e6e4c9de",
+    "6962ff2a-d339-4266-b9fe-777d290760fb",
+    "5c17f1ee-3a48-4b0c-abb6-adf7ba4a08c1",
+    "38f2be87-f9da-46d8-829a-4b845aa455b6",
+    "52d94dd8-2814-444b-8a0e-31043f928838",
+    "bf2ae215-1715-4bad-9eee-470c50662aca",
+    "be27e97c-89d3-48ab-b8fa-8e1725de2a0d",
+    "1fcee30e-c072-4435-82e8-bf671b10db49",
+    "0ef493f6-f404-4830-a6cc-399091a220b5",
+    "c77c351f-75ff-465b-8e25-0ab892a28257",
+    "87fd93dd-c073-4e46-9404-3f601c63c45e",
+    "7ea0315a-d10f-4415-b015-395b5bf5a514",
+    "c4dc073c-bf5e-4c92-ad35-b115dbde47d4",
+    "ddb0af92-6f76-47c7-99ac-873f25d768c1",
+    "3e7f31f0-b17e-4cfe-a43f-5dff1eb11d72",
+    "932d5982-6f1a-49a8-856e-79b475908a3b",
+    "12ff605a-f9e4-41c9-b7e8-2fda4f9ab241",
+    "57d1283e-e58e-4b46-b2bf-8db575691048"
+  ],
+  "affected_paths": [
+    "Finance/canary_accounts_receivable.csv",
+    "Finance/data_0.dat",
+    "Finance/data_12.dat",
+    "Finance/data_16.dat",
+    "Finance/data_20.dat",
+    "Finance/data_24.dat",
+    "Finance/data_28.dat",
+    "Finance/data_32.dat",
+    "Finance/data_36.dat",
+    "Finance/data_4.dat",
+    "Finance/data_8.dat",
+    "Finance/doc_0.txt",
+    "Finance/doc_0.txt.crypted",
+    "Finance/doc_4.txt",
+    "Finance/doc_4.txt.crypted",
+    "Finance/doc_8.txt",
+    "Finance/doc_8.txt.crypted",
+    "Human Resources/data_1.dat",
+    "Human Resources/data_13.dat",
+    "Human Resources/data_17.dat",
+    "Human Resources/data_21.dat",
+    "Human Resources/data_25.dat",
+    "Human Resources/data_29.dat",
+    "Human Resources/data_33.dat",
+    "Human Resources/data_37.dat",
+    "Human Resources/data_5.dat",
+    "Human Resources/data_9.dat",
+    "Human Resources/doc_1.txt",
+    "Human Resources/doc_1.txt.crypted",
+    "Human Resources/doc_5.txt",
+    "Human Resources/doc_5.txt.crypted",
+    "Human Resources/doc_9.txt",
+    "Human Resources/doc_9.txt.crypted",
+    "IT/data_11.dat",
+    "IT/data_15.dat",
+    "IT/data_19.dat",
+    "IT/data_23.dat",
+    "IT/data_27.dat",
+    "IT/data_3.dat",
+    "IT/data_31.dat",
+    "IT/data_35.dat",
+    "IT/data_39.dat",
+    "IT/data_7.dat",
+    "IT/doc_11.txt",
+    "IT/doc_11.txt.crypted",
+    "IT/doc_3.txt",
+    "IT/doc_3.txt.crypted",
+    "IT/doc_7.txt",
+    "IT/doc_7.txt.crypted",
+    "Legal/data_10.dat",
+    "Legal/data_14.dat",
+    "Legal/data_18.dat",
+    "Legal/data_2.dat",
+    "Legal/data_22.dat",
+    "Legal/data_26.dat",
+    "Legal/data_30.dat",
+    "Legal/data_34.dat",
+    "Legal/data_38.dat",
+    "Legal/data_6.dat",
+    "Legal/doc_10.txt",
+    "Legal/doc_10.txt.crypted",
+    "Legal/doc_2.txt",
+    "Legal/doc_2.txt.crypted",
+    "Legal/doc_6.txt",
+    "Legal/doc_6.txt.crypted"
+  ],
+  "canary_events": [
+    {
+      "event_id": "57d1283e-e58e-4b46-b2bf-8db575691048",
+      "timestamp": "2026-11-04T10:45:42.512240+00:00",
+      "event_type": "CANARY_ACCESS",
+      "source": "CONTROLLED_INSTRUMENTATION",
+      "relative_path": "Finance/canary_accounts_receivable.csv",
+      "is_canary": true,
+      "canary_id": "Finance/canary_accounts_receivable.csv",
+      "process_id": null,
+      "process_name": null,
+      "process_attribution": "UNKNOWN",
+      "operation": "ACCESS",
+      "priority": "NORMAL",
+      "metadata": {
+        "department": "Finance"
+      }
+    }
+  ],
+  "process_attribution": "UNKNOWN",
+  "process_id": null,
+  "process_name": null,
+  "assessment_history": [
+    {
+      "timestamp": "2026-11-04T10:45:42.512240+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.514240+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.516240+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.518238+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.519238+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.521733+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.522738+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.524793+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.526800+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.528800+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.530800+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.531800+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.533800+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.536310+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.538310+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.540311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.542311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.544311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.546311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.548310+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.550312+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.552311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.554311+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.557309+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.559317+00:00",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "MEDIUM: Suspicious file modification or renaming burst observed."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.561316+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.563310+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.565311+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.568317+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.570314+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.572335+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.574325+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.577324+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.579325+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.581325+00:00",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "HIGH: High-velocity anomalous filesystem activity detected across departments."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.585323+00:00",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "RAPID_FILE_RENAMING",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "CRITICAL: Strong evidence of ransomware-like mass encryption or alteration."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.588058+00:00",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "RAPID_FILE_RENAMING",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "CRITICAL: Strong evidence of ransomware-like mass encryption or alteration."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.590055+00:00",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "RAPID_FILE_RENAMING",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY"
+      ],
+      "assessment": "CRITICAL: Strong evidence of ransomware-like mass encryption or alteration."
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.593074+00:00",
+      "threat_score": 100,
+      "severity": "CRITICAL",
+      "reasons": [
+        "MASS_FILE_MODIFICATION",
+        "RAPID_FILE_RENAMING",
+        "MULTI_DEPARTMENT_TARGETING",
+        "UNUSUAL_BURST_ACTIVITY",
+        "CANARY_FILE_ACCESS"
+      ],
+      "assessment": "CRITICAL: Strong evidence of ransomware-like activity; exfiltration assessment pending."
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2026-11-04T10:45:42.512240+00:00",
+      "action": "INCIDENT_CREATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "Incident opened with assessment: MEDIUM: Suspicious file modification or renaming burst observed.",
+      "detection_id": "b781d8b3-e069-456b-8575-6f7c6b93db9e"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.514240+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "cfd112f6-0f70-4646-9c1a-4054b5249c29"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.516240+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "1c02df1a-e5eb-4a5e-b095-7ee4568e72f5"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.518238+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "b89e9d9d-2c70-462f-9d91-686fa2a10616"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.519238+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "0561cb06-d299-4178-bdc1-58fa36af4c3d"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.521733+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "7c05ccbe-9865-4e90-9969-ed94d824f229"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.522738+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "c55751ea-816f-46eb-94f9-a11e59165248"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.524793+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "8ef6c132-8729-46d0-a230-cc579d5f6191"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.526800+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "d40258b9-013e-4d89-b9f6-d6da160e4299"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.528800+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "36bce04c-a820-4586-a7bb-d70858161e2a"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.530800+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "b2b4593e-8e3a-4863-9b88-29f0152f1588"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.531800+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "cd8c00e1-63c4-480d-9b41-060fd6a5bae0"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.533800+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "8aa5a556-76bc-46de-a63c-0095fecc5c10"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.536310+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "800c3263-333b-42b7-b607-d003a3522b30"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.538310+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "516ab589-91ff-4d1f-801a-497e1725f030"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.540311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "bad5040a-f327-4000-8d94-c9f3d7a5ca8b"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.542311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "9e432762-0b5c-4a00-b5b4-61352461768e"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.544311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "e0b8d3bf-76af-4cc6-b54a-8a84dcc827a8"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.546311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "341959a8-5cae-4264-89e5-c5669a4d8a4a"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.548310+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "c37d4fe5-6fef-4c0f-b81f-d4a3c49602b9"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.550312+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "5c15ff57-0ca1-4b0d-b13d-587ec62775b3"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.552311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "111bd95b-9d6a-407f-9e27-924b5d315e12"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.554311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "ae9f6442-0eda-4623-a22d-ddee544ac6b0"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.557309+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "2bd2515b-e7ba-47dd-8730-ededc6721199"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.559317+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 40,
+      "severity": "MEDIUM",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "8ebca23e-bc1f-424f-9514-fc784c27f97c"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.561316+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "8b9b1761-f9b7-48ca-b77a-7e78a5f09467"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.563310+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "4d024c97-74e1-4480-9cdd-38d94e7447eb"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.565311+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "eecb83a3-17e8-48a7-ad95-abeb2b34ee3b"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.568317+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "53c7fa9c-0a10-47f6-b767-12e642aa1972"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.570314+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "319d44b8-1b36-472d-a176-69ac16e5a709"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.572335+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "d89c081a-1bb0-4a96-8a6e-6cd3329dabc3"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.574325+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "2ddd77d8-a137-44a5-9bc1-77eb83495bb8"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.577324+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "1a94a470-592b-4c02-89fa-e5b6db7f8720"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.579325+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "06d6eb96-927a-45d8-812a-530935771b06"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.581325+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 60,
+      "severity": "HIGH",
+      "description": "New evidence correlated: 3 reasons triggered.",
+      "detection_id": "6328d191-8023-4289-9100-6d1ef0acec8c"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.585323+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "description": "New evidence correlated: 4 reasons triggered.",
+      "detection_id": "224e0834-ba29-4e01-9a4e-0bf4d55cc33a"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.588058+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "description": "New evidence correlated: 4 reasons triggered.",
+      "detection_id": "c5ebf550-b994-4f97-b866-5f4c906b782e"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.590055+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 80,
+      "severity": "CRITICAL",
+      "description": "New evidence correlated: 4 reasons triggered.",
+      "detection_id": "cd629bd0-8a86-48a3-8edb-9d0e413e77a5"
+    },
+    {
+      "timestamp": "2026-11-04T10:45:42.593074+00:00",
+      "action": "EVIDENCE_CORRELATED",
+      "threat_score": 100,
+      "severity": "CRITICAL",
+      "description": "New evidence correlated: 5 reasons triggered.",
+      "detection_id": "b235bcbf-9a2f-447f-94ac-c52e8de983fc"
+    }
+  ],
+  "metadata": {
+    "initial_detection_id": "b781d8b3-e069-456b-8575-6f7c6b93db9e"
+  }
+}

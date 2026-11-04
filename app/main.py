@@ -981,6 +981,267 @@ def cmd_containment_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def _prompt_passphrase(prompt: str = "Enter private-key passphrase: ") -> str:
+    """Prompt for a passphrase securely, avoiding CLI arguments or plaintext logging."""
+    import getpass
+    import os
+    env_pass = os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE")
+    if env_pass:
+        return env_pass
+    return getpass.getpass(prompt)
+
+
+def cmd_vault(args: argparse.Namespace) -> int:
+    """Handle cryptographic vault operations (init, status, benchmark)."""
+    from app.vault.vault_coordinator import VAULT_COORDINATOR
+    subcmd = getattr(args, "vault_command", None)
+
+    if subcmd == "init":
+        if VAULT_COORDINATOR.key_manager.has_keys() and not getattr(args, "force", False):
+            print("[-] Cryptographic key pair already exists. Use --force to regenerate.")
+            return 1
+
+        import getpass
+        import os
+        env_pass = os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE")
+        if env_pass:
+            passphrase = env_pass
+        else:
+            passphrase = getpass.getpass("Enter passphrase to encrypt RSA private key: ")
+            confirm = getpass.getpass("Confirm private-key passphrase: ")
+            if passphrase != confirm:
+                print("[-] Error: Passphrases do not match.")
+                return 1
+            if len(passphrase) < 6:
+                print("[-] Error: Passphrase must be at least 6 characters.")
+                return 1
+
+        print("[*] Initializing Cryptographic Vault & provisioning RSA-3072 key pair...")
+        res = VAULT_COORDINATOR.initialize_vault(passphrase=passphrase, force=getattr(args, "force", False))
+        print(f"[+] Cryptographic Vault Initialized Successfully:")
+        print(f"    - Key ID        : {res['key_id']}")
+        print(f"    - Algorithm     : {res['algorithm']}")
+        print(f"    - Key Modulus   : {res['key_size_bits']} bits")
+        print(f"    - Public Key    : {res['public_key_path']}")
+        print(f"    - Private Key   : {res['private_key_path']} (Encrypted)")
+        print(f"    - Created At    : {res['created_at']}")
+        return 0
+
+    elif subcmd == "status":
+        status = VAULT_COORDINATOR.get_vault_status()
+        env_info = VAULT_COORDINATOR.key_manager.get_envelope_info() if status['has_keys'] else {}
+        print("\n--- CryptoShield Cryptographic Vault Status ---")
+        print(f"Vault Directory     : {status['vault_dir']}")
+        print(f"Keys Directory      : {status['keys_dir']}")
+        print(f"Keys Initialized    : {'[YES]' if status['has_keys'] else '[NO]'}")
+        if status['has_keys']:
+            print(f"  - Key ID          : {status.get('key_id')}")
+            print(f"  - Key Algorithm   : {status.get('key_algorithm')}")
+            print(f"  - Key Protection  : {env_info.get('format', 'UNKNOWN')} (Envelope v{env_info.get('envelope_version', 1)})")
+            if "kdf" in env_info and isinstance(env_info["kdf"], dict):
+                k = env_info["kdf"]
+                print(f"  - Key KDF         : {k.get('algorithm', 'Argon2id')} (mem: {k.get('memory_cost_kib', 0)//1024}MB, iter: {k.get('iterations', 0)}, lanes: {k.get('lanes', 0)})")
+            elif "kdf" in env_info:
+                print(f"  - Key KDF         : {env_info['kdf']}")
+        print(f"Total Snapshots     : {status['total_snapshots']}")
+        print(f"Vault Storage Used  : {status['total_encrypted_mb']} MB ({status['total_encrypted_bytes']:,} bytes)")
+        if status['snapshots']:
+            print("\nAvailable Snapshots:")
+            print(f"{'Snapshot ID':<18} {'Created At':<22} {'Files':<8} {'Encrypted Size':<16} {'Status'}")
+            print("-" * 75)
+            for s in status['snapshots']:
+                print(f"{s['snapshot_id']:<18} {s['created_at'][:19]:<22} {s['total_files']:<8} {s['total_encrypted_mb']:>5.2f} MB        {s['status']}")
+            print("-" * 75)
+        print("------------------------------------------------\n")
+        return 0
+
+    elif subcmd == "benchmark":
+        from app.vault.benchmark import print_benchmark_table, run_vault_benchmark
+        count = getattr(args, "count", 1000) or 1000
+        passphrase = _prompt_passphrase("Enter passphrase for benchmark keys: ")
+        print(f"[*] Running CryptoShield Vault Benchmark ({count:,} files)...")
+        res = run_vault_benchmark(file_count=count, passphrase=passphrase)
+        print_benchmark_table(res)
+        return 0
+
+    elif subcmd == "migrate-key":
+        if not VAULT_COORDINATOR.key_manager.has_keys():
+            print("[-] Error: No cryptographic key pair found to migrate.")
+            return 1
+
+        passphrase = _prompt_passphrase("Enter current private-key passphrase: ")
+        print("[*] Initiating atomic private-key protection hardening migration...")
+        try:
+            report = VAULT_COORDINATOR.key_manager.migrate_private_key(passphrase=passphrase)
+            print("\n[+] Private-Key Hardening Migration Successful:")
+            print(f"    - Key ID           : {report['key_id']}")
+            print(f"    - Fingerprint      : {report['fingerprint']}")
+            print(f"    - Previous Format  : {report['previous_format']}")
+            print(f"    - New Format       : {report['new_format']} (Envelope v{report['envelope_version']})")
+            print(f"    - KDF Algorithm    : {report['kdf']['algorithm']}")
+            print(f"    - Memory Cost      : {report['kdf']['memory_cost_kib']} KiB ({report['kdf']['memory_cost_kib'] // 1024} MiB)")
+            print(f"    - Iterations       : {report['kdf']['iterations']}")
+            print(f"    - Parallel Lanes   : {report['kdf']['lanes']}")
+            print(f"    - Cipher           : {report['cipher']}")
+            print(f"    - Backup File      : {report['backup_path']}")
+            print(f"    - Migrated At      : {report['migrated_at']}")
+            return 0
+        except Exception as e:
+            print(f"\n[-] Migration failed: {e}")
+            return 1
+
+    else:
+        print("[-] Usage: python -m app.main vault {init,status,benchmark,migrate-key}")
+        return 1
+
+
+def cmd_snapshot(args: argparse.Namespace) -> int:
+    """Handle snapshot operations (create, list, inspect, verify)."""
+    from app.vault.vault_coordinator import VAULT_COORDINATOR
+    subcmd = getattr(args, "snapshot_command", None)
+
+    if subcmd == "create":
+        print("[*] Initiating pre-snapshot laboratory baseline integrity audit...")
+        t_start = time.perf_counter()
+
+        last_pct = 0
+
+        def progress(current: int, total: int) -> None:
+            nonlocal last_pct
+            pct = int((current / total) * 100)
+            if pct - last_pct >= 5 or current == total:
+                last_pct = pct
+                sys.stdout.write(f"\r    [Progress] Encrypting objects: {current:,}/{total:,} ({pct:3d}%) complete...")
+                sys.stdout.flush()
+
+        try:
+            meta = VAULT_COORDINATOR.create_snapshot(progress_callback=progress)
+            elapsed = time.perf_counter() - t_start
+            print(f"\n[+] Snapshot Created & Published Successfully:")
+            print(f"    - Snapshot ID     : {meta.snapshot_id}")
+            print(f"    - Created At      : {meta.created_at}")
+            print(f"    - Total Files     : {meta.total_files:,}")
+            print(f"    - Original Size   : {meta.total_original_bytes / (1024 * 1024):.2f} MB")
+            print(f"    - Encrypted Size  : {meta.total_encrypted_bytes / (1024 * 1024):.2f} MB")
+            print(f"    - Key ID Used     : {meta.key_id}")
+            print(f"    - Creation Time   : {elapsed:.2f}s ({meta.total_files / elapsed:.1f} files/sec)")
+            print(f"    - Storage Target  : {CONFIG.vault_dir / meta.snapshot_id}")
+            return 0
+        except Exception as e:
+            print(f"\n[-] Snapshot creation failed: {e}")
+            return 1
+
+    elif subcmd == "list":
+        snaps = VAULT_COORDINATOR.list_snapshots()
+        if not snaps:
+            print("[*] No snapshots found in vault.")
+            return 0
+
+        print(f"\n--- Available Encrypted Snapshots ({len(snaps)} found) ---")
+        print(f"{'Snapshot ID':<18} {'Created At':<22} {'Files':<8} {'Original Size':<14} {'Encrypted Size':<14} {'Status'}")
+        print("-" * 88)
+        for s in snaps:
+            orig_mb = s.total_original_bytes / (1024 * 1024)
+            enc_mb = s.total_encrypted_bytes / (1024 * 1024)
+            print(f"{s.snapshot_id:<18} {s.created_at[:19]:<22} {s.total_files:<8} {orig_mb:>5.2f} MB       {enc_mb:>5.2f} MB       {s.completed_status}")
+        print("-" * 88)
+        print("Use 'python -m app.main snapshot inspect --id <snapshot-id>' to view details.\n")
+        return 0
+
+    elif subcmd == "inspect":
+        snap_id = getattr(args, "id", None)
+        if not snap_id:
+            print("[-] Error: --id <snapshot-id> is required.")
+            return 1
+
+        import os
+        passphrase = None
+        if getattr(args, "with_manifest", False) or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE"):
+            passphrase = _prompt_passphrase("Enter passphrase to decrypt confidential manifest overview: ")
+
+        try:
+            info = VAULT_COORDINATOR.inspect_snapshot(snap_id, passphrase=passphrase)
+        except Exception as e:
+            print(f"[-] Failed to inspect snapshot: {e}")
+            return 1
+
+        print("\n================ SNAPSHOT INSPECTION DOSSIER ================")
+        print(f"Snapshot ID         : {info['snapshot_id']}")
+        print(f"Format Version      : {info['format_version']}")
+        print(f"Status              : {info['status']}")
+        print(f"Created At          : {info['created_at']}")
+        print(f"Source Lab ID       : {info['source_lab_id']}")
+        print(f"Key Identifier      : {info['key_id']}")
+        print(f"Total Files         : {info['total_files']:,}")
+        print(f"Total Original Size : {info['total_original_mb']} MB ({info['total_original_bytes']:,} bytes)")
+        print(f"Total Encrypted Size: {info['total_encrypted_mb']} MB ({info['total_encrypted_bytes']:,} bytes)")
+
+        if "confidential_manifest" in info:
+            cm = info["confidential_manifest"]
+            print(f"\nDecrypted Manifest Overview (Confidential):")
+            print(f"  - Canary Files    : {cm['canary_count']:,}")
+            if cm.get("department_counts"):
+                print("  - Files by Department:")
+                for dept, cnt in sorted(cm["department_counts"].items()):
+                    print(f"      * {dept:<20}: {cnt:,}")
+            if cm.get("classification_counts"):
+                print("  - Files by Classification:")
+                for cls_name, cnt in sorted(cm["classification_counts"].items()):
+                    print(f"      * {cls_name:<15}: {cnt:,}")
+        print("=============================================================\n")
+        return 0
+
+    elif subcmd == "verify":
+        snap_id = getattr(args, "id", None)
+        if not snap_id:
+            print("[-] Error: --id <snapshot-id> is required.")
+            return 1
+
+        passphrase = _prompt_passphrase("Enter private-key passphrase to verify snapshot: ")
+        print(f"[*] Cryptographically verifying snapshot {snap_id}...")
+
+        last_pct = 0
+
+        def progress(current: int, total: int) -> None:
+            nonlocal last_pct
+            pct = int((current / total) * 100)
+            if pct - last_pct >= 5 or current == total:
+                last_pct = pct
+                sys.stdout.write(f"\r    [Progress] Verifying objects: {current:,}/{total:,} ({pct:3d}%) authenticated...")
+                sys.stdout.flush()
+
+        report = VAULT_COORDINATOR.verify_snapshot(snap_id, passphrase=passphrase, progress_callback=progress)
+
+        print("\n\n================ SNAPSHOT VERIFICATION REPORT ================")
+        print(f"Snapshot ID         : {report.snapshot_id}")
+        print(f"Verification Result : [{report.outcome}]")
+        print(f"Verified At         : {report.verified_at}")
+        print(f"Duration            : {report.duration_seconds:.2f} seconds")
+        print(f"Total Objects       : {report.total_manifest_objects:,}")
+        print(f"Verified Objects    : {report.verified_objects:,}")
+        print(f"Failed Objects      : {report.failed_objects:,}")
+        print(f"Missing Objects     : {len(report.missing_objects):,}")
+        print(f"Unexpected Objects  : {len(report.unexpected_objects):,}")
+        print(f"Tampered Objects    : {len(report.tampered_objects):,}")
+        print(f"Summary             : {report.summary}")
+        print("==============================================================")
+
+        if report.tampered_objects:
+            print("\n[!] CRITICAL: Tampered Objects Detected:")
+            for p in report.tampered_objects[:10]:
+                print(f"    - {p}")
+        if report.missing_objects:
+            print("\n[!] Missing Objects:")
+            for p in report.missing_objects[:10]:
+                print(f"    - {p}")
+
+        return 0 if report.outcome == "FULLY_VERIFIED" else 2
+
+    else:
+        print("[-] Usage: python -m app.main snapshot {create,list,inspect,verify}")
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -1064,6 +1325,27 @@ def build_parser() -> argparse.ArgumentParser:
     cont_bench_parser = subparsers.add_parser("containment-benchmark", help="Execute containment engine performance benchmark")
     cont_bench_parser.add_argument("--iterations", type=int, default=5, help="Number of iterations (default: 5)")
 
+    # vault (Phase 5)
+    vault_parser = subparsers.add_parser("vault", help="Cryptographic Vault operations")
+    vault_sub = vault_parser.add_subparsers(dest="vault_command", help="Vault sub-commands")
+    v_init = vault_sub.add_parser("init", help="Initialize cryptographic vault & generate RSA keys")
+    v_init.add_argument("--force", action="store_true", help="Force regenerate key pair")
+    vault_sub.add_parser("status", help="Show vault health, keys, and storage metrics")
+    v_bench = vault_sub.add_parser("benchmark", help="Execute vault performance benchmark")
+    v_bench.add_argument("--count", type=int, default=1000, help="Number of files to benchmark (default: 1000)")
+    vault_sub.add_parser("migrate-key", help="Harden existing private key with Argon2id & AES-256-GCM")
+
+    # snapshot (Phase 5)
+    snap_parser = subparsers.add_parser("snapshot", help="Cryptographic snapshot management & verification")
+    snap_sub = snap_parser.add_subparsers(dest="snapshot_command", help="Snapshot sub-commands")
+    snap_sub.add_parser("create", help="Create a clean, cryptographically authenticated snapshot")
+    snap_sub.add_parser("list", help="List available snapshots")
+    s_inspect = snap_sub.add_parser("inspect", help="Inspect snapshot metadata")
+    s_inspect.add_argument("--id", type=str, required=True, help="Snapshot ID (e.g. SNAP-XXXXXXXX)")
+    s_inspect.add_argument("--with-manifest", action="store_true", help="Prompt for passphrase to decrypt manifest summary")
+    s_verify = snap_sub.add_parser("verify", help="Cryptographically audit and verify an encrypted snapshot")
+    s_verify.add_argument("--id", type=str, required=True, help="Snapshot ID (e.g. SNAP-XXXXXXXX)")
+
     return parser
 
 
@@ -1113,6 +1395,10 @@ def main() -> int:
         return cmd_containment_policy_demo(args)
     elif args.command == "containment-benchmark":
         return cmd_containment_benchmark(args)
+    elif args.command == "vault":
+        return cmd_vault(args)
+    elif args.command == "snapshot":
+        return cmd_snapshot(args)
     else:
         parser.print_help()
         return 1
