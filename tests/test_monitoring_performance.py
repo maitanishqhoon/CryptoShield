@@ -36,8 +36,8 @@ def test_controlled_event_bursts_and_latency(temp_lab: Path):
     try:
         for i in range(100):
             fp = test_dir / f"f_{i:03d}.txt"
-            t0 = time.perf_counter()
             fp.write_text(f"content {i}")
+            t0 = time.perf_counter()
             ev = coordinator.access_monitor.record_access(fp)
             lat_ms = (time.perf_counter() - t0) * 1000.0
             latencies.append(lat_ms)

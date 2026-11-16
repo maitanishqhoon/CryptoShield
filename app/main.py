@@ -8,6 +8,7 @@ Phase 1 Foundation Command-Line Interface.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -1242,6 +1243,252 @@ def cmd_snapshot(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_recovery(args: argparse.Namespace) -> int:
+    """Handle cryptographic recovery operations (Phase 6)."""
+    from app.recovery import RECOVERY_COORDINATOR, RecoveryError
+    subcmd = getattr(args, "recovery_command", None)
+
+    if subcmd == "status":
+        status = RECOVERY_COORDINATOR.get_status()
+        print("\n--- CryptoShield Cryptographic Recovery Subsystem Status ---")
+        print(f"Workspaces Directory : {status['workspaces_dir']}")
+        print(f"Reports Directory    : {status['reports_dir']}")
+        print(f"Staging Directory    : {status['staging_dir']}")
+        print(f"Registered Workspaces: {status['workspaces_count']}")
+        if status['workspaces']:
+            print(f"{'Workspace ID':<24} {'Seeded Files':<14} {'Marker Valid':<14} {'Created At'}")
+            print("-" * 75)
+            for w in status['workspaces']:
+                m_str = "[VALID]" if w['marker_valid'] else "[TAMPERED]"
+                print(f"{w['workspace_id']:<24} {w['seeded_file_count']:<14} {m_str:<14} {w['created_at'][:19]}")
+            print("-" * 75)
+        print(f"Total Recovery Reports: {status['reports_count']}")
+        if status['recent_reports']:
+            print("Recent Recovery Reports:")
+            for r in status['recent_reports']:
+                print(f"  - [{r['recovery_id']}] WS: {r['workspace_id']} | Snapshot: {r['snapshot_id']} | Restored: {r['restored_count']} | At: {r['completed_at'][:19]}")
+        print("------------------------------------------------------------\n")
+        return 0
+
+    elif subcmd == "workspace":
+        ws_sub = getattr(args, "workspace_command", None)
+        if ws_sub == "create":
+            import uuid
+            ws_id = getattr(args, "id", None) or f"ws_{uuid.uuid4().hex[:8]}"
+            seed = getattr(args, "seed", False)
+            files = getattr(args, "files", None)
+            snapshot_id = getattr(args, "snapshot", None)
+            print(f"[*] Creating recovery workspace '{ws_id}' (seed={seed}, max_files={files})...")
+            try:
+                meta = RECOVERY_COORDINATOR.workspace_manager.create_workspace(
+                    workspace_id=ws_id,
+                    source_snapshot_id=snapshot_id,
+                    seed_from_lab=seed,
+                    max_seed_files=files,
+                )
+                print(f"[+] Recovery Workspace Created Successfully:")
+                print(f"    - Workspace ID   : {meta.workspace_id}")
+                print(f"    - Workspace Path : {meta.workspace_path}")
+                print(f"    - Seeded Files   : {meta.seeded_file_count}")
+                print(f"    - Safety Marker  : [VALID]")
+                return 0
+            except Exception as e:
+                print(f"[-] Failed to create workspace: {e}")
+                return 1
+
+        elif ws_sub == "list":
+            workspaces = RECOVERY_COORDINATOR.workspace_manager.list_workspaces()
+            if not workspaces:
+                print("[*] No recovery workspaces registered.")
+                return 0
+            print(f"\n--- Registered Recovery Workspaces ({len(workspaces)} found) ---")
+            print(f"{'Workspace ID':<24} {'Seeded Files':<14} {'Marker Valid':<14} {'Created At'}")
+            print("-" * 75)
+            for w in workspaces:
+                m_str = "[VALID]" if w.marker_valid else "[TAMPERED]"
+                print(f"{w.workspace_id:<24} {w.seeded_file_count:<14} {m_str:<14} {w.created_at[:19]}")
+            print("-" * 75)
+            return 0
+
+        elif ws_sub == "delete":
+            ws_id = getattr(args, "workspace", None)
+            if not ws_id:
+                print("[-] Error: --workspace <workspace_id> is required.")
+                return 1
+            print(f"[*] Deleting recovery workspace '{ws_id}'...")
+            try:
+                RECOVERY_COORDINATOR.workspace_manager.delete_workspace(ws_id)
+                print(f"[+] Workspace '{ws_id}' deleted successfully.")
+                return 0
+            except Exception as e:
+                print(f"[-] Failed to delete workspace: {e}")
+                return 1
+        else:
+            print("[-] Usage: python -m app.main recovery workspace {create,list,delete}")
+            return 1
+
+    elif subcmd == "assess":
+        ws_id = getattr(args, "workspace", None)
+        snap_id = getattr(args, "snapshot", None)
+        if not ws_id or not snap_id:
+            print("[-] Error: Both --workspace and --snapshot are required.")
+            return 1
+        passphrase = getattr(args, "passphrase", None) or _prompt_passphrase("Enter private-key passphrase to assess snapshot: ")
+        target_file = getattr(args, "file", None)
+        target_dir = getattr(args, "directory", None)
+        overwrite_modified = getattr(args, "overwrite_modified", False)
+
+        print(f"[*] Assessing workspace '{ws_id}' against snapshot '{snap_id}'...")
+        try:
+            summary = RECOVERY_COORDINATOR.assess(
+                workspace_id=ws_id,
+                snapshot_id=snap_id,
+                passphrase=passphrase,
+                target_file=target_file,
+                target_directory=target_dir,
+                overwrite_modified=overwrite_modified,
+            )
+            print("\n" + RECOVERY_COORDINATOR.reporter.format_assessment_summary(summary) + "\n")
+            return 0
+        except Exception as e:
+            print(f"[-] Assessment failed: {e}")
+            return 1
+
+    elif subcmd == "preview":
+        ws_id = getattr(args, "workspace", None)
+        snap_id = getattr(args, "snapshot", None)
+        if not ws_id or not snap_id:
+            print("[-] Error: Both --workspace and --snapshot are required.")
+            return 1
+        passphrase = getattr(args, "passphrase", None) or _prompt_passphrase("Enter private-key passphrase: ")
+        target_file = getattr(args, "file", None)
+        target_dir = getattr(args, "directory", None)
+        overwrite_modified = not getattr(args, "no_overwrite_modified", False)
+
+        print(f"[*] Simulating restoration preview for workspace '{ws_id}'...")
+        try:
+            report = RECOVERY_COORDINATOR.preview(
+                workspace_id=ws_id,
+                snapshot_id=snap_id,
+                passphrase=passphrase,
+                target_file=target_file,
+                target_directory=target_dir,
+                overwrite_modified=overwrite_modified,
+            )
+            print("\n" + RECOVERY_COORDINATOR.reporter.format_operation_report(report) + "\n")
+            return 0
+        except Exception as e:
+            print(f"[-] Preview failed: {e}")
+            return 1
+
+    elif subcmd == "restore":
+        ws_id = getattr(args, "workspace", None)
+        snap_id = getattr(args, "snapshot", None)
+        if not ws_id or not snap_id:
+            print("[-] Error: Both --workspace and --snapshot are required.")
+            return 1
+        authorize = getattr(args, "authorize", False)
+        if not authorize:
+            print("[-] Error: Live restoration requires explicit authorization (--authorize).")
+            print("    To preview planned restoration actions without modifying files, run 'recovery preview'.")
+            return 1
+        passphrase = getattr(args, "passphrase", None) or _prompt_passphrase("Enter private-key passphrase: ")
+        target_file = getattr(args, "file", None)
+        target_dir = getattr(args, "directory", None)
+        overwrite_modified = not getattr(args, "no_overwrite_modified", False)
+
+        print(f"[*] Initiating authorized live restoration on workspace '{ws_id}'...")
+        last_pct = 0
+        def progress(current: int, total: int, current_file: str) -> None:
+            nonlocal last_pct
+            pct = int((current / total) * 100) if total > 0 else 100
+            if pct - last_pct >= 5 or current == total:
+                last_pct = pct
+                sys.stdout.write(f"\r    [Progress] Restoring files: {current:,}/{total:,} ({pct:3d}%) ...")
+                sys.stdout.flush()
+
+        try:
+            report = RECOVERY_COORDINATOR.restore(
+                workspace_id=ws_id,
+                snapshot_id=snap_id,
+                passphrase=passphrase,
+                target_file=target_file,
+                target_directory=target_dir,
+                overwrite_modified=overwrite_modified,
+                dry_run=False,
+                authorize=True,
+                progress_callback=progress,
+            )
+            print("\n\n" + RECOVERY_COORDINATOR.reporter.format_operation_report(report) + "\n")
+            return 0 if report.failed_count == 0 else 2
+        except Exception as e:
+            print(f"\n[-] Restoration failed: {e}")
+            return 1
+
+    elif subcmd == "verify":
+        ws_id = getattr(args, "workspace", None)
+        snap_id = getattr(args, "snapshot", None)
+        if not ws_id or not snap_id:
+            print("[-] Error: Both --workspace and --snapshot are required.")
+            return 1
+        passphrase = getattr(args, "passphrase", None) or _prompt_passphrase("Enter private-key passphrase: ")
+        print(f"[*] Auditing integrity of recovery workspace '{ws_id}' against snapshot '{snap_id}'...")
+        try:
+            summary = RECOVERY_COORDINATOR.verify_workspace_integrity(
+                workspace_id=ws_id,
+                snapshot_id=snap_id,
+                passphrase=passphrase,
+            )
+            print("\n" + RECOVERY_COORDINATOR.reporter.format_assessment_summary(summary) + "\n")
+            is_intact = summary.modified_count == 0 and summary.missing_count == 0
+            return 0 if is_intact else 2
+        except Exception as e:
+            print(f"[-] Integrity verification failed: {e}")
+            return 1
+
+    elif subcmd == "demo":
+        files = getattr(args, "files", 100) or 100
+        snap_id = getattr(args, "snapshot", None)
+        cleanup = getattr(args, "cleanup", False)
+        passphrase = getattr(args, "passphrase", None) or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE") or "CryptoShieldVaultPassphrase2026!"
+
+        print(f"\n================================================================================")
+        print(f"             CRYPTOSHIELD AUTOMATED RECOVERY DEMONSTRATION                      ")
+        print(f"================================================================================")
+        print(f"Scale Preset    : {files:,} files")
+        print(f"Auto-Cleanup    : {'[YES]' if cleanup else '[NO]'}")
+        print(f"Executing end-to-end recovery scenario...")
+
+        try:
+            res = RECOVERY_COORDINATOR.run_recovery_demo(
+                file_count=files,
+                snapshot_id=snap_id,
+                passphrase=passphrase,
+                cleanup=cleanup,
+            )
+            print("\n[+] Demonstration Executed Successfully:")
+            print(f"    - Workspace ID      : {res['demo_workspace_id']}")
+            print(f"    - Baseline Snapshot : {res['snapshot_id']}")
+            print(f"    - Seeded Files      : {res['seeded_file_count']:,}")
+            dmg = res['damage_simulated']
+            print(f"    - Damage Simulated  : {len(dmg['modified'])} modified, {len(dmg['deleted'])} deleted, {len(dmg['untracked'])} untracked, {len(dmg['canaries_affected'])} canaries")
+            rst = res['restoration']
+            print(f"    - Restored Files    : {rst['restored_count']:,} ({rst['duration_seconds']:.2f}s, {rst['throughput_files_per_sec']:.1f} files/sec)")
+            print(f"    - Evidence Quarantined : {rst['evidence_quarantined']:,}")
+            print(f"    - Canaries Restored : {rst['canaries_restored']:,}")
+            print(f"    - Post-Audit Status : {'PASSED (100% Intact)' if rst['audit_passed'] else 'FAILED'}")
+            print(f"    - Total Scenario Time: {res['total_duration_seconds']:.2f}s")
+            print("================================================================================\n")
+            return 0 if res['success'] else 2
+        except Exception as e:
+            print(f"\n[-] Demo execution failed: {e}")
+            return 1
+
+    else:
+        print("[-] Usage: python -m app.main recovery {status,workspace,assess,preview,restore,verify,demo}")
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -1346,6 +1593,66 @@ def build_parser() -> argparse.ArgumentParser:
     s_verify = snap_sub.add_parser("verify", help="Cryptographically audit and verify an encrypted snapshot")
     s_verify.add_argument("--id", type=str, required=True, help="Snapshot ID (e.g. SNAP-XXXXXXXX)")
 
+    # recovery (Phase 6)
+    rec_parser = subparsers.add_parser("recovery", help="Cryptographic recovery, workspace isolation & restoration")
+    rec_sub = rec_parser.add_subparsers(dest="recovery_command", help="Recovery sub-commands")
+
+    # recovery status
+    rec_sub.add_parser("status", help="Show recovery subsystem status and workspaces")
+
+    # recovery workspace
+    ws_parser = rec_sub.add_parser("workspace", help="Manage isolated recovery workspaces")
+    ws_sub = ws_parser.add_subparsers(dest="workspace_command", help="Workspace operations")
+    ws_create = ws_sub.add_parser("create", help="Create a new authenticated recovery workspace")
+    ws_create.add_argument("--id", type=str, default=None, help="Workspace ID (default: auto-generated)")
+    ws_create.add_argument("--seed", action="store_true", help="Seed workspace from baseline lab files")
+    ws_create.add_argument("--files", type=int, default=None, help="Max files to seed into workspace")
+    ws_create.add_argument("--snapshot", type=str, default=None, help="Source snapshot ID")
+    ws_sub.add_parser("list", help="List all recovery workspaces")
+    ws_del = ws_sub.add_parser("delete", help="Delete a recovery workspace")
+    ws_del.add_argument("--workspace", type=str, required=True, help="Workspace ID to delete")
+
+    # recovery assess
+    rec_assess = rec_sub.add_parser("assess", help="Assess damage in a workspace against snapshot baseline")
+    rec_assess.add_argument("--workspace", type=str, required=True, help="Workspace ID")
+    rec_assess.add_argument("--snapshot", type=str, required=True, help="Snapshot ID")
+    rec_assess.add_argument("--file", type=str, default=None, help="Single relative file path to assess")
+    rec_assess.add_argument("--directory", type=str, default=None, help="Directory subtree to assess")
+    rec_assess.add_argument("--overwrite-modified", action="store_true", help="Schedule restoration for modified files")
+    rec_assess.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
+
+    # recovery preview
+    rec_prev = rec_sub.add_parser("preview", help="Preview restoration actions without modifying workspace files")
+    rec_prev.add_argument("--workspace", type=str, required=True, help="Workspace ID")
+    rec_prev.add_argument("--snapshot", type=str, required=True, help="Snapshot ID")
+    rec_prev.add_argument("--file", type=str, default=None, help="Single relative file path to preview")
+    rec_prev.add_argument("--directory", type=str, default=None, help="Directory subtree to preview")
+    rec_prev.add_argument("--no-overwrite-modified", action="store_true", help="Do not overwrite modified files")
+    rec_prev.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
+
+    # recovery restore
+    rec_rest = rec_sub.add_parser("restore", help="Execute live restoration with safety gates and evidence quarantine")
+    rec_rest.add_argument("--workspace", type=str, required=True, help="Workspace ID")
+    rec_rest.add_argument("--snapshot", type=str, required=True, help="Snapshot ID")
+    rec_rest.add_argument("--authorize", action="store_true", help="Explicitly authorize restoration execution")
+    rec_rest.add_argument("--file", type=str, default=None, help="Single relative file path to restore")
+    rec_rest.add_argument("--directory", type=str, default=None, help="Directory subtree to restore")
+    rec_rest.add_argument("--no-overwrite-modified", action="store_true", help="Do not overwrite modified files")
+    rec_rest.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
+
+    # recovery verify
+    rec_ver = rec_sub.add_parser("verify", help="Verify cryptographic integrity of recovery workspace")
+    rec_ver.add_argument("--workspace", type=str, required=True, help="Workspace ID")
+    rec_ver.add_argument("--snapshot", type=str, required=True, help="Snapshot ID")
+    rec_ver.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
+
+    # recovery demo
+    rec_demo = rec_sub.add_parser("demo", help="Run automated end-to-end recovery demonstration")
+    rec_demo.add_argument("--files", type=int, default=100, choices=[100, 1000, 10000, 20000], help="Scale preset (100, 1000, 10000, 20000)")
+    rec_demo.add_argument("--snapshot", type=str, default=None, help="Snapshot ID")
+    rec_demo.add_argument("--cleanup", action="store_true", help="Clean up demo workspace upon completion")
+    rec_demo.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
+
     return parser
 
 
@@ -1399,6 +1706,8 @@ def main() -> int:
         return cmd_vault(args)
     elif args.command == "snapshot":
         return cmd_snapshot(args)
+    elif args.command == "recovery":
+        return cmd_recovery(args)
     else:
         parser.print_help()
         return 1

@@ -64,3 +64,9 @@ runtime/logs/*
 !runtime/logs/.gitkeep
 runtime/reports/*
 !runtime/reports/.gitkeep
+runtime/incidents/*
+!runtime/incidents/.gitkeep
+runtime/containment/*
+!runtime/containment/.gitkeep
+runtime/recovery/*
+!runtime/recovery/.gitkeep

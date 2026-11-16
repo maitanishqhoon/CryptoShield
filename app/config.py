@@ -202,6 +202,14 @@ class CryptoShieldConfig:
     SIMULATOR_MAX_DURATION_SECONDS: float = 10.0
     SIMULATOR_MAX_OPERATIONS: int = 100
 
+    # Recovery and Restoration Parameters (Phase 6)
+    RECOVERY_DIR: Path = RUNTIME_DIR / "recovery"
+    RECOVERY_WORKSPACES_DIR: Path = RECOVERY_DIR / "workspaces"
+    RECOVERY_STAGING_DIR: Path = RECOVERY_DIR / "staging"
+    RECOVERY_REPORTS_DIR: Path = RECOVERY_DIR / "reports"
+    RECOVERY_MARKER_FILENAME: str = ".cryptoshield_recovery_marker"
+    RECOVERY_EVIDENCE_DIRNAME: str = ".evidence_quarantine"
+
     @property
     def containment_dir(self) -> Path:
         return self.CONTAINMENT_DIR
@@ -250,6 +258,48 @@ class CryptoShieldConfig:
     def json_log_path(self) -> Path:
         return self.LOGS_DIR / self.JSON_LOG_FILENAME
 
+    @property
+    def recovery_dir(self) -> Path:
+        return self.RECOVERY_DIR
+
+    @property
+    def recovery_workspaces_dir(self) -> Path:
+        return self.RECOVERY_WORKSPACES_DIR
+
+    @property
+    def recovery_staging_dir(self) -> Path:
+        return self.RECOVERY_STAGING_DIR
+
+    @property
+    def recovery_reports_dir(self) -> Path:
+        return self.RECOVERY_REPORTS_DIR
+
+    def ensure_directories(self) -> None:
+        """Create necessary runtime directories for CryptoShield including recovery."""
+        for path in [
+            self.RUNTIME_DIR,
+            self.LAB_DIR,
+            self.VAULT_DIR,
+            self.KEYS_DIR,
+            self.SNAPSHOTS_DIR,
+            self.LOGS_DIR,
+            self.REPORTS_DIR,
+            self.INCIDENTS_DIR,
+            self.CONTAINMENT_DIR,
+            self.RECOVERY_DIR,
+            self.RECOVERY_WORKSPACES_DIR,
+            self.RECOVERY_STAGING_DIR,
+            self.RECOVERY_REPORTS_DIR,
+        ]:
+            path.mkdir(parents=True, exist_ok=True)
+
 
 # Global singleton instance
 CONFIG = CryptoShieldConfig()
+Config = CryptoShieldConfig
+
+
+def ensure_directories() -> None:
+    """Convenience helper to create all runtime directories."""
+    CONFIG.ensure_directories()
+
