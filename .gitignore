@@ -70,3 +70,6 @@ runtime/containment/*
 !runtime/containment/.gitkeep
 runtime/recovery/*
 !runtime/recovery/.gitkeep
+runtime/exfiltration/*
+!runtime/exfiltration/.gitkeep
+runtime/lab/.exfiltration_staging/*

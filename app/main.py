@@ -1489,6 +1489,108 @@ def cmd_recovery(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_exfiltration(args: argparse.Namespace) -> int:
+    """Handle Data Exfiltration Monitoring operations (status, monitor, demo)."""
+    from app.exfiltration import EXFILTRATION_COORDINATOR
+    subcmd = getattr(args, "exfiltration_command", None)
+
+    if subcmd == "status":
+        status = EXFILTRATION_COORDINATOR.get_status()
+        print("\n--- Data Exfiltration Monitoring Subsystem Status ---")
+        print(f"Status           : {'[ACTIVE] LISTENING' if status['is_running'] else '[STOPPED]'}")
+        print(f"Mock Endpoint    : {status['endpoint']}")
+        print(f"Risk Tier        : [{status['risk_tier']}]")
+        print(f"Threat Score     : {status['threat_score']} / 100")
+        print(f"Indicators Active: {len(status['indicators'])}")
+        for ind in status['indicators']:
+            print(f"    - {ind}")
+        print(f"Read Bursts      : {status['read_bursts_count']}")
+        print(f"Canary Reads     : {len(status['canary_reads'])}")
+        print(f"Staging Events   : {status['staging_events_count']}")
+        xfer = status['transfers']
+        print(f"Transfers Sent   : {xfer['total_transfers_completed']} ({xfer['total_bytes_transferred']:,} bytes)")
+        print("-----------------------------------------------------\n")
+        return 0
+
+    elif subcmd == "monitor":
+        print("[*] Starting Data Exfiltration Monitoring Engine...")
+        host, port = EXFILTRATION_COORDINATOR.start()
+        print(f"[+] Mock loopback receiver listening on {host}:{port}")
+        print("[*] Monitoring for read bursts, canary breaches, staging archives, and transfers.")
+        print("[*] Press Ctrl+C to terminate monitoring.")
+        try:
+            while True:
+                time.sleep(1.0)
+        except KeyboardInterrupt:
+            print("\n[*] Stopping Exfiltration Monitoring Engine...")
+        finally:
+            EXFILTRATION_COORDINATOR.stop()
+            print("[+] Exfiltration Monitoring stopped successfully.")
+        return 0
+
+    elif subcmd == "demo":
+        from app.simulation.exfiltration_simulator import ControlledExfiltrationSimulator
+        file_count = getattr(args, "files", 15)
+        cleanup = getattr(args, "cleanup", False)
+        print(f"[*] Launching Controlled Data Exfiltration Demonstration ({file_count} files)...")
+        host, port = EXFILTRATION_COORDINATOR.start(ephemeral_port=True)
+        print(f"[+] Mock loopback receiver active on {host}:{port}")
+
+        sim = ControlledExfiltrationSimulator(event_bus=EXFILTRATION_COORDINATOR.bus)
+        try:
+            print("[1/4] Preparing demonstration fixtures and honeypot canaries...")
+            sim.prepare_fixtures(file_count=file_count, canary_count=2)
+
+            print("[2/4] Executing read harvesting across sensitive departments & tripping canaries...")
+            print("[3/4] Packaging harvested files into staging archive...")
+            print("[4/4] Simulating outbound transfer to local mock receiver...")
+            result = sim.run_simulation(mock_host=host, mock_port=port)
+
+            time.sleep(0.5)  # Allow eventbus dispatch
+            assessment = EXFILTRATION_COORDINATOR.get_assessment()
+
+            print("\n================ CONTROLLED EXFILTRATION DEMO RESULTS ================")
+            print(f"Run ID              : {result.run_id}")
+            print(f"Scenario Duration   : {result.duration_seconds:.2f}s")
+            print(f"Files Harvested     : {result.files_read} (Canaries: {result.canaries_read})")
+            print(f"Bytes Staged        : {result.bytes_staged:,} B")
+            print(f"Bytes Exfiltrated   : {result.bytes_transferred:,} B")
+            print(f"Destination Endpoint: {host}:{port} (Loopback Only)")
+            print(f"Transfer Status     : {result.transfer_status}")
+            print("----------------------------------------------------------------------")
+            print(f"Exfiltration Risk   : [{assessment.risk_tier}]")
+            print(f"Threat Score        : {assessment.threat_score} / 100")
+            print(f"Indicators Detected : {len(assessment.indicators)}")
+            for ind in assessment.indicators:
+                print(f"    - {ind}")
+            print(f"Canaries Compromised: {len(assessment.canaries_compromised)}")
+            for c in assessment.canaries_compromised:
+                print(f"    - {c}")
+            print("======================================================================")
+
+            # Check if an active incident exists and correlate
+            try:
+                from app.detection.incident_manager import IncidentManager
+                inc_mgr = IncidentManager()
+                correlated = EXFILTRATION_COORDINATOR.correlate_with_incident(inc_mgr)
+                if correlated:
+                    print(f"[+] Correlated findings into SecurityIncident {correlated.incident_id}")
+            except Exception as e:
+                logger.debug("Incident correlation skipped: %s", e)
+
+            return 0
+        finally:
+            if cleanup:
+                print("[*] Cleaning up temporary simulation fixtures...")
+                sim.cleanup()
+                print("[+] Cleanup complete.")
+            EXFILTRATION_COORDINATOR.stop()
+
+    else:
+        print("[-] Usage: python -m app.main exfiltration {status,monitor,demo}")
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -1653,6 +1755,21 @@ def build_parser() -> argparse.ArgumentParser:
     rec_demo.add_argument("--cleanup", action="store_true", help="Clean up demo workspace upon completion")
     rec_demo.add_argument("--passphrase", type=str, default=None, help="Private key passphrase")
 
+    # exfiltration (Phase 7)
+    exfil_parser = subparsers.add_parser("exfiltration", help="Data Exfiltration Monitoring & Staging Telemetry")
+    exfil_sub = exfil_parser.add_subparsers(dest="exfiltration_command", help="Exfiltration sub-commands")
+
+    # exfiltration status
+    exfil_sub.add_parser("status", help="Show exfiltration monitoring status and metrics")
+
+    # exfiltration monitor
+    exfil_sub.add_parser("monitor", help="Start real-time exfiltration telemetry and mock receiver")
+
+    # exfiltration demo
+    exfil_demo = exfil_sub.add_parser("demo", help="Run controlled harmless data exfiltration demonstration")
+    exfil_demo.add_argument("--files", type=int, default=15, help="Number of files to simulate (default: 15)")
+    exfil_demo.add_argument("--cleanup", action="store_true", help="Clean up demo fixtures upon completion")
+
     return parser
 
 
@@ -1708,6 +1825,8 @@ def main() -> int:
         return cmd_snapshot(args)
     elif args.command == "recovery":
         return cmd_recovery(args)
+    elif args.command == "exfiltration":
+        return cmd_exfiltration(args)
     else:
         parser.print_help()
         return 1

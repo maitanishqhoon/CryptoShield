@@ -210,6 +210,20 @@ class CryptoShieldConfig:
     RECOVERY_MARKER_FILENAME: str = ".cryptoshield_recovery_marker"
     RECOVERY_EVIDENCE_DIRNAME: str = ".evidence_quarantine"
 
+    # Data Exfiltration Monitoring Parameters (Phase 7)
+    EXFILTRATION_DIR: Path = RUNTIME_DIR / "exfiltration"
+    EXFILTRATION_STAGING_DIR: Path = LAB_DIR / ".exfiltration_staging"
+    EXFILTRATION_MOCK_HOST: str = "127.0.0.1"
+    EXFILTRATION_MOCK_PORT: int = 8999
+    EXFILTRATION_READ_BURST_THRESHOLD: int = 10       # 10+ reads in window
+    EXFILTRATION_READ_WINDOW_SECONDS: float = 5.0
+    EXFILTRATION_CANARY_READ_WEIGHT: int = 40         # Weight for tripping canary read
+    EXFILTRATION_MASS_READ_WEIGHT: int = 25           # Weight for mass sensitive reads
+    EXFILTRATION_STAGING_WEIGHT: int = 20             # Weight for local archive staging
+    EXFILTRATION_TRANSFER_WEIGHT: int = 30            # Weight for outbound mock transfer
+    EXFILTRATION_HIGH_THRESHOLD: int = 60
+    EXFILTRATION_CRITICAL_THRESHOLD: int = 80
+
     @property
     def containment_dir(self) -> Path:
         return self.CONTAINMENT_DIR
@@ -274,8 +288,16 @@ class CryptoShieldConfig:
     def recovery_reports_dir(self) -> Path:
         return self.RECOVERY_REPORTS_DIR
 
+    @property
+    def exfiltration_dir(self) -> Path:
+        return self.EXFILTRATION_DIR
+
+    @property
+    def exfiltration_staging_dir(self) -> Path:
+        return self.EXFILTRATION_STAGING_DIR
+
     def ensure_directories(self) -> None:
-        """Create necessary runtime directories for CryptoShield including recovery."""
+        """Create necessary runtime directories for CryptoShield including recovery and exfiltration."""
         for path in [
             self.RUNTIME_DIR,
             self.LAB_DIR,
@@ -290,6 +312,7 @@ class CryptoShieldConfig:
             self.RECOVERY_WORKSPACES_DIR,
             self.RECOVERY_STAGING_DIR,
             self.RECOVERY_REPORTS_DIR,
+            self.EXFILTRATION_DIR,
         ]:
             path.mkdir(parents=True, exist_ok=True)
 
