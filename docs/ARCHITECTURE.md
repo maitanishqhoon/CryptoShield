@@ -144,3 +144,18 @@ flowchart TD
 - `RecoveryAssessor`: Parallel multi-threaded auditor comparing on-disk files against the snapshot manifest, classifying files as `INTACT`, `MODIFIED`, `MISSING`, `UNREADABLE`, or `UNTRACKED`.
 - `RestorationManager`: Two-stage authenticated restore. Decrypts to temporary staging, validates GCM auth tags and SHA-256 digests, quarantines modified evidence, and atomically commits restored files.
 - `RecoveryCoordinator`: Coordinates assessment, preview, restoration, and verification flows. Emits audit telemetry to `EventBus`.
+
+### 3.6 Data Exfiltration Monitoring Subsystem (`app/exfiltration/`)
+- `MockReceiver`: Safe loopback TCP endpoint (`127.0.0.1`) with ephemeral port binding, in-memory consumption, and local pipe transport fallback.
+- `ReadBurstDetector`: Sliding-window analyzer monitoring `FILE_READ`, `FILE_OPEN`, and `CANARY_ACCESS` events, detecting multi-department harvesting bursts and honeypot canary breaches.
+- `StagingDetector`: Subscribes to filesystem events to detect directory aggregation and archive staging creations (`.zip`, `.tar`, `.7z`).
+- `TransferMonitor`: Enforces loopback safety boundaries, measures throughput metrics, and logs outbound transmission attempts.
+- `ExfiltrationCorrelator`: Multi-modal scoring engine fusing read telemetry, canary breach alerts, staging observations, and mock socket transfers into a consolidated 0–100 threat assessment (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+- `ExfiltrationCoordinator`: Central lifecycle coordinator and `IncidentManager` correlation bridge.
+
+### 3.7 Data Loss Prevention (DLP) Subsystem (`app/dlp/`)
+- `DLPPolicyEngine`: Priority-ordered rule matrix evaluator assessing transfer classifications, canary honeypots, departments, bulk volume limits, and process identities across four posture profiles (`DEFAULT`, `STRICT`, `AUDIT_ONLY`, `PERMISSIVE`).
+- `DLPTransferGate`: Active pre-transmission interception gate that halts forbidden transfers before physical socket delivery, enforcing zero-bytes leakage.
+- `DLPApprovalManager`: Quarantines transfers evaluated as `REQUIRE_APPROVAL`, tracks unique `APR-<hex>` authorization tokens, and manages administrative approval/rejection workflows.
+- `DLPAuditLogger`: Thread-safe, append-only logger persisting structured JSONL audit records to `runtime/dlp/audit.log`.
+- `DLPCoordinator`: Subsystem orchestrator hooking `DLPTransferGate` into `TransferMonitor`, handling profile transitions, and enriching active `SecurityIncident` dossiers with DLP enforcement metrics and chronological timeline records.

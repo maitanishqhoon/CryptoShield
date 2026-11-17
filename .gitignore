@@ -73,3 +73,5 @@ runtime/recovery/*
 runtime/exfiltration/*
 !runtime/exfiltration/.gitkeep
 runtime/lab/.exfiltration_staging/*
+runtime/dlp/*
+!runtime/dlp/.gitkeep

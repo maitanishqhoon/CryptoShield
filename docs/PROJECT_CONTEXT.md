@@ -75,9 +75,9 @@ To eliminate reliance on ad-hoc test files and enable reproducible benchmarking,
   - AES-256-GCM object encryption, RSA-3072 key encapsulation (OAEP with SHA-256), Argon2id-AES256GCM private key envelope (V2), `.cso` authenticated container format, tamper-evident encrypted snapshot manifests.
 - [x] **Phase 6: Cryptographic Recovery & File Restoration Engine**
   - Marker-authenticated isolated recovery workspaces (`runtime/recovery/workspaces/`), multi-threaded damage assessment, two-stage authenticated restoration (AES-GCM tag + SHA-256 verification before atomic commit), evidence quarantine for modified files.
-- [ ] **Phase 7: Data Exfiltration Monitoring**
+- [x] **Phase 7: Data Exfiltration Monitoring**
   - Suspicious read-burst detection, staging directory aggregation detection, mock loopback socket transfer monitoring, incident dossier correlation.
-- [ ] **Phase 8: Data Loss Prevention (DLP) Engine**
+- [x] **Phase 8: Data Loss Prevention (DLP) Engine**
   - Classification-aware transfer policy evaluation (`PUBLIC`, `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED`), rule-based decisions (`ALLOW`, `BLOCK`, `ALERT`, `REQUIRE_APPROVAL`), controlled transfer interception.
 - [ ] **Phase 9: Forensic Incident Reporting**
   - Forensic dossier aggregation, chain-of-custody verification logs, chronological attack timelines, multi-format export (JSON, Markdown, CSV).

@@ -224,6 +224,16 @@ class CryptoShieldConfig:
     EXFILTRATION_HIGH_THRESHOLD: int = 60
     EXFILTRATION_CRITICAL_THRESHOLD: int = 80
 
+    # Data Loss Prevention (DLP) Parameters (Phase 8)
+    DLP_DIR: Path = RUNTIME_DIR / "dlp"
+    DLP_POLICIES_FILENAME: str = "policies.json"
+    DLP_AUDIT_LOG_FILENAME: str = "audit.log"
+    DLP_ENABLED: bool = True
+    DLP_STRICT_MODE: bool = False
+    DLP_MAX_BURST_FILES: int = 20
+    DLP_MAX_PAYLOAD_BYTES: int = 5 * 1024 * 1024  # 5 MB
+    DLP_APPROVAL_TIMEOUT_SECONDS: float = 300.0   # 5 minutes
+
     @property
     def containment_dir(self) -> Path:
         return self.CONTAINMENT_DIR
@@ -296,8 +306,20 @@ class CryptoShieldConfig:
     def exfiltration_staging_dir(self) -> Path:
         return self.EXFILTRATION_STAGING_DIR
 
+    @property
+    def dlp_dir(self) -> Path:
+        return self.DLP_DIR
+
+    @property
+    def dlp_policies_path(self) -> Path:
+        return self.DLP_DIR / self.DLP_POLICIES_FILENAME
+
+    @property
+    def dlp_audit_log_path(self) -> Path:
+        return self.DLP_DIR / self.DLP_AUDIT_LOG_FILENAME
+
     def ensure_directories(self) -> None:
-        """Create necessary runtime directories for CryptoShield including recovery and exfiltration."""
+        """Create necessary runtime directories for CryptoShield including recovery, exfiltration, and dlp."""
         for path in [
             self.RUNTIME_DIR,
             self.LAB_DIR,
@@ -313,6 +335,7 @@ class CryptoShieldConfig:
             self.RECOVERY_STAGING_DIR,
             self.RECOVERY_REPORTS_DIR,
             self.EXFILTRATION_DIR,
+            self.DLP_DIR,
         ]:
             path.mkdir(parents=True, exist_ok=True)
 

@@ -33,16 +33,19 @@ class TransferMonitor:
         event_bus: Optional[EventBus] = None,
         mock_receiver: Optional[Any] = None,
         transfer_callback: Optional[Callable[[OutboundTransferRecord], None]] = None,
+        dlp_gate: Optional[Any] = None,
     ) -> None:
         self.bus = event_bus or BUS
         self.mock_receiver = mock_receiver
         self.transfer_callback = transfer_callback
+        self.dlp_gate = dlp_gate
 
         self._transfer_records: List[OutboundTransferRecord] = []
         self._lock = threading.Lock()
         self._total_bytes_transferred: int = 0
         self._total_transfers_completed: int = 0
         self._total_transfers_failed: int = 0
+        self._total_transfers_blocked: int = 0
 
     def record_transfer(
         self,
@@ -89,6 +92,8 @@ class TransferMonitor:
             if status == TransferStatus.COMPLETED:
                 self._total_bytes_transferred += bytes_transferred
                 self._total_transfers_completed += 1
+            elif status == TransferStatus.BLOCKED:
+                self._total_transfers_blocked += 1
             elif status == TransferStatus.FAILED:
                 self._total_transfers_failed += 1
 
@@ -111,11 +116,53 @@ class TransferMonitor:
         """
         Executes an actual TCP socket transmission to the local MockReceiver endpoint.
         Transmits data in chunks and records real-time throughput metrics.
+        If a DLPTransferGate is attached, intercepts and evaluates the transfer before transmission.
         """
         if target_host not in ("127.0.0.1", "localhost"):
             raise ValueError(f"Security Invariant: Outbound target must be 127.0.0.1, got {target_host}")
 
         endpoint_str = f"{target_host}:{target_port}"
+
+        # DLP Interception Check
+        if self.dlp_gate:
+            evaluation = self.dlp_gate.evaluate_transfer(
+                destination_endpoint=endpoint_str,
+                payload_bytes=payload_bytes,
+                file_count=file_count,
+                process_id=process_id,
+                process_name=process_name,
+                classifications=classifications,
+                departments=departments,
+                contains_canary=contains_canary,
+            )
+            if not evaluation.allowed:
+                logger.warning(
+                    "[DLP GATE] Transfer to %s intercepted and BLOCKED: %s (Action: %s)",
+                    endpoint_str,
+                    evaluation.reason,
+                    evaluation.action.value,
+                )
+                return self.record_transfer(
+                    destination_endpoint=endpoint_str,
+                    bytes_transferred=0,  # Zero bytes transferred!
+                    file_count=file_count,
+                    protocol=TransferProtocol.MOCK_SOCKET,
+                    process_id=process_id,
+                    process_name=process_name,
+                    classifications=classifications,
+                    departments=departments,
+                    contains_canary=contains_canary,
+                    status=TransferStatus.BLOCKED,
+                    metadata={
+                        "dlp_intercepted": True,
+                        "dlp_action": evaluation.action.value,
+                        "dlp_rule_id": evaluation.triggered_rule_id,
+                        "dlp_reason": evaluation.reason,
+                        "dlp_evaluation_id": evaluation.evaluation_id,
+                        "approval_token": evaluation.approval_token,
+                        "payload_size_requested": len(payload_bytes),
+                    },
+                )
         total_sent = 0
         transfer_status = TransferStatus.COMPLETED
 
@@ -180,6 +227,7 @@ class TransferMonitor:
                 "total_bytes_transferred": self._total_bytes_transferred,
                 "total_transfers_completed": self._total_transfers_completed,
                 "total_transfers_failed": self._total_transfers_failed,
+                "total_transfers_blocked": self._total_transfers_blocked,
                 "total_transfers_monitored": len(self._transfer_records),
             }
 
@@ -190,14 +238,17 @@ class TransferMonitor:
             self._total_bytes_transferred = 0
             self._total_transfers_completed = 0
             self._total_transfers_failed = 0
+            self._total_transfers_blocked = 0
 
     def _publish_transfer(self, record: OutboundTransferRecord) -> None:
         """Publishes transfer records to the EventBus."""
-        event_type = (
-            "EXFILTRATION_TRANSFER_COMPLETED"
-            if record.status == TransferStatus.COMPLETED.value
-            else "EXFILTRATION_TRANSFER_FAILED"
-        )
+        if record.status == TransferStatus.COMPLETED.value:
+            event_type = "EXFILTRATION_TRANSFER_COMPLETED"
+        elif record.status == TransferStatus.BLOCKED.value:
+            event_type = "EXFILTRATION_TRANSFER_BLOCKED"
+        else:
+            event_type = "EXFILTRATION_TRANSFER_FAILED"
+
         bus_event = Event(
             event_type=event_type,
             data=record.to_dict(),

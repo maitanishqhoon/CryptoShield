@@ -1591,6 +1591,187 @@ def cmd_exfiltration(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_dlp(args: argparse.Namespace) -> int:
+    """Handle Data Loss Prevention (DLP) operations (status, policies, profile, evaluate, approvals, demo)."""
+    from app.dlp import DLP_COORDINATOR, DLPAction, DLPProfile
+    subcmd = getattr(args, "dlp_command", None)
+
+    if subcmd == "status":
+        status = DLP_COORDINATOR.get_status()
+        metrics = status["metrics"]
+        print("\n--- Data Loss Prevention (DLP) Engine Status ---")
+        print(f"Subsystem Active    : {'[YES] ACTIVE' if status['is_active'] else '[NO] DISABLED'}")
+        print(f"Security Profile    : [{status['profile']}]")
+        print(f"Policy Rules Loaded : {status['total_rules']} (Active: {status['enabled_rules']})")
+        print(f"Pending Approvals   : {status['pending_approvals_count']}")
+        print("---------------- Operational Metrics ----------------")
+        print(f"Total Evaluations   : {metrics['total_evaluations']}")
+        print(f"Transfers Allowed   : {metrics['allowed_count']}")
+        print(f"Alerts Triggered    : {metrics['alerted_count']}")
+        print(f"Transfers Quarantined: {metrics['quarantined_count']}")
+        print(f"Transfers Intercepted: {metrics['blocked_count']}")
+        print("----------------------------------------------------\n")
+        return 0
+
+    elif subcmd == "policies":
+        rules = DLP_COORDINATOR.policy_engine.get_rules()
+        print(f"\n--- CryptoShield DLP Policy Matrix ({len(rules)} Rules) ---")
+        header = f"{'Priority':<9} | {'Rule ID':<26} | {'Action':<17} | {'Severity':<9} | {'Name'}"
+        print(header)
+        print("-" * len(header))
+        for r in rules:
+            status_tag = "" if r.enabled else "[DISABLED] "
+            print(f"{r.priority:<9} | {r.rule_id:<26} | {r.action.value:<17} | {r.severity:<9} | {status_tag}{r.name}")
+        print("-" * len(header))
+        print("Active Profile:", DLP_COORDINATOR.policy_engine.profile.value, "\n")
+        return 0
+
+    elif subcmd == "profile":
+        new_prof_str = getattr(args, "set", None)
+        if new_prof_str:
+            try:
+                prof = DLPProfile(new_prof_str.upper())
+                DLP_COORDINATOR.set_profile(prof)
+                print(f"[+] DLP security profile updated to: [{prof.value}]")
+            except Exception as e:
+                print(f"[-] Invalid profile: {new_prof_str} ({e})")
+                return 1
+        else:
+            print(f"Current DLP profile: [{DLP_COORDINATOR.policy_engine.profile.value}]")
+            print("Available profiles: DEFAULT, STRICT, AUDIT_ONLY, PERMISSIVE")
+        return 0
+
+    elif subcmd == "evaluate":
+        classification = getattr(args, "classification", "CONFIDENTIAL")
+        canary = getattr(args, "canary", False)
+        file_count = getattr(args, "files", 1)
+        bytes_count = getattr(args, "bytes", 1024)
+        endpoint = getattr(args, "endpoint", "127.0.0.1:8999")
+
+        context = {
+            "destination_endpoint": endpoint,
+            "bytes": bytes_count,
+            "file_count": file_count,
+            "classifications": [classification],
+            "contains_canary": canary,
+        }
+        res = DLP_COORDINATOR.policy_engine.evaluate(context)
+        print("\n================ DLP TRANSFER EVALUATION ================")
+        print(f"Evaluation ID       : {res.evaluation_id}")
+        print(f"Decision Action     : [{res.action.value}]")
+        print(f"Authorized / Allowed: {'YES' if res.allowed else 'NO (BLOCKED / QUARANTINED)'}")
+        print(f"Triggered Rule      : {res.triggered_rule_id} ({res.triggered_rule_name})")
+        print(f"Severity Level      : {res.severity}")
+        print(f"Enforcement Reason  : {res.reason}")
+        print(f"Classification(s)   : {res.classifications_evaluated}")
+        print(f"Contains Canary     : {res.contains_canary}")
+        print("=========================================================\n")
+        return 0
+
+    elif subcmd == "approvals":
+        approve_token = getattr(args, "approve", None)
+        reject_token = getattr(args, "reject", None)
+
+        if approve_token:
+            ok, req = DLP_COORDINATOR.approve_transfer(approve_token, decided_by="cli_operator")
+            if ok:
+                print(f"[+] Successfully approved quarantined transfer token: {approve_token}")
+            else:
+                print(f"[-] Failed to approve token {approve_token} (Not found or already decided).")
+            return 0 if ok else 1
+
+        elif reject_token:
+            ok, req = DLP_COORDINATOR.reject_transfer(reject_token, decided_by="cli_operator")
+            if ok:
+                print(f"[+] Successfully rejected quarantined transfer token: {reject_token}")
+            else:
+                print(f"[-] Failed to reject token {reject_token} (Not found or already decided).")
+            return 0 if ok else 1
+
+        else:
+            pending = DLP_COORDINATOR.approval_manager.get_pending_requests()
+            print(f"\n--- Pending DLP Authorization Queue ({len(pending)} Requests) ---")
+            if not pending:
+                print("No pending transfers quarantined.")
+            else:
+                for req in pending:
+                    print(f"Token        : {req.approval_token}")
+                    print(f"Requested At : {req.requested_at}")
+                    print(f"Evaluation ID: {req.evaluation_id}")
+                    details = req.transfer_details
+                    print(f"Destination  : {details.get('destination_endpoint')}")
+                    print(f"Files / Size : {details.get('file_count')} files | {details.get('bytes_requested', 0):,} B")
+                    print(f"Classes      : {details.get('classifications')}")
+                    print(f"Reason       : {details.get('reason')}")
+                    print("-" * 50)
+            print()
+            return 0
+
+    elif subcmd == "demo":
+        from app.simulation.dlp_simulator import ControlledDLPSimulator
+        from app.exfiltration import EXFILTRATION_COORDINATOR
+
+        cleanup = getattr(args, "cleanup", False)
+        print("[*] Launching Controlled Data Loss Prevention (DLP) Demonstration...")
+        host, port = EXFILTRATION_COORDINATOR.start(ephemeral_port=True)
+        print(f"[+] Mock loopback receiver active on {host}:{port}")
+
+        sim = ControlledDLPSimulator(
+            event_bus=DLP_COORDINATOR.bus,
+            dlp_coordinator=DLP_COORDINATOR,
+            mock_receiver=EXFILTRATION_COORDINATOR.receiver,
+        )
+
+        try:
+            print("[1/5] Preparing demonstration fixtures across Public, Operations, Finance, IT, Research...")
+            sim.prepare_fixtures()
+
+            print("[2/5] Simulating Tier 1 (PUBLIC) document transfer -> Evaluated as ALLOW...")
+            print("[3/5] Simulating Tier 2 (INTERNAL) document transfer -> Evaluated as ALERT...")
+            print("[4/5] Simulating Tier 3 (CONFIDENTIAL) payroll transfer -> Quarantined (Operator Approved)...")
+            print("[5/5] Simulating Tier 4 (RESTRICTED & CANARY) exfiltration -> Intercepted & BLOCKED (0 bytes leaked)...")
+            result = sim.run_demonstration(mock_host=host, mock_port=port)
+
+            print("\n================ CONTROLLED DLP DEMONSTRATION RESULTS ================")
+            print(f"Run ID                       : {result.run_id}")
+            print(f"Scenario Duration            : {result.duration_seconds:.2f}s")
+            print(f"DLP Profile Active           : [{result.metadata.get('dlp_profile')}]")
+            print(f"Scenarios Executed           : {result.total_scenarios_executed} Tiers")
+            print(f"Transfers Allowed            : {result.transfers_allowed}")
+            print(f"Alerts Emitted               : {result.transfers_alerted}")
+            print(f"Quarantined & Approved       : {result.transfers_quarantined_and_approved}")
+            print(f"Transfers Intercepted/Blocked: {result.transfers_blocked}")
+            print(f"Zero-Bytes Leakage Verified  : {'[PASS] 100% BLOCKED' if result.zero_bytes_leakage_verified else '[FAIL]'}")
+            print("----------------------------------------------------------------------")
+            for idx, step in enumerate(result.steps, 1):
+                status_icon = "[PASS]" if (step.transfer_status in ("COMPLETED", "BLOCKED")) else "[INFO]"
+                print(f"  {status_icon} {step.scenario_name}:")
+                print(f"         Class: {step.target_classification} | Action: {step.dlp_action} | Transferred: {step.bytes_transferred}B | Status: {step.transfer_status}")
+            print("======================================================================\n")
+
+            # Correlate with active SecurityIncident if present
+            try:
+                from app.detection.incident_manager import IncidentManager
+                inc_mgr = IncidentManager()
+                correlated = DLP_COORDINATOR.correlate_with_incident(inc_mgr)
+                if correlated:
+                    print(f"[+] Correlated DLP enforcement telemetry into SecurityIncident {correlated.incident_id}")
+            except Exception as e:
+                logger.debug("DLP Incident correlation skipped: %s", e)
+
+            return 0
+        finally:
+            if cleanup:
+                print("[*] Cleaning up temporary DLP fixtures...")
+                sim.cleanup()
+                print("[+] Cleanup complete.")
+            EXFILTRATION_COORDINATOR.stop()
+
+    else:
+        print("[-] Usage: python -m app.main dlp {status,policies,profile,evaluate,approvals,demo}")
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -1770,6 +1951,37 @@ def build_parser() -> argparse.ArgumentParser:
     exfil_demo.add_argument("--files", type=int, default=15, help="Number of files to simulate (default: 15)")
     exfil_demo.add_argument("--cleanup", action="store_true", help="Clean up demo fixtures upon completion")
 
+    # dlp (Phase 8)
+    dlp_parser = subparsers.add_parser("dlp", help="Data Loss Prevention (DLP) Policy Engine")
+    dlp_sub = dlp_parser.add_subparsers(dest="dlp_command", help="DLP sub-commands")
+
+    # dlp status
+    dlp_sub.add_parser("status", help="Show DLP engine status, profile, and enforcement metrics")
+
+    # dlp policies
+    dlp_sub.add_parser("policies", help="List all configured DLP rules, priorities, and actions")
+
+    # dlp profile
+    dlp_prof = dlp_sub.add_parser("profile", help="Show or set the active security posture profile")
+    dlp_prof.add_argument("--set", choices=["DEFAULT", "STRICT", "AUDIT_ONLY", "PERMISSIVE"], help="Switch posture profile")
+
+    # dlp evaluate
+    dlp_eval = dlp_sub.add_parser("evaluate", help="Interactively evaluate a candidate transfer context")
+    dlp_eval.add_argument("--classification", choices=["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"], default="CONFIDENTIAL")
+    dlp_eval.add_argument("--canary", action="store_true", help="Flag transfer as containing canary honeypot files")
+    dlp_eval.add_argument("--files", type=int, default=1, help="Number of files to transfer")
+    dlp_eval.add_argument("--bytes", type=int, default=1024, help="Payload byte size")
+    dlp_eval.add_argument("--endpoint", type=str, default="127.0.0.1:8999", help="Destination endpoint")
+
+    # dlp approvals
+    dlp_appr = dlp_sub.add_parser("approvals", help="Inspect and resolve quarantined transfers")
+    dlp_appr.add_argument("--approve", type=str, help="Approval token to authorize")
+    dlp_appr.add_argument("--reject", type=str, help="Approval token to reject")
+
+    # dlp demo
+    dlp_demo = dlp_sub.add_parser("demo", help="Run multi-tier DLP demonstration (ALLOW, ALERT, APPROVAL, BLOCK)")
+    dlp_demo.add_argument("--cleanup", action="store_true", help="Clean up demo fixtures upon completion")
+
     return parser
 
 
@@ -1827,6 +2039,8 @@ def main() -> int:
         return cmd_recovery(args)
     elif args.command == "exfiltration":
         return cmd_exfiltration(args)
+    elif args.command == "dlp":
+        return cmd_dlp(args)
     else:
         parser.print_help()
         return 1
