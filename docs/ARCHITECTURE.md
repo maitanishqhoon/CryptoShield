@@ -159,3 +159,9 @@ flowchart TD
 - `DLPApprovalManager`: Quarantines transfers evaluated as `REQUIRE_APPROVAL`, tracks unique `APR-<hex>` authorization tokens, and manages administrative approval/rejection workflows.
 - `DLPAuditLogger`: Thread-safe, append-only logger persisting structured JSONL audit records to `runtime/dlp/audit.log`.
 - `DLPCoordinator`: Subsystem orchestrator hooking `DLPTransferGate` into `TransferMonitor`, handling profile transitions, and enriching active `SecurityIncident` dossiers with DLP enforcement metrics and chronological timeline records.
+
+### 3.8 Forensic Incident Reporting Subsystem (`app/reporting/`)
+- `ForensicAggregator`: Synthesizes multi-domain telemetry from `IncidentManager`, `ContainmentManager`, `RecoveryReporter`, `DLPAuditLogger`, `ExfiltrationCoordinator`, and `BaselineManifest`. Merges multi-subsystem timelines into strict microsecond-order chronological sequences and calculates academic evaluation metrics (detection latency, containment duration, recovery duration, protection rate, and zero-byte leakage verification).
+- `ReportExporter`: Renders and exports `ForensicDossier` into 4 presentation formats (structured machine-readable JSON, comprehensive Markdown report, tabular CSV event audit, and responsive dark-theme HTML report).
+- `ChainOfCustodyRecord`: Cryptographic chain of custody embedding baseline manifest SHA-256 digests and computing deterministic `dossier_sha256` seals.
+- `ForensicCoordinator`: Central singleton coordinator indexing reports under `runtime/reports/`, managing retrieval, verifying cryptographic integrity seals, and subscribing to EventBus `SECURITY_INCIDENT_RESOLVED` events for automatic dossier compilation.

@@ -1,0 +1,475 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [8 0 R 10 0 R 12 0 R 14 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+7 0 obj
+<< /Length 8040 >>
+stream
+0.06 0.09 0.16 rg BT /F2 17 Tf 40.00 778.89 Td (CryptoShield - Full Architecture & Operational Guide) Tj ET
+0.01 0.45 0.70 rg BT /F1 9 Tf 40.00 762.89 Td (Phases 1-8 Full Defensive Platform | 229 Passing Tests \(100%\) | NFSU Lab) Tj ET
+0.01 0.52 0.78 RG 1.5 w 40.00 754.89 m 555.28 754.89 l S
+0.94 0.97 1.0 rg 40.00 686.89 515.28 58.00 re f
+0.01 0.52 0.78 rg 40.00 686.89 4 58.00 re f
+0.01 0.40 0.60 rg BT /F1 8.5 Tf 52.00 732.89 Td (Welcome to the Full CryptoShield Architecture Guide! Now that we have completed all 8 core operational) Tj ET
+0.01 0.40 0.60 rg BT /F1 8.5 Tf 52.00 721.89 Td (phases \(with 229 out of 229 automated tests passing\), this document serves as the complete reference for) Tj ET
+0.01 0.40 0.60 rg BT /F1 8.5 Tf 52.00 710.89 Td (explaining the architecture, technological concepts, testing methodology, and end-to-end security workflow) Tj ET
+0.01 0.40 0.60 rg BT /F1 8.5 Tf 52.00 699.89 Td (to your team.) Tj ET
+0.01 0.41 0.63 rg BT /F2 12 Tf 40.00 658.89 Td (1. CryptoShield in Layman's Language: The Big Picture) Tj ET
+0.85 0.88 0.92 RG 0.8 w 40.00 653.89 m 555.28 653.89 l S
+0.12 0.16 0.23 rg BT /F2 10.5 Tf 40.00 637.89 Td (The Real-World Problem) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 623.89 Td (Modern ransomware has evolved into 'Double Extortion':) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 608.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 608.89 Td (The Theft \(Exfiltration\): First, attackers quietly read and copy your private documents, pack them) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 596.89 Td (into an archive, and sneak them out over the network. They threaten to publish them if you don't pay.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 582.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 582.89 Td (The Lockup \(Encryption\): Next, they run through your hard drive at lightning speed, scrambling every) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 570.89 Td (file into gibberish \(encrypting them\) and deleting your backups so you can't restore them.) Tj ET
+0.12 0.16 0.23 rg BT /F2 10.5 Tf 40.00 555.89 Td (The CryptoShield Analogy: A High-Tech Bank & Embassy) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 541.89 Td (Imagine an embassy or high-security bank. CryptoShield is not just a single lock on the front door; it is) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 529.89 Td (an integrated immune system:) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 514.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 514.89 Td (The Tripwires \(Canary Files\): Fake stacks of money left on tables. If anyone so much as touches them,) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 502.89 Td (silent alarms blare.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 488.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 488.89 Td (The Security Guards & Cameras \(Monitoring\): Guards watching who touches what file, how fast they are) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 476.89 Td (opening drawers, and what programs are running.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 462.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 462.89 Td (The Suspicion Brain \(Threat Scorer\): Distinguishes a busy accountant from a masked burglar shoving) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 450.89 Td (files into bags.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 436.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 436.89 Td (The Blast Doors \(Containment\): The instant a thief is spotted, steel shutters drop over the vault) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 424.89 Td (door, and the suspect is disarmed and frozen.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 410.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 410.89 Td (The Border Customs Checkpoint \(DLP Gate\): Even if a thief grabs documents, they cannot walk out) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 398.89 Td (without customs inspecting every box. Confidential files are stopped cold before a single byte leaves.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 384.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 384.89 Td (The Underground Vault \(Crypto Vault\): A hidden, sealed backup taken earlier. Even if a fire burns down) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 372.89 Td (the front desk, original documents are verified, decrypted, and restored bit-for-bit.) Tj ET
+0.01 0.41 0.63 rg BT /F2 12 Tf 40.00 349.89 Td (2. Technological Concepts Used \(What They Mean & Why We Used Them\)) Tj ET
+0.85 0.88 0.92 RG 0.8 w 40.00 344.89 m 555.28 344.89 l S
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 329.89 Td (Here is every major computer science, cryptographic, and security concept we built into CryptoShield,) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 317.89 Td (explained in plain terms:) Tj ET
+0.12 0.16 0.23 rg BT /F2 10.5 Tf 40.00 301.89 Td (A. Cryptography Concepts) Tj ET
+0.06 0.09 0.16 rg 40.00 278.39 515.28 18.50 re f
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 44.00 286.39 Td (Concept) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 188.28 286.39 Td (What It Is in Plain English) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 415.00 286.39 Td (Where & Why We Use It) Tj ET
+1.0 1.0 1.0 rg 40.00 196.89 515.28 81.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 196.89 515.28 81.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 267.89 Td (AES-256-GCM \(Symmetric) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 257.39 Td (Authenticated Encryption\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 267.89 Td (Think of this as an armored military lockbox. It) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 257.39 Td (scrambles data using a 256-bit key. GCM) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 246.89 Td (\(Galois/Counter Mode\) is special because it) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 236.39 Td (generates a cryptographic 'tamper-evident seal') Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 225.89 Td (\(the Auth Tag\). If an attacker changes even one) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 215.39 Td (single bit of the encrypted file on disk, GCM) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 204.89 Td (detects it immediately and refuses to open.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 267.89 Td (Used by CryptoEngine to encrypt) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 257.39 Td (files into .cso \(CryptoShield) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 246.89 Td (Object\) files for our backup) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 236.39 Td (snapshots.) Tj ET
+0.96 0.97 0.99 rg 40.00 104.89 515.28 92.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 104.89 515.28 92.00 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 186.39 Td (RSA-3072 & RSA-OAEP \(Asymmetric) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 175.89 Td (Public/Private Encryption\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 186.39 Td (A two-key system: a Public Key that can only lock) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 175.89 Td (the safe, and a Private Key that is needed to open) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 165.39 Td (it. OAEP is mathematical padding that prevents) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 154.89 Td (mathematical pattern attacks.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 186.39 Td (Used by KeyManager and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 175.89 Td (SnapshotManager. Each backup) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 165.39 Td (snapshot gets its own random AES) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 154.89 Td (key, which is then wrapped) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 144.39 Td (\(locked\) using RSA. Even if) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 133.89 Td (someone finds the snapshot, they) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 123.39 Td (can't open it without the master) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 112.89 Td (private key.) Tj ET
+0.75 0.78 0.82 RG 0.5 w 40.00 30.00 m 555.28 30.00 l S
+0.40 0.45 0.50 rg BT /F1 7.5 Tf 40.00 20.00 Td (CryptoShield University Lab Defense Platform - Internal Team Guide) Tj ET
+0.40 0.45 0.50 rg BT /F2 7.5 Tf 500.28 20.00 Td (Page 1 of 4) Tj ET
+
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R
+   /MediaBox [0 0 595.28 841.89]
+   /Contents 7 0 R
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+>>
+endobj
+9 0 obj
+<< /Length 11541 >>
+stream
+0.4 0.45 0.5 rg BT /F4 8 Tf 40.00 813.89 Td (CryptoShield - Architecture & Operational Guide (Phases 1-8)) Tj ET
+0.8 0.85 0.9 RG 0.5 w 40.00 809.89 m 555.28 809.89 l S
+1.0 1.0 1.0 rg 40.00 736.39 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 736.39 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 786.39 Td (Argon2id \(Memory-Hard Key) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 775.89 Td (Derivation\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 786.39 Td (A password hasher that deliberately uses a huge) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 775.89 Td (amount of RAM \(64 MB\) and processor work. It makes) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 765.39 Td (brute-force password guessing impossible, even for) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 754.89 Td (supercomputers or specialized GPU mining rigs.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 786.39 Td (Used to protect the master RSA) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 775.89 Td (private key on disk. If an) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 765.39 Td (attacker steals the private key) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 754.89 Td (file, they cannot crack its) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 744.39 Td (passphrase through brute force.) Tj ET
+0.96 0.97 0.99 rg 40.00 675.89 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 675.89 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 725.89 Td (SHA-256 \(Cryptographic Hash) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 715.39 Td (Function\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 725.89 Td (A one-way mathematical fingerprint. No matter how) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 715.39 Td (large a file is, it generates a unique 64-character) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 704.89 Td (fingerprint. Change a single comma, and the) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 694.39 Td (fingerprint changes completely.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 725.89 Td (Used in our Baseline Manifest) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 715.39 Td (\(baseline_manifest.json\) and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 704.89 Td (Restoration Verifier to ensure) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 694.39 Td (every file is 100% genuine and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 683.89 Td (unaltered.) Tj ET
+1.0 1.0 1.0 rg 40.00 594.39 515.28 81.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 594.39 515.28 81.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 665.39 Td (HMAC-SHA256 \(Keyed-Hash Message) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 654.89 Td (Authentication\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 665.39 Td (A digital signature created with a secret key. It) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 654.89 Td (proves that a message or marker was written by) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 644.39 Td (CryptoShield and has not been forged or moved.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 665.39 Td (Used in) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 654.89 Td (.cryptoshield_lab_marker and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 644.39 Td (.cryptoshield_recovery_marker.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 633.89 Td (Prevents CryptoShield from) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 623.39 Td (accidentally or maliciously) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 612.89 Td (touching files outside its) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 602.39 Td (designated safe lab folders.) Tj ET
+0.12 0.16 0.23 rg BT /F2 10.5 Tf 40.00 576.39 Td (B. Operating System & Security Concepts) Tj ET
+0.06 0.09 0.16 rg 40.00 552.89 515.28 18.50 re f
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 44.00 560.89 Td (Concept) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 188.28 560.89 Td (What It Is in Plain English) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 415.00 560.89 Td (Where & Why We Use It) Tj ET
+1.0 1.0 1.0 rg 40.00 492.39 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 492.39 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 542.39 Td (Canary Files / Honeypots) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 542.39 Td (Deceptive 'bait' files \(e.g., passwords.xlsx,) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 531.89 Td (budget_2026.docx\) placed quietly in directories.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 521.39 Td (Normal users never touch them. Ransomware, which) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 510.89 Td (blindly encrypts or reads every file) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 500.39 Td (alphabetically, inevitably touches them first.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 542.39 Td (Used in CanaryAnalyzer and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 531.89 Td (ReadBurstDetector. Touching a) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 521.39 Td (canary instantly awards high) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 510.89 Td (threat points \(+50 to +60\) and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 500.39 Td (triggers emergency alerts.) Tj ET
+0.96 0.97 0.99 rg 40.00 452.89 515.28 39.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 452.89 515.28 39.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 481.89 Td (File System Telemetry) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 471.39 Td (\(watchdog\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 481.89 Td (Hooking directly into the operating system kernel) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 471.39 Td (to be notified the exact millisecond a file is) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 460.89 Td (created, read, modified, renamed, or deleted.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 481.89 Td (Used in FilesystemMonitor to) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 471.39 Td (track rapid file changes across) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 460.89 Td (the 20,000 files in our lab.) Tj ET
+1.0 1.0 1.0 rg 40.00 402.89 515.28 50.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 402.89 515.28 50.00 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 442.39 Td (Process Inspection \(psutil\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 442.39 Td (Looking at the OS process table to see what) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 431.89 Td (program is running, who launched it \(parent) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 421.39 Td (process\), its Process ID \(PID\), its memory usage,) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 410.89 Td (and its exact executable path.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 442.39 Td (Used in ProcessMonitor to track) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 431.89 Td (which program is responsible for) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 421.39 Td (disk and network activity.) Tj ET
+0.96 0.97 0.99 rg 40.00 342.39 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 342.39 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 392.39 Td (Sliding Time Windows) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 392.39 Td (Rather than looking at a single snapshot, the) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 381.89 Td (system evaluates activity over rolling time) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 371.39 Td (intervals \(e.g., last 1 second, 5 seconds, 10) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 360.89 Td (seconds, 30 seconds\).) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 392.39 Td (Used in BehaviorAnalyzer and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 381.89 Td (ReadBurstDetector. 10 file edits) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 371.39 Td (in an hour is normal; 500 file) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 360.89 Td (edits in 3 seconds is an obvious) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 350.39 Td (ransomware outbreak.) Tj ET
+1.0 1.0 1.0 rg 40.00 281.89 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 281.89 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 331.89 Td (Pub/Sub Event Bus) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 331.89 Td (A central broadcasting radio station. Components) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 321.39 Td (don't call each other directly; they broadcast) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 310.89 Td (events \(like FILE_MODIFIED or CANARY_ACCESS\), and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 300.39 Td (any interested module \(Scorer, Containment, Logger\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 289.89 Td (tunes in and reacts asynchronously.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 331.89 Td (Implemented in) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 321.39 Td (app/core/event_bus.py. Keeps) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 310.89 Td (code modular, thread-safe, and) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 300.39 Td (cleanly separated.) Tj ET
+0.96 0.97 0.99 rg 40.00 200.39 515.28 81.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 200.39 515.28 81.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 271.39 Td (PID Reuse Protection) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 271.39 Td (Operating systems reuse process IDs \(PIDs\) once a) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 260.89 Td (program closes. If malware PID 1234 dies, Windows) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 250.39 Td (might assign PID 1234 to Spotify 5 seconds later.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 271.39 Td (We built) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 260.89 Td (ControlledProcessRegistry, which) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 250.39 Td (verifies PID + process) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 239.89 Td (start-time + executable path) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 229.39 Td (before issuing any kill command,) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 218.89 Td (preventing accidental) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 208.39 Td (termination of innocent apps.) Tj ET
+1.0 1.0 1.0 rg 40.00 139.89 515.28 60.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 139.89 515.28 60.50 re S
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 44.00 189.89 Td (Pre-Transmission Gate \(DLP\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 189.89 Td (Intercepting data before it hits the network) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 179.39 Td (socket. Traditional firewalls see data after it's) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 168.89 Td (in motion; our pre-flight gate stops the) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 188.28 158.39 Td (transmission in memory before a single byte leaves.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 189.89 Td (Used in DLPTransferGate. It) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 179.39 Td (evaluates policies and halts or) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 168.89 Td (quarantines unauthorized) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 415.00 158.39 Td (transfers instantly.) Tj ET
+0.01 0.41 0.63 rg BT /F2 12 Tf 40.00 113.89 Td (3. What Are the Multiple Tests For? \(229 Tests Explained\)) Tj ET
+0.85 0.88 0.92 RG 0.8 w 40.00 108.89 m 555.28 108.89 l S
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 93.89 Td (You noticed we have 47 test files with 229 total tests. In high-stakes security and cryptography) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 81.89 Td (software, you cannot guess or assume code works - you must prove it against edge cases, malicious attacks,) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 69.89 Td (and unexpected failures.) Tj ET
+0.75 0.78 0.82 RG 0.5 w 40.00 30.00 m 555.28 30.00 l S
+0.40 0.45 0.50 rg BT /F1 7.5 Tf 40.00 20.00 Td (CryptoShield University Lab Defense Platform - Internal Team Guide) Tj ET
+0.40 0.45 0.50 rg BT /F2 7.5 Tf 500.28 20.00 Td (Page 2 of 4) Tj ET
+
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R
+   /MediaBox [0 0 595.28 841.89]
+   /Contents 9 0 R
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+>>
+endobj
+11 0 obj
+<< /Length 8691 >>
+stream
+0.4 0.45 0.5 rg BT /F4 8 Tf 40.00 813.89 Td (CryptoShield - Architecture & Operational Guide (Phases 1-8)) Tj ET
+0.8 0.85 0.9 RG 0.5 w 40.00 809.89 m 555.28 809.89 l S
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 787.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 787.89 Td (1. Safety & Sandbox Invariant Tests \(test_safety.py, test_config.py, test_lab_write_gate.py\): What) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 775.89 Td (they test: Can an attacker escape the sandbox using directory traversal tricks \(e.g.) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 763.89 Td (../../Windows/System32\), symlinks, or fake markers? Why it matters: Ensures CryptoShield will never) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 751.89 Td (accidentally delete, overwrite, or terminate files outside its lab.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 737.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 737.89 Td (2. Cryptographic Rigor & Anti-Tampering Tests \(test_vault_*.py, 43 tests\): What they test: If an) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 725.89 Td (attacker flips a single byte in an encrypted .cso file, does AES-GCM reject it? \(Yes, GCM tag) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 713.89 Td (mismatch\). If an attacker swaps out a file for an older version, does the encrypted manifest catch it?) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 701.89 Td (\(Yes, SHA-256 mismatch\). Does Argon2id correctly resist wrong passwords? Why it matters: Guarantees) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 689.89 Td (backup vault is mathematically unhackable and tamper-evident.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 675.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 675.89 Td (3. Detection & Heuristic Tests \(test_behavior_analyzer.py, test_canary_*.py, test_threat_scorer.py\):) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 663.89 Td (What they test: Does normal typing trigger a false alarm? \(No, threat score stays LOW\). Does renaming) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 651.89 Td (50 files to .locked in 2 seconds trigger the alarm? \(Yes, hits CRITICAL\). Does touching a honeypot) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 639.89 Td (canary immediately spike the threat score? \(Yes, +50 points instantly\). Why it matters: Eliminates) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 627.89 Td (false alarms while guaranteeing zero delay during real attacks.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 613.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 613.89 Td (4. Containment Verification Tests \(test_containment_*.py, test_process_controller.py\): What they test:) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 601.89 Td (When we tell the system to contain a process, does the write gate shut? Does the process actually stop) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 589.89 Td (running? Can it sneak in one last write after containment? Why it matters: Verifies that malware is) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 577.89 Td (completely neutralized and cannot continue encrypting in the background.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 563.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 563.89 Td (5. Bit-for-Bit Recovery Tests \(test_recovery_*.py, 27 tests\): What they test: If 100 files are) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 551.89 Td (encrypted or deleted by malware, does the recovery engine restore them so that their SHA-256 hashes) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 539.89 Td (match the originals with 100.00% accuracy? Are corrupted files quarantined safely? Why it matters: A) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 527.89 Td (backup system is useless if it restores corrupted files.) Tj ET
+0.01 0.52 0.78 rg BT /F2 9.0 Tf 42.00 513.89 Td (>) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 513.89 Td (6. Exfiltration & DLP Tests \(test_exfiltration_*.py, test_dlp_*.py, 52 tests\): What they test: Does) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 501.89 Td (bulk reading across multiple departments trigger exfiltration alarms? Does creating a staging archive) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 489.89 Td (\(.zip\) get flagged? Does the DLP Gate stop RESTRICTED financial data from leaving? Does) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 477.89 Td (REQUIRE_APPROVAL properly hold the file in quarantine until an administrator issues an approval token?) Tj ET
+0.15 0.20 0.28 rg BT /F1 9.0 Tf 52.00 465.89 Td (Why it matters: Guarantees complete defense against extortion and theft.) Tj ET
+0.01 0.41 0.63 rg BT /F2 12 Tf 40.00 442.89 Td (4. The Complete End-to-End Workflow \(Step-by-Step\)) Tj ET
+0.85 0.88 0.92 RG 0.8 w 40.00 437.89 m 555.28 437.89 l S
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 422.89 Td (Here is exactly how the entire system functions in real life, from peace-time preparation to attack) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 410.89 Td (mitigation and recovery:) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 395.89 Td (Step 1: Peacetime Preparation \(The Immune Blueprint\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 382.89 Td (What happens: Before any attack, CryptoShield inventories all 20,000 files in the workspace. It) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 370.89 Td (calculates their SHA-256 hashes and saves them in baseline_manifest.json. It sprinkles Canary files) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 358.89 Td (\(honeypots\) throughout the folders. It takes an encrypted Vault Snapshot \(SNAP-XXXX\): files are encrypted) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 346.89 Td (using AES-256-GCM, their keys are sealed with RSA-3072, and the private key is locked with Argon2id.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 331.89 Td (Step 2: The Attack Phase 1 - Data Harvesting \(The Theft\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 318.89 Td (What happens: The attacker begins reading sensitive files across Engineering, HR, and Finance. How) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 306.89 Td (CryptoShield reacts: The ReadBurstDetector notices an abnormal spike in reads across multiple departments.) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 294.89 Td (The EventBus broadcasts this telemetry to the ExfiltrationCorrelator.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 279.89 Td (Step 3: The Attack Phase 2 - Staging) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 266.89 Td (What happens: The attacker gathers stolen documents into a hidden folder and compresses them into) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 254.89 Td (confidential_export.zip. How CryptoShield reacts: The StagingDetector detects high-entropy archive) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 242.89 Td (creation in real-time and flags it as prepared exfiltration cargo.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 227.89 Td (Step 4: The Attack Phase 3 - Exfiltration Blocked by DLP) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 214.89 Td (What happens: The attacker attempts to stream the .zip file out to an external server. How CryptoShield) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 202.89 Td (reacts: The DLPTransferGate intercepts the network attempt before physical transmission. It inspects the) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 190.89 Td (payload, determines it contains RESTRICTED company secrets, and slams the door shut. Zero bytes leave the) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 178.89 Td (computer. An alert is logged to runtime/dlp/audit.log.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 163.89 Td (Step 5: The Attack Phase 4 - Ransomware Burst & Canary Tripwire) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 150.89 Td (What happens: Having failed to exfiltrate \(or running concurrently\), the ransomware begins rapidly) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 138.89 Td (rewriting files with encrypted garbage and touches passwords.xlsx \(our canary\). How CryptoShield reacts:) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 126.89 Td (1. The canary tripwire snaps! CanaryAnalyzer immediately flags a high-priority breach \(+50 to +60 threat) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 114.89 Td (score\). 2. The BehaviorAnalyzer detects a massive spike in write speed and file extension modifications.) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 102.89 Td (3. The ThreatScorer tallies the indicators: the score hits 100 / 100 \(CRITICAL\).) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 87.89 Td (Step 6: Instant Containment) Tj ET
+0.75 0.78 0.82 RG 0.5 w 40.00 30.00 m 555.28 30.00 l S
+0.40 0.45 0.50 rg BT /F1 7.5 Tf 40.00 20.00 Td (CryptoShield University Lab Defense Platform - Internal Team Guide) Tj ET
+0.40 0.45 0.50 rg BT /F2 7.5 Tf 500.28 20.00 Td (Page 3 of 4) Tj ET
+
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R
+   /MediaBox [0 0 595.28 841.89]
+   /Contents 11 0 R
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+>>
+endobj
+13 0 obj
+<< /Length 8089 >>
+stream
+0.4 0.45 0.5 rg BT /F4 8 Tf 40.00 813.89 Td (CryptoShield - Architecture & Operational Guide (Phases 1-8)) Tj ET
+0.8 0.85 0.9 RG 0.5 w 40.00 809.89 m 555.28 809.89 l S
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 787.89 Td (What happens: The IncidentManager triggers the ContainmentManager: 1. LabWriteGate locks immediately) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 775.89 Td (\(.write_gate_state set to locked\). 2. ProcessController looks up the malware in the) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 763.89 Td (ControlledProcessRegistry to ensure safe targeting, then terminates the process immediately. 3.) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 751.89 Td (ContainmentVerifier checks the process table to confirm the malware is dead and that no further disk) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 739.89 Td (writes are occurring.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 724.89 Td (Step 7: Incident Dossier Generated) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 711.89 Td (What happens: An official incident report \(INC-XXXXXXXX.json\) is created in runtime/incidents/. It) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 699.89 Td (documents every single event: when the canary was touched, which process was responsible, what threat) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 687.89 Td (score was reached, and the exact second containment occurred.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 672.89 Td (Step 8: Cryptographic Restoration \(The Cure\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 659.89 Td (What happens: Now that the attacker is dead and contained: 1. RecoveryAssessor compares every file on) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 647.89 Td (disk against the trusted baseline manifest. It identifies which files were modified/scrambled by the) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 635.89 Td (attacker. 2. Damaged files are safely moved to a quarantine folder for digital evidence preservation. 3.) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 623.89 Td (RestorationManager reaches into the encrypted Vault snapshot. It uses the AES-256-GCM cipher to decrypt) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 611.89 Td (the clean versions into a temporary staging area. 4. It checks the GCM authentication tag and SHA-256) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 599.89 Td (hash. If they match the original fingerprint perfectly, it atomically moves the clean file back into its) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 587.89 Td (original spot.) Tj ET
+0.20 0.25 0.33 rg BT /F2 9.5 Tf 40.00 572.89 Td (Step 9: Post-Incident Verification) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 559.89 Td (What happens: CryptoShield re-runs its integrity audit across all 20,000 files. Result: 100% matched, 0) Tj ET
+0.12 0.16 0.23 rg BT /F1 9.0 Tf 40.00 547.89 Td (modified, 0 missing, 0 bytes leaked. The system is completely restored to its original state.) Tj ET
+0.01 0.41 0.63 rg BT /F2 12 Tf 40.00 523.89 Td (5. Summary Checklist of Completed Phases \(1 through 8\)) Tj ET
+0.85 0.88 0.92 RG 0.8 w 40.00 518.89 m 555.28 518.89 l S
+0.06 0.09 0.16 rg 40.00 483.89 515.28 29.00 re f
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 44.00 502.39 Td (Phase) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 95.53 502.39 Td (Subsystem) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 250.11 502.39 Td (Core Purpose in Simple Words) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 487.14 502.39 Td (Tests) Tj ET
+1.0 1.0 1.0 rg BT /F2 8.0 Tf 487.14 491.89 Td (Passing) Tj ET
+1.0 1.0 1.0 rg 40.00 454.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 454.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 473.39 Td (1) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 473.39 Td (Lab & Dataset Engine) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 473.39 Td (Builds a realistic 20,000-file corporate playground) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 462.89 Td (with digital fingerprints.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 473.39 Td (21 / 21) Tj ET
+0.96 0.97 0.99 rg 40.00 425.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 425.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 444.39 Td (2) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 444.39 Td (File Telemetry & Sentry) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 444.39 Td (Cameras and microphones recording every file read,) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 433.89 Td (edit, delete, and process start.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 444.39 Td (20 / 20) Tj ET
+1.0 1.0 1.0 rg 40.00 396.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 396.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 415.39 Td (3) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 415.39 Td (Threat Brain & Scoring) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 415.39 Td (Weighs suspicious activity and canary breaches to) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 404.89 Td (calculate a 0-100 threat score.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 415.39 Td (27 / 27) Tj ET
+0.96 0.97 0.99 rg 40.00 367.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 367.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 386.39 Td (4) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 386.39 Td (Blast Doors & Containment) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 386.39 Td (Drops the write gate and safely kills malicious) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 375.89 Td (processes without hurting system apps.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 386.39 Td (21 / 21) Tj ET
+1.0 1.0 1.0 rg 40.00 338.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 338.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 357.39 Td (5) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 357.39 Td (Cryptographic Vault) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 357.39 Td (Indestructible backups encrypted with military-grade) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 346.89 Td (AES-256-GCM and RSA-3072.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 357.39 Td (43 / 43) Tj ET
+0.96 0.97 0.99 rg 40.00 309.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 309.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 328.39 Td (6) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 328.39 Td (Two-Stage Restoration) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 328.39 Td (Medical recovery that verifies every byte before) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 317.89 Td (restoring damaged files.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 328.39 Td (27 / 27) Tj ET
+1.0 1.0 1.0 rg 40.00 280.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 280.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 299.39 Td (7) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 299.39 Td (Exfiltration Radar) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 299.39 Td (Detects mass reading, folder harvesting, and archive) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 288.89 Td (compression \(.zip\).) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 299.39 Td (25 / 25) Tj ET
+0.96 0.97 0.99 rg 40.00 251.89 515.28 29.00 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 251.89 515.28 29.00 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 270.39 Td (8) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 270.39 Td (Data Loss Prevention \(DLP\)) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 270.39 Td (Customs gate that inspects and halts confidential) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 259.89 Td (data transfers before socket egress.) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 270.39 Td (27 / 27) Tj ET
+1.0 1.0 1.0 rg 40.00 233.39 515.28 18.50 re f
+0.82 0.85 0.88 RG 0.5 w 40.00 233.39 515.28 18.50 re S
+0.12 0.16 0.23 rg BT /F2 7.8 Tf 44.00 241.39 Td (Total) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 95.53 241.39 Td (Phases 1-8) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 250.11 241.39 Td (Complete Full-Spectrum Defensive Platform) Tj ET
+0.12 0.16 0.23 rg BT /F1 7.8 Tf 487.14 241.39 Td (229 / 229) Tj ET
+0.75 0.78 0.82 RG 0.5 w 40.00 30.00 m 555.28 30.00 l S
+0.40 0.45 0.50 rg BT /F1 7.5 Tf 40.00 20.00 Td (CryptoShield University Lab Defense Platform - Internal Team Guide) Tj ET
+0.40 0.45 0.50 rg BT /F2 7.5 Tf 500.28 20.00 Td (Page 4 of 4) Tj ET
+
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R
+   /MediaBox [0 0 595.28 841.89]
+   /Contents 13 0 R
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+>>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000142 00000 n 
+0000000212 00000 n 
+0000000287 00000 n 
+0000000355 00000 n 
+0000000433 00000 n 
+0000008525 00000 n 
+0000008696 00000 n 
+0000020290 00000 n 
+0000020462 00000 n 
+0000029206 00000 n 
+0000029379 00000 n 
+0000037521 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+37694
+%%EOF

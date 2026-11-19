@@ -267,6 +267,10 @@ class CryptoShieldConfig:
         return self.INCIDENTS_DIR
 
     @property
+    def reports_dir(self) -> Path:
+        return self.REPORTS_DIR
+
+    @property
     def lab_marker_path(self) -> Path:
         return self.LAB_DIR / self.LAB_MARKER_FILENAME
 

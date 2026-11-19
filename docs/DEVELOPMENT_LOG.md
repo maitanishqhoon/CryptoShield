@@ -59,3 +59,28 @@
   - Authored 27 new tests across 6 test modules in `tests/`: All 27 passed.
   - Executed full regression suite: **229 / 229 tests passed with 0 failures** in 41.67s.
   - Verified 20,000-file laboratory baseline: **100% intact** (0 modified, 0 missing, 0 untracked).
+
+## 2026-11-19 — Phase 9 Forensic Incident Reporting Subsystem Implementation
+- Engineered `app/reporting/models.py`:
+  - Defined strongly typed dataclasses for cross-subsystem telemetry: `ReportFormat` (`JSON`, `MARKDOWN`, `CSV`, `HTML`), `ForensicSubsystem`, `ForensicTimelineEntry`, `ForensicCanaryRecord`, `DetectionForensicSummary`, `ContainmentForensicSummary`, `ExfiltrationForensicSummary`, `DLPForensicSummary`, `RecoveryForensicSummary`, `ForensicEvaluationMetrics`, `ChainOfCustodyRecord`, `ForensicDossier`, and `ReportMetadata`.
+  - Implemented deterministic SHA-256 seal computation (`compute_dossier_hash()`) ensuring post-incident tamper-evidence.
+- Built `app/reporting/aggregator.py`:
+  - Multi-subsystem aggregator fusing telemetry from `IncidentManager`, `ContainmentManager`, `RecoveryReporter`, `DLPAuditLogger`, `ExfiltrationCoordinator`, and `BaselineManifest`.
+  - Chronological timeline fusion interleaving attack, canary, containment, DLP, and recovery events.
+  - Comprehensive academic metrics calculation: detection latency, containment duration, recovery duration, blast radius vs preserved assets, exfiltration zero-byte leakage verification, and restoration hash match rate.
+  - Behavioral mapping to MITRE ATT&CK techniques (`T1486`, `T1083`, `T1005`, `T1074`, `T1048`).
+- Built `app/reporting/exporter.py`:
+  - Multi-format exporter generating structured reports under `runtime/reports/`:
+    - **JSON**: Machine-readable schema with embedded cryptographic chain of custody.
+    - **Markdown**: Formatted technical and executive summary report with KPI tables and timeline.
+    - **CSV**: Tabular chronological event audit for spreadsheets and SIEM tooling.
+    - **HTML**: Standalone responsive dark-mode report with visual KPI cards, badges, and timeline.
+  - Cryptographic verification engine (`verify_dossier_seal()`, `verify_report_file()`) with zero-tolerance tampering detection.
+- Built `app/reporting/forensic_coordinator.py`:
+  - Central singleton managing report generation, indexing, caching, disk retrieval, and EventBus integration (`SECURITY_INCIDENT_RESOLVED`).
+- Built `app/simulation/forensic_demo.py`:
+  - Automated, harmless 7-stage double-extortion attack and defense simulation demonstrating rapid read bursts, canary tripping, containment write-gate locking, DLP zero-byte interception, cryptographic recovery, and automated report sealing.
+- Wired CLI sub-commands: `python -m app.main report {list,inspect,generate,verify,demo}`.
+- Authored 21 new tests across 5 test modules in `tests/`: All 21 passed.
+- Executed full regression suite: **250 / 250 tests passed with 0 failures** in 50.65s.
+- Verified 20,000-file laboratory baseline: **100% intact** (0 modified, 0 missing, 0 untracked, 0 canary tampering in 12.03s).

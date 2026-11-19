@@ -79,7 +79,7 @@ To eliminate reliance on ad-hoc test files and enable reproducible benchmarking,
   - Suspicious read-burst detection, staging directory aggregation detection, mock loopback socket transfer monitoring, incident dossier correlation.
 - [x] **Phase 8: Data Loss Prevention (DLP) Engine**
   - Classification-aware transfer policy evaluation (`PUBLIC`, `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED`), rule-based decisions (`ALLOW`, `BLOCK`, `ALERT`, `REQUIRE_APPROVAL`), controlled transfer interception.
-- [ ] **Phase 9: Forensic Incident Reporting**
-  - Forensic dossier aggregation, chain-of-custody verification logs, chronological attack timelines, multi-format export (JSON, Markdown, CSV).
+- [x] **Phase 9: Forensic Incident Reporting**
+  - Forensic dossier aggregation, chain-of-custody verification logs, chronological attack timelines, multi-format export (JSON, Markdown, CSV, HTML), and SHA-256 integrity seal auditing.
 - [ ] **Phase 10: PySide6 Desktop GUI & Final System Integration**
   - Interactive desktop operator console, real-time telemetry visualizer, interactive containment and recovery controls, live exfiltration/DLP graphs, and end-to-end multi-tier demonstration scenarios.

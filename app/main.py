@@ -1772,6 +1772,136 @@ def cmd_dlp(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_report(args: argparse.Namespace) -> int:
+    """Handle Forensic Incident Reporting operations (list, inspect, generate, verify, demo)."""
+    from app.reporting import FORENSIC_COORDINATOR, ReportFormat
+    subcmd = getattr(args, "report_command", None)
+
+    if subcmd == "list":
+        reports = FORENSIC_COORDINATOR.list_reports()
+        print(f"\n--- CryptoShield Forensic Reports Catalog ({len(reports)} Available) ---")
+        if not reports:
+            print("No forensic incident reports found in runtime/reports/.")
+            print("Run 'python -m app.main report demo' or 'python -m app.main report generate <INCIDENT_ID>'.\n")
+            return 0
+        header = f"{'Report ID':<14} | {'Incident ID':<14} | {'Severity':<9} | {'Score':<5} | {'Affected':<8} | {'Restored':<8} | {'SHA-256 Seal':<16} | {'Generated (UTC)'}"
+        print(header)
+        print("-" * len(header))
+        for r in reports:
+            seal_short = (r.dossier_sha256[:12] + "...") if r.dossier_sha256 else "UNSEALED"
+            gen_short = r.generated_at[:19] if len(r.generated_at) >= 19 else r.generated_at
+            print(f"{r.report_id:<14} | {r.incident_id:<14} | {r.severity:<9} | {r.threat_score:<5} | {r.files_affected:<8} | {r.restored_count:<8} | {seal_short:<16} | {gen_short}")
+        print("-" * len(header))
+        print("To inspect full report details: python -m app.main report inspect <REPORT_ID>\n")
+        return 0
+
+    elif subcmd == "inspect":
+        report_id = args.report_id
+        dossier = FORENSIC_COORDINATOR.get_report(report_id)
+        if not dossier:
+            print(f"[-] Report '{report_id}' not found in runtime/reports/.")
+            return 1
+        m = dossier.metrics
+        det = dossier.detection
+        cont = dossier.containment
+        dlp = dossier.dlp
+        rec = dossier.recovery
+        coc = dossier.chain_of_custody
+
+        print(f"\n================================================================================")
+        print(f"   FORENSIC DOSSIER: {dossier.report_id}  (Incident: {dossier.incident_id})")
+        print(f"================================================================================")
+        print(f"Status           : [{dossier.incident_status}]")
+        print(f"Generated At     : {dossier.generated_at}")
+        print(f"Threat Score     : {dossier.threat_score}/100 [{dossier.severity}]")
+        print(f"Title            : {dossier.assessment_title}")
+        print(f"\n--- Executive Summary ---")
+        print(dossier.executive_summary)
+        print(f"\n--- Key Evaluation & Defense Metrics ---")
+        print(f"Detection Latency       : {m.detection_latency_seconds:.3f}s")
+        print(f"Containment Duration    : {m.containment_duration_seconds:.3f}s")
+        print(f"Recovery Duration       : {m.recovery_duration_seconds:.3f}s")
+        print(f"Files Affected          : {m.files_affected_count} (Preserved/Restored: {m.files_preserved_or_restored_count} / {m.total_enterprise_files})")
+        print(f"Protection Rate         : {m.protection_success_rate:.2f}%")
+        print(f"Exfiltration Leakage    : {m.exfiltration_leakage_bytes} Bytes ({'ZERO LEAKAGE [PASS]' if m.zero_leakage_verified else 'FAIL'})")
+        print(f"Exfiltration Blocked    : {m.exfiltration_bytes_blocked:,} Bytes")
+        print(f"Restoration Hash Match  : {m.sha256_hash_match_rate:.1f}%")
+        print(f"\n--- Subsystem Telemetry ---")
+        print(f"Attribution             : {det.process_attribution} (PID: {det.process_id or 'N/A'}, Image: {det.process_name or 'N/A'})")
+        print(f"Canary Honeypot Breaches: {det.canaries_compromised_count}")
+        print(f"Containment Status      : {cont.status} via {cont.shutdown_method} (Write Gate: {cont.write_gate_status}, Prevented: {cont.operations_prevented_count})")
+        print(f"DLP Interceptions       : {dlp.transfers_blocked} blocked ({dlp.bytes_blocked_at_gate:,} Bytes, Profile: {dlp.profile})")
+        print(f"Restoration Audit       : {rec.restored_count} restored, {rec.evidence_quarantined_count} quarantined ({'PASS' if rec.audit_passed else 'FAIL'})")
+        print(f"\n--- Cryptographic Chain of Custody ---")
+        print(f"Record ID               : {coc.record_id if coc else 'N/A'}")
+        print(f"Manifest SHA-256        : {coc.manifest_sha256 if coc else 'N/A'}")
+        print(f"Dossier SHA-256 Seal    : {coc.dossier_sha256 if coc else 'UNSEALED'}")
+        print(f"Certifier               : {coc.certifier if coc else 'N/A'}")
+        print(f"================================================================================\n")
+        return 0
+
+    elif subcmd == "generate":
+        inc_id = args.incident_id
+        fmt_list = [f.strip().upper() for f in args.format.split(",")] if args.format else None
+        try:
+            print(f"[*] Aggregating telemetry and compiling forensic dossier for {inc_id}...")
+            dossier = FORENSIC_COORDINATOR.generate_report(
+                incident_or_id=inc_id,
+                formats=fmt_list,
+                containment_id=args.containment,
+                recovery_id=args.recovery,
+            )
+            print(f"[+] Forensic Report Generated: {dossier.report_id}")
+            print(f"    Threat Score: {dossier.threat_score}/100 [{dossier.severity}]")
+            print(f"    Dossier SHA-256 Seal: {dossier.chain_of_custody.dossier_sha256 if dossier.chain_of_custody else 'N/A'}")
+            print(f"    Export Directory: {FORENSIC_COORDINATOR.reports_dir}")
+            return 0
+        except Exception as e:
+            print(f"[-] Failed to generate forensic report: {e}")
+            return 1
+
+    elif subcmd == "verify":
+        target = args.target
+        valid, msg = FORENSIC_COORDINATOR.verify_report(target)
+        if valid:
+            print(f"[+] [PASS] {msg}")
+            return 0
+        else:
+            print(f"[-] [FAIL] {msg}")
+            return 1
+
+    elif subcmd == "demo":
+        from app.simulation.forensic_demo import ControlledForensicDemo
+        print("\n================================================================================")
+        print("   CryptoShield: Controlled Forensic Incident Reporting Demonstration")
+        print("   Phase 9: Comprehensive End-to-End Double-Extortion Defense & Forensics")
+        print("================================================================================\n")
+        demo = ControlledForensicDemo()
+        res = demo.run_demo()
+
+        print(f"[+] Demonstration Completed Successfully in {res.duration_seconds:.2f}s!")
+        print(f"\n--- Attack & Defense Verification ---")
+        print(f"Incident Created      : {res.incident_id}")
+        print(f"Threat Level          : {res.threat_score}/100 [{res.severity}]")
+        print(f"Containment Actions   : {res.actions_contained} writes prevented")
+        print(f"DLP Interceptions     : {res.transfers_blocked} unauthorized transfers blocked at gate")
+        print(f"Exfiltration Leakage  : 0 Bytes ({'PASS' if res.zero_leakage_verified else 'FAIL'})")
+        print(f"Files Restored        : {res.files_restored} files (100% SHA-256 match)")
+        print(f"\n--- Forensic Sealing & Multi-Format Exports ---")
+        print(f"Report ID             : {res.report_id}")
+        print(f"Chain-of-Custody Seal : {res.dossier_sha256}")
+        print(f"Seal Verification     : {'[PASS] VALID' if res.sha256_seal_verified else '[FAIL] INVALID'}")
+        print(f"Generated Files:")
+        for fmt, path in res.generated_reports.items():
+            print(f"  - {fmt.upper():<8}: {path}")
+        print("================================================================================\n")
+        return 0
+
+    else:
+        print("[-] Usage: python -m app.main report {list,inspect,generate,verify,demo}")
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -1982,6 +2112,33 @@ def build_parser() -> argparse.ArgumentParser:
     dlp_demo = dlp_sub.add_parser("demo", help="Run multi-tier DLP demonstration (ALLOW, ALERT, APPROVAL, BLOCK)")
     dlp_demo.add_argument("--cleanup", action="store_true", help="Clean up demo fixtures upon completion")
 
+    # =========================================================================
+    # Phase 9: Forensic Incident Reporting Subsystem
+    # =========================================================================
+    report_parser = subparsers.add_parser("report", help="Forensic Incident Reporting Subsystem")
+    report_sub = report_parser.add_subparsers(dest="report_command", help="Forensic reporting commands")
+
+    # report list
+    report_sub.add_parser("list", help="List all generated forensic incident reports")
+
+    # report inspect
+    rep_inspect = report_sub.add_parser("inspect", help="Display detailed forensic dossier, timeline & chain of custody")
+    rep_inspect.add_argument("report_id", type=str, help="Report ID to inspect (e.g. REP-XXXXXXXX)")
+
+    # report generate
+    rep_gen = report_sub.add_parser("generate", help="Compile and export forensic incident report across formats")
+    rep_gen.add_argument("incident_id", type=str, help="Incident ID to aggregate and export (e.g. INC-XXXXXXXX)")
+    rep_gen.add_argument("--format", type=str, default="json,markdown,csv,html", help="Comma-separated formats (json,markdown,csv,html)")
+    rep_gen.add_argument("--containment", type=str, help="Explicit containment ID to correlate")
+    rep_gen.add_argument("--recovery", type=str, help="Explicit recovery ID to correlate")
+
+    # report verify
+    rep_ver = report_sub.add_parser("verify", help="Cryptographically audit SHA-256 seal on a forensic dossier file or ID")
+    rep_ver.add_argument("target", type=str, help="Report JSON file path or report ID (REP-XXXXXXXX)")
+
+    # report demo
+    report_sub.add_parser("demo", help="Run end-to-end double-extortion attack, defense & forensic report demonstration")
+
     return parser
 
 
@@ -2041,6 +2198,8 @@ def main() -> int:
         return cmd_exfiltration(args)
     elif args.command == "dlp":
         return cmd_dlp(args)
+    elif args.command == "report":
+        return cmd_report(args)
     else:
         parser.print_help()
         return 1
