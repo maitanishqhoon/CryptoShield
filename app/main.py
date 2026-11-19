@@ -1902,6 +1902,13 @@ def cmd_report(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_gui(args: argparse.Namespace) -> int:
+    """Launch PySide6 Desktop GUI & Unified SOC Console (Phase 10)."""
+    from app.ui.app_launcher import launch_gui
+    offscreen = getattr(args, "offscreen", False)
+    return launch_gui(offscreen=offscreen)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cryptoshield",
@@ -2139,6 +2146,12 @@ def build_parser() -> argparse.ArgumentParser:
     # report demo
     report_sub.add_parser("demo", help="Run end-to-end double-extortion attack, defense & forensic report demonstration")
 
+    # =========================================================================
+    # Phase 10: PySide6 Desktop GUI & Unified SOC Console
+    # =========================================================================
+    gui_parser = subparsers.add_parser("gui", help="Launch interactive PySide6 Desktop GUI & SOC Console")
+    gui_parser.add_argument("--offscreen", action="store_true", help="Run GUI in headless offscreen mode")
+
     return parser
 
 
@@ -2200,6 +2213,8 @@ def main() -> int:
         return cmd_dlp(args)
     elif args.command == "report":
         return cmd_report(args)
+    elif args.command == "gui":
+        return cmd_gui(args)
     else:
         parser.print_help()
         return 1

@@ -122,6 +122,52 @@ class LabWriteGate:
         with self._lock:
             return self._gate_states.get(simulation_run_id, WriteGateState.CLOSED)
 
+    def is_locked(self, simulation_run_id: Optional[str] = None) -> bool:
+        """Check if write gate is locked (closed)."""
+        with self._lock:
+            if simulation_run_id:
+                return self._gate_states.get(simulation_run_id, WriteGateState.CLOSED) != WriteGateState.OPEN
+            state_dir = getattr(CONFIG, "containment_dir", getattr(CONFIG, "CONTAINMENT_DIR", self.lab_dir))
+            global_file = state_dir / ".write_gate_state"
+            if global_file.exists():
+                try:
+                    return global_file.read_text(encoding="utf-8").strip() == "CLOSED"
+                except Exception:
+                    pass
+            if self._gate_states:
+                return any(s != WriteGateState.OPEN for s in self._gate_states.values())
+            return False
+
+    def lock(self, reason: str = "Manual Lock", simulation_run_id: Optional[str] = None) -> None:
+        """Lock write gate."""
+        with self._lock:
+            if simulation_run_id:
+                self.close_gate(simulation_run_id)
+            else:
+                for rid in list(self._gate_states.keys()):
+                    self.close_gate(rid)
+                try:
+                    state_dir = getattr(CONFIG, "containment_dir", getattr(CONFIG, "CONTAINMENT_DIR", self.lab_dir))
+                    global_file = state_dir / ".write_gate_state"
+                    global_file.write_text("CLOSED", encoding="utf-8")
+                except Exception as e:
+                    logger.debug(f"Could not update global gate file: {e}")
+
+    def unlock(self, simulation_run_id: Optional[str] = None) -> None:
+        """Unlock write gate."""
+        with self._lock:
+            if simulation_run_id:
+                self.open_gate(simulation_run_id)
+            else:
+                for rid in list(self._gate_states.keys()):
+                    self._gate_states[rid] = WriteGateState.OPEN
+                try:
+                    state_dir = getattr(CONFIG, "containment_dir", getattr(CONFIG, "CONTAINMENT_DIR", self.lab_dir))
+                    global_file = state_dir / ".write_gate_state"
+                    global_file.write_text("OPEN", encoding="utf-8")
+                except Exception as e:
+                    logger.debug(f"Could not update global gate file: {e}")
+
     def is_write_allowed(
         self,
         simulation_run_id: str,

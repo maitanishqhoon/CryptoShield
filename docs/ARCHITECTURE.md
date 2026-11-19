@@ -67,7 +67,7 @@ flowchart TD
         Assessor --> Restorer
     end
 
-    subgraph Exfiltration & DLP Layers Planned
+    subgraph Exfiltration & DLP Layers
         ExfilMon[Exfiltration Monitor Phase 7]
         DLPEng[DLP Engine Phase 8]
         Bus --> ExfilMon
@@ -75,7 +75,7 @@ flowchart TD
         DLPEng --> Incidents
     end
 
-    subgraph Reporting & UI Layers Planned
+    subgraph Reporting & UI Layers
         ReportEng[Forensic Reporting Phase 9]
         GUI[PySide6 UI Dashboard Phase 10]
         Incidents --> ReportEng
@@ -165,3 +165,18 @@ flowchart TD
 - `ReportExporter`: Renders and exports `ForensicDossier` into 4 presentation formats (structured machine-readable JSON, comprehensive Markdown report, tabular CSV event audit, and responsive dark-theme HTML report).
 - `ChainOfCustodyRecord`: Cryptographic chain of custody embedding baseline manifest SHA-256 digests and computing deterministic `dossier_sha256` seals.
 - `ForensicCoordinator`: Central singleton coordinator indexing reports under `runtime/reports/`, managing retrieval, verifying cryptographic integrity seals, and subscribing to EventBus `SECURITY_INCIDENT_RESOLVED` events for automatic dossier compilation.
+
+### 3.9 PySide6 Desktop User Interface Subsystem (`app/ui/`)
+- `EventBusBridge`: Thread-safe bridge mapping asynchronous background `EventBus` notifications from Watchdog, psutil, DLP, and detection engines directly into queued Qt Signals (`event_received`, `threat_updated`, `incident_created`, `containment_triggered`, `write_gate_changed`, `dlp_interception`, `log_emitted`), ensuring lock-free GUI rendering on the main thread.
+- `AsyncWorker`: Generic non-blocking `QThread` execution engine executing intensive cryptographic operations, dataset synthesis, and attack simulations with responsive progress bars and background exception handling.
+- `SOC Dark Theme`: Professional cybersecurity operations center visual design system featuring slate backgrounds (`#0b0f19`, `#131b2e`), high-contrast typography, and semantic status color accents (Green, Cyan, Amber, Orange, Red, Purple).
+- `CryptoShieldMainWindow`: Integrated operator console uniting all 9 defensive subsystems across an operational status ribbon and 8 dedicated subsystem tabs:
+  1. **Dashboard & Telemetry**: Threat score meter, active incident alert card, real-time filtered event log, canary status.
+  2. **Lab & Dataset Engine**: Workspace validation, 1k/10k/20k synthetic dataset synthesizer, parallel SHA-256 integrity auditor.
+  3. **Threat Containment**: Emergency `LabWriteGate` toggle, controlled process registry auditor, containment operation dossiers.
+  4. **Cryptographic Vault**: RSA-3072 key manager, Argon2id envelope verification, AES-256-GCM snapshot creation & cryptographic auditor.
+  5. **Recovery & Restoration**: Isolated workspace manager, multithreaded damage assessor, two-stage authenticated restore wizard with evidence quarantine.
+  6. **Exfiltration & DLP**: Safe loopback mock receiver controls (`127.0.0.1`), active posture profile selector, rule priority matrix, quarantined approval queue.
+  7. **Forensic Reports**: Report dossier catalog, SHA-256 chain-of-custody seal auditor, chronological attack timeline, academic KPI scorecard.
+  8. **Simulation Testbed**: One-click execution launcher for all 5 controlled double-extortion scenarios with live terminal audit.
+- `CLI Integration`: Executable via `python -m app.main gui [--offscreen]` with seamless headless verification support.

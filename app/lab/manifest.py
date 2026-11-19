@@ -108,7 +108,7 @@ class ManifestManager:
         for root, _, files in os.walk(lab_root):
             root_path = Path(root)
             for f in files:
-                if f in {CONFIG.LAB_MARKER_FILENAME, CONFIG.MANIFEST_FILENAME}:
+                if f in {CONFIG.LAB_MARKER_FILENAME, CONFIG.MANIFEST_FILENAME, ".write_gate_state"}:
                     continue
                 full_path = root_path / f
                 try:
