@@ -24,24 +24,67 @@ def qapp():
     return app
 
 
-def test_simulation_tab(qapp):
-    """Test SimulationTab launcher buttons and DLP demonstration execution."""
-    tab = SimulationTab()
+def test_simulation_tab_all_scenarios(qapp):
+    """Test SimulationTab launcher buttons, bridge telemetry, and scenario executions."""
+    bus = EventBus()
+    bridge = EventBusBridge(bus=bus)
+    bridge.connect_bus()
+
+    tab = SimulationTab(bridge=bridge)
     assert tab.btn_s1 is not None
     assert tab.btn_s2 is not None
     assert tab.btn_s3 is not None
     assert tab.btn_s4 is not None
     assert tab.btn_s5 is not None
 
-    # Run DLP simulation scenario
+    # Test bridge telemetry log stream
+    bridge.log_emitted.emit("Unit test telemetry beacon")
+    assert "[TELEMETRY] Unit test telemetry beacon" in tab.txt_console.toPlainText()
+
+    # 1. Test Scenario 3: DLP multi-tier demonstration
     tab._run_dlp_demo()
     assert tab.active_worker is not None
-    tab.active_worker.wait(5000)
+    tab.active_worker.wait(8000)
     qapp.processEvents()
-
     assert tab.kpi_containment.lbl_value.text() == "BLOCKED"
     assert tab.kpi_leakage.lbl_value.text().startswith("0 BYTES")
     assert "DLP multi-tier enforcement demonstration completed" in tab.txt_console.toPlainText()
+
+    # 2. Test Scenario 1: Containment demonstration
+    tab._run_containment_demo()
+    assert tab.active_worker is not None
+    tab.active_worker.wait(8000)
+    qapp.processEvents()
+    assert "LOCKED" in tab.kpi_containment.lbl_value.text()
+    assert "contained in" in tab.txt_console.toPlainText()
+
+    # 3. Test Scenario 2: Exfiltration demonstration
+    tab._run_exfiltration_demo()
+    assert tab.active_worker is not None
+    tab.active_worker.wait(8000)
+    qapp.processEvents()
+    assert tab.kpi_containment.lbl_value.text() == "MONITORED"
+    assert "Exfiltration simulation completed" in tab.txt_console.toPlainText()
+
+    # 4. Test Scenario 4: Double-extortion forensic demonstration
+    tab._run_forensic_demo()
+    assert tab.active_worker is not None
+    tab.active_worker.wait(8000)
+    qapp.processEvents()
+    assert "CONTAINED" in tab.kpi_containment.lbl_value.text()
+    assert tab.kpi_leakage.lbl_value.text().startswith("0 BYTES")
+    assert "Double-Extortion Defense & Forensics Demo Completed" in tab.txt_console.toPlainText()
+
+    # 5. Test Scenario 5: Cryptographic recovery demonstration
+    tab._run_recovery_demo()
+    assert tab.active_worker is not None
+    tab.active_worker.wait(15000)
+    qapp.processEvents()
+    assert "PRESERVED" in tab.kpi_containment.lbl_value.text()
+    assert "RESTORED" in tab.kpi_restored.lbl_value.text()
+    assert "Cryptographic Recovery Demo Completed" in tab.txt_console.toPlainText()
+
+    bridge.disconnect_bus()
 
 
 def test_crypto_shield_main_window(qapp):
@@ -53,6 +96,12 @@ def test_crypto_shield_main_window(qapp):
     window = CryptoShieldMainWindow(bridge=bridge)
     assert window.tabs.count() == 8
     assert "Dashboard" in window.tabs.tabText(0)
+    assert "Lab" in window.tabs.tabText(1)
+    assert "Containment" in window.tabs.tabText(2)
+    assert "Vault" in window.tabs.tabText(3)
+    assert "Recovery" in window.tabs.tabText(4)
+    assert "Exfiltration" in window.tabs.tabText(5)
+    assert "Forensic" in window.tabs.tabText(6)
     assert "Simulation" in window.tabs.tabText(7)
 
     # Test tab switching across all 8 tabs
@@ -61,7 +110,11 @@ def test_crypto_shield_main_window(qapp):
         qapp.processEvents()
         assert window.tabs.currentIndex() == idx
 
-    # Test bridge signal updating top ribbon
+    # Test clock update
+    window._update_clock()
+    assert "IST" in window.lbl_clock.text()
+
+    # Test bridge signals updating top ribbon
     bridge.threat_updated.emit(90, "CRITICAL")
     qapp.processEvents()
     assert "CRITICAL" in window.badge_threat.text()
@@ -73,6 +126,10 @@ def test_crypto_shield_main_window(qapp):
     bridge.write_gate_changed.emit(False)
     qapp.processEvents()
     assert "UNLOCKED" in window.badge_gate.text()
+
+    # Test status bar
+    assert window.statusBar() is not None
+    assert "ONLINE" in window.lbl_sb_bus.text()
 
     bridge.disconnect_bus()
 

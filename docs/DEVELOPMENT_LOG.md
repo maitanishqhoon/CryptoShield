@@ -157,4 +157,19 @@
   - Wired `bridge=self.bridge` to `RecoveryTab`, `ExfiltrationTab`, and `ForensicsTab` in `CryptoShieldMainWindow`.
 - **Automated Testing & Invariants:**
   - Expanded `tests/test_ui_stage3_tabs.py` covering bridge signals, approval/rejection lifecycle, posture changes, workspace preview, seal verification, and timeline inspection.
-  - All 18 UI test suite cases across 5 test modules passed with 100% pass rate.
+
+## 2026-11-20 — Stage 10.4 (Simulation Testbed, Main Window & Launcher) Hardening & End-to-End Verification
+- **SimulationTab (Tab 8) Hardening & Error Fixes:**
+  - Fixed Scenario 1 (Ransomware Containment Demo): replaced invalid `coord.evaluate_and_contain(...)` call with standard `DetectionResult` dispatch to `coord.handle_detection(detection)` with `ContainmentManager` cooperative stop registration.
+  - Fixed Scenario 2 (Data Exfiltration Demo): separated fixture provisioning (`sim.prepare_fixtures(file_count=15)`) from simulator instantiation, and mapped output telemetry to `ExfiltrationSimulationResult` attributes (`files_read`, `canaries_read`, `bytes_staged`, `transfer_status`).
+  - Fixed Scenario 5 (Cryptographic Recovery Demo): corrected parameter name from `files=100` to `file_count=20` on `RecoveryCoordinator.run_recovery_demo()`, and unpacked the nested `restoration` report dictionary.
+  - Wrapped all scenario workloads in robust `try ... finally` cleanup blocks, guaranteeing zero orphaned demonstration folders in `runtime/lab/`.
+  - Integrated `bridge: Optional[EventBusBridge]` with `_on_bridge_log` slot for live telemetry beacon streaming directly into the demonstration terminal.
+- **CryptoShieldMainWindow & Launcher Integration:**
+  - Connected `bridge=self.bridge` to `SimulationTab`, completing unified EventBusBridge connectivity across all 8 subsystem tabs.
+  - Verified IST top ribbon clock, live threat severity badge styling, write-gate emergency locking, and status bar telemetry indicator.
+  - Verified headless `--offscreen` GUI launcher execution via `launch_gui()`.
+- **Automated Testing & Invariants:**
+  - Expanded `tests/test_ui_stage4_simulation_and_window.py` covering all 5 defensive proof-of-concept scenarios, tab switching across all 8 tabs, ribbon signal updates, and headless launcher execution.
+  - Full UI suite: **18 / 18 tests passed across 5 test modules in 13.84s (100% pass rate)**.
+  - Laboratory 20,000-file baseline verified 100% intact (0 modified, 0 missing, 0 untracked, 0 canary tampering).

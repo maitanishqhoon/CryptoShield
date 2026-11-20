@@ -75,7 +75,7 @@ class CryptoShieldMainWindow(QMainWindow):
         self.tab_recovery = RecoveryTab(bridge=self.bridge)
         self.tab_exfiltration = ExfiltrationTab(bridge=self.bridge)
         self.tab_forensics = ForensicsTab(bridge=self.bridge)
-        self.tab_simulation = SimulationTab()
+        self.tab_simulation = SimulationTab(bridge=self.bridge)
 
         self.tabs.addTab(self.tab_dashboard, "1. Dashboard & Telemetry")
         self.tabs.addTab(self.tab_lab, "2. Lab & Dataset Engine")

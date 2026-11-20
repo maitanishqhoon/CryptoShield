@@ -40,9 +40,13 @@ class SimulationTab(QWidget):
     DLP zero-byte interception, cryptographic recovery, and forensic sealing.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.active_worker: Optional[AsyncWorker] = None
+
+        if self.bridge and hasattr(self.bridge, "log_emitted"):
+            self.bridge.log_emitted.connect(self._on_bridge_log)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -188,6 +192,10 @@ class SimulationTab(QWidget):
             self.txt_console.verticalScrollBar().maximum()
         )
 
+    def _on_bridge_log(self, msg: str) -> None:
+        """Stream system-wide events into the live terminal console."""
+        self._append_log(f"[*] [TELEMETRY] {msg}")
+
     # -------------------------------------------------------------------------
     # Scenario 1: Containment Demo
     # -------------------------------------------------------------------------
@@ -200,6 +208,12 @@ class SimulationTab(QWidget):
             from app.containment.containment_coordinator import ContainmentCoordinator
             from app.containment.containment_manager import ContainmentManager
             from app.containment.process_registry import ControlledProcessRegistry
+            from app.core.models import (
+                DetectionReason,
+                DetectionResult,
+                ProcessAttribution,
+                ThreatLevel,
+            )
             from app.simulation.controlled_activity_simulator import ControlledActivitySimulator
 
             simulator = ControlledActivitySimulator(max_operations=30, max_duration_seconds=5.0)
@@ -211,17 +225,36 @@ class SimulationTab(QWidget):
 
             coord = ContainmentCoordinator()
             t0 = time.perf_counter()
-            # Wait for simulator
-            time.sleep(1.0)
-            outcome = coord.evaluate_and_contain(run_id=run_id, pid=pid, threat_score=95)
-            elapsed = time.perf_counter() - t0
+            try:
+                time.sleep(0.5)
 
-            return {
-                "run_id": run_id,
-                "pid": pid,
-                "outcome": outcome,
-                "elapsed": elapsed,
-            }
+                detection = DetectionResult(
+                    detection_id=f"det-sim-{run_id}",
+                    timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                    threat_score=95,
+                    severity=ThreatLevel.CRITICAL.value,
+                    assessment="CRITICAL: Simulated ransomware writes detected in lab demonstration target.",
+                    reasons=[
+                        DetectionReason.MASS_FILE_MODIFICATION.value,
+                        DetectionReason.RAPID_FILE_RENAMING.value,
+                    ],
+                    affected_files_count=30,
+                    canary_access_count=1,
+                    process_attribution=ProcessAttribution.CONFIRMED.value,
+                    process_id=pid,
+                    process_name="python.exe",
+                    metadata={"simulation_run_id": run_id},
+                )
+                decision = coord.handle_detection(detection)
+                elapsed = time.perf_counter() - t0
+                return {
+                    "run_id": run_id,
+                    "pid": pid,
+                    "decision": decision,
+                    "elapsed": elapsed,
+                }
+            finally:
+                simulator.cleanup()
 
         self.active_worker = AsyncWorker(containment_payload)
         self.active_worker.signals.finished.connect(self._on_containment_finished)
@@ -252,12 +285,15 @@ class SimulationTab(QWidget):
         self._append_log("[*] Initializing Controlled Exfiltration Workload...")
 
         def exfil_payload():
-            sim = ControlledExfiltrationSimulator(file_count=15)
-            t0 = time.perf_counter()
-            res = sim.run_simulation()
-            elapsed = time.perf_counter() - t0
-            sim.cleanup()
-            return res, elapsed
+            sim = ControlledExfiltrationSimulator()
+            try:
+                sim.prepare_fixtures(file_count=15)
+                t0 = time.perf_counter()
+                res = sim.run_simulation()
+                elapsed = time.perf_counter() - t0
+                return res, elapsed
+            finally:
+                sim.cleanup()
 
         self.active_worker = AsyncWorker(exfil_payload)
         self.active_worker.signals.finished.connect(self._on_exfil_finished)
@@ -275,10 +311,10 @@ class SimulationTab(QWidget):
         self.kpi_elapsed.set_value(f"{elapsed:.2f}s", ThemeColors.CYAN)
 
         self._append_log(f"[+] Exfiltration simulation completed in {elapsed:.2f}s!")
-        self._append_log(f"    - Read Burst Files   : {res.read_burst_count}")
-        self._append_log(f"    - Staging Detected   : {res.staging_detected}")
-        self._append_log(f"    - Mock Transfers     : {res.mock_transfers_count}")
-        self._append_log(f"    - Threat Score       : {res.threat_score}/100 [{res.risk_tier.value}]")
+        self._append_log(f"    - Harvested Files    : {res.files_read}")
+        self._append_log(f"    - Honeypot Canaries  : {res.canaries_read} (Canary Decoy Trips)")
+        self._append_log(f"    - Bytes Staged       : {res.bytes_staged:,} bytes (Staging ZIP)")
+        self._append_log(f"    - Loopback Status    : {res.transfer_status} (127.0.0.1)")
 
     # -------------------------------------------------------------------------
     # Scenario 3: DLP Demo
@@ -366,7 +402,7 @@ class SimulationTab(QWidget):
 
         def recovery_payload():
             t0 = time.perf_counter()
-            res = RECOVERY_COORDINATOR.run_recovery_demo(files=100, cleanup=True)
+            res = RECOVERY_COORDINATOR.run_recovery_demo(file_count=20, cleanup=True)
             elapsed = time.perf_counter() - t0
             return res, elapsed
 
@@ -380,7 +416,8 @@ class SimulationTab(QWidget):
         self._set_running_state(False, "[PASS] Cryptographic Recovery Demo Completed!")
         self.progress_bar.setValue(100)
 
-        restored = getattr(res, "restored_count", 100)
+        restoration = res.get("restoration", {}) if isinstance(res, dict) else {}
+        restored = restoration.get("restored_count", getattr(res, "restored_count", 20))
         self.kpi_containment.set_value("PRESERVED", ThemeColors.GREEN)
         self.kpi_leakage.set_value("0 BYTES [PASS]", ThemeColors.GREEN)
         self.kpi_restored.set_value(f"{restored} RESTORED", ThemeColors.GREEN)
@@ -388,7 +425,8 @@ class SimulationTab(QWidget):
 
         self._append_log(f"[+] Cryptographic Recovery Demo Completed in {elapsed:.2f}s!")
         self._append_log(f"    - Restored Files     : {restored} (100% AES-GCM tag + SHA-256 matched)")
-        self._append_log(f"    - Evidence Preserved : Evidence quarantine verified")
+        self._append_log(f"    - Evidence Preserved : {restoration.get('evidence_quarantined', 0)} modified files quarantined")
+        self._append_log(f"    - Throughput         : {restoration.get('throughput_files_per_sec', 0.0):.1f} files/sec")
         self._append_log(f"    - Integrity Status   : [PASS] Clean restoration commit verified")
 
     def _on_scenario_error(self, err_msg: str) -> None:
