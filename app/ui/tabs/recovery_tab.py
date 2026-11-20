@@ -42,12 +42,16 @@ class RecoveryTab(QWidget):
     two-stage authenticated file recoveries with evidence quarantine.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.workspace_mgr = RecoveryWorkspaceManager()
         self.coordinator = RECOVERY_COORDINATOR
         self.snapshot_mgr = SnapshotManager()
         self.active_worker: Optional[AsyncWorker] = None
+
+        if self.bridge and hasattr(self.bridge, "recovery_progress"):
+            self.bridge.recovery_progress.connect(self._on_bridge_recovery_progress)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -433,6 +437,13 @@ class RecoveryTab(QWidget):
     def _on_restore_progress(self, cur: int, tot: int, msg: str) -> None:
         self.progress_bar.setValue(cur)
         self.txt_audit.setPlainText(f"[*] {msg}")
+
+    def _on_bridge_recovery_progress(self, status_text: str, current: int, total: int) -> None:
+        """Handle recovery progress emitted via event bus bridge."""
+        pct = int((current / total) * 100) if total > 0 else 0
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(pct)
+        self.txt_audit.setPlainText(f"[*] {status_text} [{current}/{total}]")
 
     def _on_restore_finished(self, report) -> None:
         self.btn_restore.setEnabled(True)

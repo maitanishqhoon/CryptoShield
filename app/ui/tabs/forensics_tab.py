@@ -39,11 +39,18 @@ class ForensicsTab(QWidget):
     reviewing chronological attack timelines, and evaluating double-extortion defensive KPIs.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.coordinator = FORENSIC_COORDINATOR
         self._reports_meta: List[Any] = []
         self._current_dossier: Optional[ForensicDossier] = None
+
+        if self.bridge:
+            if hasattr(self.bridge, "incident_resolved"):
+                self.bridge.incident_resolved.connect(self._on_bridge_incident_resolved)
+            if hasattr(self.bridge, "incident_created"):
+                self.bridge.incident_created.connect(self._on_bridge_incident_created)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -284,7 +291,8 @@ class ForensicsTab(QWidget):
             if md_path.exists():
                 self.txt_summary.setMarkdown(md_path.read_text(encoding="utf-8"))
             else:
-                self.txt_summary.setPlainText(f"Executive Summary for {report_id}\nIncident: {dossier.incident_id}\nSeverity: {dossier.detection.severity}")
+                sev = getattr(dossier.detection, "peak_severity", getattr(dossier.detection, "severity", "NORMAL"))
+                self.txt_summary.setPlainText(f"Executive Summary for {report_id}\nIncident: {dossier.incident_id}\nSeverity: {sev}")
 
             # Populate JSON Dossier
             data = dossier.to_dict() if hasattr(dossier, "to_dict") else vars(dossier)
@@ -323,3 +331,15 @@ class ForensicsTab(QWidget):
         except Exception as e:
             self.lbl_verify_status.setText(f"[-] Failed to generate report: {e}")
             self.lbl_verify_status.setStyleSheet(f"color: {ThemeColors.RED};")
+
+    def _on_bridge_incident_resolved(self, incident_id: str, notes: str) -> None:
+        """Auto-populate incident ID input and refresh catalog upon incident resolution."""
+        if incident_id:
+            self.input_inc_id.setText(incident_id)
+        self.refresh_catalog()
+
+    def _on_bridge_incident_created(self, incident_dict: Dict[str, Any]) -> None:
+        """Auto-populate incident ID input when an incident starts."""
+        inc_id = incident_dict.get("incident_id")
+        if inc_id:
+            self.input_inc_id.setText(str(inc_id))

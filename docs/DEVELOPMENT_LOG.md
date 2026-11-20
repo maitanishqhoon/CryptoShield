@@ -128,3 +128,33 @@
   - Telemetry Event Table: live normalization to IST (`HH:MM:SS.mmm`).
   - Core event bus, logging formatters, safety markers, containment records, detection events, incidents, exfiltration assessments, DLP audit logs, recovery dossiers, snapshot manifests, and forensic report exporters.
   - Forensic reporting headers and narratives synchronized to `(IST)`.
+
+## 2026-11-20 — Stage 10.2 (Core Defense & Data Tabs) Verification & Hardening
+- **DashboardTab Enhancements:**
+  - Connected `kpi_canaries` directly to `CANARY_SECURITY_ALERT` / `CANARY_ACCESS` events, automatically marking honeypot status as `BREACHED` (Red) during active tampering and resetting to `ARMED` (Cyan) upon incident resolution.
+  - Wired `kpi_dlp` to `DLPPolicyEngine.get_instance().profile` and `dlp_interception` signals for dynamic posture updates.
+- **ContainmentTab Enhancements:**
+  - Connected `bridge` instance in `CryptoShieldMainWindow` to `ContainmentTab`, enabling real-time slot synchronization for write gate state changes and containment triggers.
+- **Automated Testing & Invariants:**
+  - Expanded `tests/test_ui_stage2_tabs.py` with end-to-end signal tests covering canary alert indicators, DLP interception status, and bridge-backed containment triggers.
+  - Executed full 273-test regression suite: **273 / 273 passed in 53.69s (100% pass rate, 0 failures)**.
+  - Laboratory 20,000-file baseline verified 100% intact (0 modified, 0 missing, 0 untracked, 0 canary tampering in 2.08s).
+
+## 2026-11-20 — Stage 10.3 (Recovery, Exfiltration & Forensics Tabs 5–7) Hardening & Error Fixes
+- **ExfiltrationTab (Tab 6) Fixes & Hardening:**
+  - Resolved `TypeError: DLPApprovalManager.approve() got an unexpected keyword argument 'approver'` in `_approve_transfer()` by aligning argument to `decided_by="SOC Console Operator"`.
+  - Resolved `TypeError: DLPApprovalManager.reject() got an unexpected keyword argument 'approver'` in `_reject_transfer()` by aligning argument to `decided_by="SOC Console Operator"`.
+  - Fixed `AttributeError` in `refresh_approvals()` by replacing unmapped `req.created_at` with `req.requested_at` and `req.transfer_context` with `req.transfer_details`.
+  - Added `bridge: Optional[EventBusBridge]` integration with `_on_bridge_dlp_event` and `_on_bridge_bus_event` slots for live approval queue and audit log reactivity.
+- **RecoveryTab (Tab 5) Hardening:**
+  - Added `bridge: Optional[EventBusBridge]` parameter to `RecoveryTab`.
+  - Connected `bridge.recovery_progress` to `_on_bridge_recovery_progress` slot, enabling dynamic progress bar updates and status messages during background file restoration.
+- **ForensicsTab (Tab 7) Hardening:**
+  - Fixed `AttributeError` in `_load_dossier` by reading `peak_severity` from `DetectionForensicSummary`.
+  - Added `bridge: Optional[EventBusBridge]` parameter to `ForensicsTab`.
+  - Connected `bridge.incident_created` and `bridge.incident_resolved` to auto-populate incident IDs and refresh reports catalog upon incident resolution.
+- **Main Window Integration:**
+  - Wired `bridge=self.bridge` to `RecoveryTab`, `ExfiltrationTab`, and `ForensicsTab` in `CryptoShieldMainWindow`.
+- **Automated Testing & Invariants:**
+  - Expanded `tests/test_ui_stage3_tabs.py` covering bridge signals, approval/rejection lifecycle, posture changes, workspace preview, seal verification, and timeline inspection.
+  - All 18 UI test suite cases across 5 test modules passed with 100% pass rate.

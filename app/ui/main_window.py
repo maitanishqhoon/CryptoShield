@@ -70,11 +70,11 @@ class CryptoShieldMainWindow(QMainWindow):
         # Initialize all 8 tabs
         self.tab_dashboard = DashboardTab(bridge=self.bridge)
         self.tab_lab = LabTab()
-        self.tab_containment = ContainmentTab()
+        self.tab_containment = ContainmentTab(bridge=self.bridge)
         self.tab_vault = VaultTab()
-        self.tab_recovery = RecoveryTab()
-        self.tab_exfiltration = ExfiltrationTab()
-        self.tab_forensics = ForensicsTab()
+        self.tab_recovery = RecoveryTab(bridge=self.bridge)
+        self.tab_exfiltration = ExfiltrationTab(bridge=self.bridge)
+        self.tab_forensics = ForensicsTab(bridge=self.bridge)
         self.tab_simulation = SimulationTab()
 
         self.tabs.addTab(self.tab_dashboard, "1. Dashboard & Telemetry")

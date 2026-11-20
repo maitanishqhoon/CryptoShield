@@ -53,10 +53,29 @@ def test_dashboard_tab(qapp):
     assert dash.badge_inc_status.text() == "ATTACK DETECTED"
     assert dash.btn_resolve.isEnabled()
 
-    # Simulate incident resolution
+    # Simulate canary breach event
+    canary_ev = Event(
+        event_type="CANARY_SECURITY_ALERT",
+        data={"path": "runtime/lab/finance/.canary_report.xlsx", "severity": "CRITICAL"},
+        source="test",
+    )
+    bridge._on_bus_event(canary_ev)
+    assert "BREACHED" in dash.kpi_canaries.lbl_value.text()
+
+    # Simulate DLP interception event
+    dlp_ev = Event(
+        event_type="DLP_TRANSFER_BLOCKED",
+        data={"posture": "STRICT", "rule_id": "DLP-001"},
+        source="test",
+    )
+    bridge._on_bus_event(dlp_ev)
+    assert dash.kpi_dlp.lbl_value.text() == "STRICT"
+
+    # Simulate incident resolution resets canaries
     dash.on_incident_resolved("INC-TEST1234", "Unit test clean resolution")
     assert dash.lbl_inc_id.text() == "No Active Incident"
     assert dash.badge_inc_status.text() == "CLEAN"
+    assert "ARMED" in dash.kpi_canaries.lbl_value.text()
     assert not dash.btn_resolve.isEnabled()
 
     # Simulate write gate change
@@ -85,8 +104,12 @@ def test_lab_tab(qapp):
 
 
 def test_containment_tab(qapp):
-    """Test ContainmentTab gate toggle, process list, and history loading."""
-    cont = ContainmentTab()
+    """Test ContainmentTab gate toggle, process list, history loading, and bridge signals."""
+    bus = EventBus()
+    bridge = EventBusBridge(bus=bus)
+    bridge.connect_bus()
+
+    cont = ContainmentTab(bridge=bridge)
     assert cont.lbl_gate_status.text() != ""
 
     # Test gate lock & unlock
@@ -95,10 +118,18 @@ def test_containment_tab(qapp):
     cont._unlock_gate()
     assert "UNLOCKED" in cont.lbl_gate_status.text()
 
+    # Test bridge signal reactions
+    bridge.write_gate_changed.emit(True)
+    assert "LOCKED" in cont.lbl_gate_status.text()
+    bridge.write_gate_changed.emit(False)
+    assert "UNLOCKED" in cont.lbl_gate_status.text()
+
     # Process refresh
     cont.refresh_processes()
     # History refresh
     cont.refresh_history()
+
+    bridge.disconnect_bus()
 
 
 def test_vault_tab(qapp):

@@ -40,12 +40,19 @@ class ExfiltrationTab(QWidget):
     and auditing zero-leakage enforcement.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.dlp_coord = DLP_COORDINATOR
         self.policy_engine = getattr(self.dlp_coord, "policy_engine", DLPPolicyEngine())
         self.approval_mgr = getattr(self.dlp_coord, "approval_manager", DLPApprovalManager())
         self.mock_receiver: Optional[MockReceiver] = None
+
+        if self.bridge:
+            if hasattr(self.bridge, "dlp_interception"):
+                self.bridge.dlp_interception.connect(self._on_bridge_dlp_event)
+            if hasattr(self.bridge, "event_received"):
+                self.bridge.event_received.connect(self._on_bridge_bus_event)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -244,11 +251,17 @@ class ExfiltrationTab(QWidget):
 
         for row, req in enumerate(requests):
             status_str = req.status.value if hasattr(req.status, "value") else str(req.status)
+            details = getattr(req, "transfer_details", getattr(req, "transfer_context", {}))
+            classifications = details.get("classifications", [])
+            class_str = ", ".join(classifications) if isinstance(classifications, list) else str(details.get("classification", "CONFIDENTIAL"))
+            if not class_str:
+                class_str = "CONFIDENTIAL"
+            req_time = getattr(req, "requested_at", getattr(req, "created_at", ""))
             items = [
                 QTableWidgetItem(str(req.approval_token)),
-                QTableWidgetItem(str(req.created_at)[:19]),
-                QTableWidgetItem(str(req.transfer_context.get("classification", "CONFIDENTIAL"))),
-                QTableWidgetItem(f"{req.transfer_context.get('file_count', 1):,}"),
+                QTableWidgetItem(str(req_time)[:19]),
+                QTableWidgetItem(class_str),
+                QTableWidgetItem(f"{details.get('file_count', 1):,}"),
                 QTableWidgetItem(status_str),
             ]
             items[4].setForeground(QColor(ThemeColors.AMBER) if status_str == "PENDING" else QColor(ThemeColors.GREEN))
@@ -265,6 +278,18 @@ class ExfiltrationTab(QWidget):
                 self.txt_audit_log.setPlainText("\n".join(lines[-15:]))
             except Exception:
                 pass
+
+    def _on_bridge_dlp_event(self, data: Dict[str, Any]) -> None:
+        """Slot for bridge DLP interception signals."""
+        self.refresh_approvals()
+        self.refresh_audit_log()
+
+    def _on_bridge_bus_event(self, event: Any) -> None:
+        """Slot for raw EventBus events matching DLP activity."""
+        event_type = getattr(event, "event_type", "")
+        if event_type.startswith("DLP_"):
+            self.refresh_approvals()
+            self.refresh_audit_log()
 
     def _start_receiver(self) -> None:
         """Start the loopback mock receiver."""
@@ -303,7 +328,7 @@ class ExfiltrationTab(QWidget):
         if row < 0 or row >= len(getattr(self, "_current_requests", [])):
             return
         req = self._current_requests[row]
-        self.approval_mgr.approve(req.approval_token, approver="SOC Console Operator")
+        self.approval_mgr.approve(req.approval_token, decided_by="SOC Console Operator")
         self.refresh_approvals()
         self.refresh_audit_log()
 
@@ -313,6 +338,6 @@ class ExfiltrationTab(QWidget):
         if row < 0 or row >= len(getattr(self, "_current_requests", [])):
             return
         req = self._current_requests[row]
-        self.approval_mgr.reject(req.approval_token, approver="SOC Console Operator")
+        self.approval_mgr.reject(req.approval_token, decided_by="SOC Console Operator")
         self.refresh_approvals()
         self.refresh_audit_log()

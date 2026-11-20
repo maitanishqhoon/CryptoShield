@@ -184,17 +184,39 @@ class DashboardTab(QWidget):
 
     def _connect_bridge(self) -> None:
         """Bind Qt signals from EventBusBridge to UI slots."""
-        self.bridge.event_received.connect(self.event_table.add_event)
+        self.bridge.event_received.connect(self._on_bridge_event)
         self.bridge.threat_updated.connect(self.update_threat)
         self.bridge.incident_created.connect(self.on_incident_created)
         self.bridge.incident_resolved.connect(self.on_incident_resolved)
         self.bridge.write_gate_changed.connect(self.on_write_gate_changed)
+        self.bridge.dlp_interception.connect(self._on_dlp_interception)
+
+    def _on_bridge_event(self, event: Event) -> None:
+        """Process incoming EventBus event for telemetry table and canary status."""
+        self.event_table.add_event(event)
+        if "CANARY" in event.event_type:
+            self.kpi_canaries.set_value("BREACHED", accent_color=ThemeColors.RED)
+            self.kpi_canaries.set_subtitle("Honeypot tampering detected")
+
+    def _on_dlp_interception(self, data: Dict[str, Any]) -> None:
+        """Update DLP KPI on interception."""
+        posture = data.get("posture") or data.get("profile")
+        if posture:
+            self.kpi_dlp.set_value(str(posture), accent_color=ThemeColors.BLUE)
 
     def refresh_state(self) -> None:
         """Query disk & controllers to ensure UI matches physical runtime state."""
         # Check write gate state
         is_locked = self.write_gate.is_locked()
         self.on_write_gate_changed(is_locked)
+
+        # Check DLP posture profile
+        try:
+            from app.dlp.policy_engine import DLPPolicyEngine
+            profile_val = DLPPolicyEngine.get_instance().profile.value
+            self.kpi_dlp.set_value(profile_val, accent_color=ThemeColors.BLUE)
+        except Exception:
+            pass
 
         # Check incidents
         try:
@@ -256,6 +278,8 @@ class DashboardTab(QWidget):
             font-weight: 700;
         """)
         self.btn_resolve.setEnabled(False)
+        self.kpi_canaries.set_value("ARMED", accent_color=ThemeColors.CYAN)
+        self.kpi_canaries.set_subtitle("Active canary surveillance")
         self.update_threat(0, "NORMAL")
 
     def on_write_gate_changed(self, is_locked: bool) -> None:
