@@ -147,11 +147,11 @@ class ExfiltrationCoordinator:
         target_incident.metadata["exfiltration_assessment"] = assessment.to_dict()
         target_incident.metadata["exfiltration_risk_tier"] = assessment.risk_tier
         target_incident.metadata["exfiltration_threat_score"] = assessment.threat_score
-        target_incident.last_updated_at = datetime.now(timezone.utc).isoformat()
+        target_incident.last_updated_at = datetime.now(CONFIG.TIMEZONE).isoformat()
 
         # Add chronological action to incident timeline
         target_incident.timeline.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
             "action": "EXFILTRATION_CORRELATED",
             "description": (
                 f"Exfiltration assessment [{assessment.risk_tier}] correlated: "

@@ -68,12 +68,12 @@ class IncidentManager:
     def _parse_timestamp(self, ts_str: str) -> float:
         """Parse ISO timestamp to epoch float."""
         try:
-            dt = datetime.fromisoformat(ts_str)
+            dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=CONFIG.TIMEZONE)
             return dt.timestamp()
         except Exception:
-            return datetime.now(timezone.utc).timestamp()
+            return datetime.now(CONFIG.TIMEZONE).timestamp()
 
     def process_detection(
         self,
@@ -96,7 +96,7 @@ class IncidentManager:
             return None
 
         with self._lock:
-            now_dt = datetime.now(timezone.utc)
+            now_dt = datetime.now(CONFIG.TIMEZONE)
             now_epoch = now_dt.timestamp()
 
             # Check if there is an active OPEN or INVESTIGATING incident to merge into
@@ -299,7 +299,7 @@ class IncidentManager:
             if not incident:
                 return None
 
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(CONFIG.TIMEZONE).isoformat()
             incident.status = IncidentStatus.INVESTIGATING.value
             incident.last_updated_at = now
 
@@ -329,7 +329,7 @@ class IncidentManager:
             if not incident:
                 return None
 
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(CONFIG.TIMEZONE).isoformat()
             incident.status = IncidentStatus.RESOLVED.value
             incident.last_updated_at = now
 

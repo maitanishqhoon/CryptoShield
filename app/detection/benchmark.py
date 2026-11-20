@@ -74,7 +74,7 @@ def run_detection_benchmark(
     bench_manifest = Manifest(
         manifest_version="1.0.0",
         lab_id="benchmark-lab-id",
-        generated_at=datetime.now(timezone.utc).isoformat(),
+        generated_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
         total_files=20000,
         total_size_bytes=50 * 1024 * 1024,
         canary_count=10,
@@ -116,7 +116,7 @@ def run_detection_benchmark(
 
         ev = MonitoringEvent(
             event_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             event_type="FILE_MODIFIED",
             source="WATCHDOG",
             relative_path=path,
@@ -140,7 +140,7 @@ def run_detection_benchmark(
         events.append(
             MonitoringEvent(
                 event_id=str(uuid.uuid4()),
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 event_type="CANARY_ACCESS",
                 source="CONTROLLED_INSTRUMENTATION",
                 relative_path="Finance/canary_decoy_1.csv",

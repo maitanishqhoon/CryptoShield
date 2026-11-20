@@ -119,3 +119,12 @@
 - Executed full 268-test regression suite: **268 / 268 passed with 0 failures** in 56.89s (100% pass rate).
 - Verified 20,000-file laboratory baseline: **100% intact** (0 modified, 0 missing, 0 untracked, 0 canary tampering in 2.18s).
 - **All 10 project milestone phases are now 100% complete and fully verified!**
+
+### Temporal Synchronization & Containment Console Alignment
+- Implemented `ContainmentTab` in `app/ui/tabs/containment_tab.py` with `LabWriteGate` emergency controls, `ControlledProcessRegistry` process table, and `ContainmentManager` JSON audit dossiers.
+- Established centralized temporal engine in `app/core/time.py` defining Indian Standard Time (IST, UTC+05:30) with `now_ist()`, `now_iso()`, `from_timestamp_ist()`, `format_ist()`, and `parse_iso_to_ist()`.
+- Synchronized all subsystems to IST:
+  - Desktop GUI top ribbon live clock: `IST: YYYY-MM-DD HH:MM:SS IST`.
+  - Telemetry Event Table: live normalization to IST (`HH:MM:SS.mmm`).
+  - Core event bus, logging formatters, safety markers, containment records, detection events, incidents, exfiltration assessments, DLP audit logs, recovery dossiers, snapshot manifests, and forensic report exporters.
+  - Forensic reporting headers and narratives synchronized to `(IST)`.

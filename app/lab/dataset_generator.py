@@ -317,7 +317,7 @@ This specification details the architecture for the enterprise synthetic workloa
         hostname = f"srv-{department.lower().replace(' ', '')}-{self.rng.randint(1, 9):02d}"
 
         for i in range(self.rng.randint(12, 35)):
-            t = datetime.fromtimestamp(base_time + (i * 12), tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            t = datetime.fromtimestamp(base_time + (i * 12), tz=CONFIG.TIMEZONE).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
             level = self.rng.choice(["INFO", "INFO", "INFO", "WARN", "DEBUG"])
             action = self.rng.choice([
                 "AUTH_SUCCESS user=admin ip=10.0.4.12",
@@ -601,7 +601,7 @@ Fictional Master Recovery Passphrase:
         manifest = Manifest(
             manifest_version="1.0.0",
             lab_id=marker.lab_id,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
             total_files=created_files,
             total_size_bytes=total_size_bytes,
             canary_count=actual_canaries,

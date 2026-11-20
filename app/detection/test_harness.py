@@ -128,7 +128,7 @@ class ControlledDetectionHarness:
 
         return MonitoringEvent(
             event_id=str(uuid.uuid4()),
-            timestamp=timestamp or datetime.now(timezone.utc).isoformat(),
+            timestamp=timestamp or datetime.now(CONFIG.TIMEZONE).isoformat(),
             event_type=event_type,
             source=source,
             relative_path=relative_path,
@@ -565,7 +565,7 @@ class ControlledDetectionHarness:
         )
         coordinator.start()
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(CONFIG.TIMEZONE)
         # Event 1: 20 seconds ago
         ev_old = self._create_event(
             "FILE_MODIFIED",

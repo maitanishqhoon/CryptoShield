@@ -200,11 +200,11 @@ class DLPCoordinator:
         target_incident.metadata["dlp_metrics"] = metrics
         target_incident.metadata["dlp_transfers_blocked"] = metrics["blocked_count"]
         target_incident.metadata["dlp_transfers_quarantined"] = metrics["quarantined_count"]
-        target_incident.last_updated_at = datetime.now(timezone.utc).isoformat()
+        target_incident.last_updated_at = datetime.now(CONFIG.TIMEZONE).isoformat()
 
         # Add chronological action to incident timeline
         target_incident.timeline.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
             "action": "DLP_POLICY_ENFORCED",
             "description": (
                 f"DLP policy enforcement ({self.policy_engine.profile.value}): "

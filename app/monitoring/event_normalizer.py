@@ -156,7 +156,7 @@ class EventNormalizer:
 
         return MonitoringEvent(
             event_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             event_type=event_type,
             source=source,
             relative_path=rel_path,
@@ -221,7 +221,7 @@ class EventNormalizer:
 
         return MonitoringEvent(
             event_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             event_type=event_type,
             source=source,
             relative_path=rel_path,
@@ -256,7 +256,7 @@ class EventNormalizer:
 
         return MonitoringEvent(
             event_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             event_type=event_type,
             source="PSUTIL",
             relative_path=None,

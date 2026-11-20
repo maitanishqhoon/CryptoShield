@@ -97,7 +97,7 @@ class ContainmentManager:
         - Captures complete chronological audit timeline.
         """
         with self._lock:
-            now_iso = datetime.now(timezone.utc).isoformat()
+            now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
             run_id = decision.simulation_run_id
 
             # 1. Idempotency check: Already contained?
@@ -140,7 +140,7 @@ class ContainmentManager:
             # 2. Authorization check
             if not decision.auto_containment_authorized:
                 record.final_status = ContainmentStatus.CONTAINMENT_RECOMMENDED.value
-                record.completion_timestamp = datetime.now(timezone.utc).isoformat()
+                record.completion_timestamp = datetime.now(CONFIG.TIMEZONE).isoformat()
                 record.failure_explanation = "Automatic containment not authorized by policy."
                 self._add_timeline_entry(
                     record,
@@ -154,7 +154,7 @@ class ContainmentManager:
             # 3. Registration check
             if not run_id or not self.registry.is_run_registered(run_id):
                 record.final_status = ContainmentStatus.SKIPPED.value
-                record.completion_timestamp = datetime.now(timezone.utc).isoformat()
+                record.completion_timestamp = datetime.now(CONFIG.TIMEZONE).isoformat()
                 record.failure_explanation = f"Simulation run '{run_id}' is not registered."
                 self._add_timeline_entry(
                     record,
@@ -177,7 +177,7 @@ class ContainmentManager:
 
             if not is_valid and "already" not in id_msg.lower():
                 record.final_status = ContainmentStatus.FAILED.value
-                record.completion_timestamp = datetime.now(timezone.utc).isoformat()
+                record.completion_timestamp = datetime.now(CONFIG.TIMEZONE).isoformat()
                 record.failure_explanation = id_msg
                 self._add_timeline_entry(
                     record,
@@ -235,7 +235,7 @@ class ContainmentManager:
             )
 
             # 9. Final status determination
-            record.completion_timestamp = datetime.now(timezone.utc).isoformat()
+            record.completion_timestamp = datetime.now(CONFIG.TIMEZONE).isoformat()
             if outcome.success and verification.is_verified:
                 record.final_status = ContainmentStatus.CONTAINED.value
                 self._contained_runs[run_id] = containment_id
@@ -260,7 +260,7 @@ class ContainmentManager:
     def _add_timeline_entry(self, record: ContainmentRecord, action: str, desc: str) -> None:
         """Append chronological timeline entry to containment record."""
         entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
             "action": action,
             "description": desc,
         }

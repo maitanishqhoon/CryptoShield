@@ -10,14 +10,19 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from app.core.models import DataClassification, DatasetPreset
+from app.core.time import IST, DEFAULT_TIMEZONE_NAME
 
 
 @dataclass(frozen=True)
 class CryptoShieldConfig:
     """Immutable configuration holding all paths and operational constraints."""
+
+    # Timezone & Temporal Configuration (Indian Standard Time - IST)
+    TIMEZONE: Any = IST
+    TIMEZONE_NAME: str = DEFAULT_TIMEZONE_NAME
 
     # Base project paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent

@@ -9,10 +9,11 @@ from __future__ import annotations
 import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Callable, Dict, List
 
 from app.core.logger import get_logger
+from app.core.time import IST, now_iso
 
 logger = get_logger("event_bus")
 
@@ -24,7 +25,7 @@ class Event:
     data: Dict[str, Any]
     source: str = "system"
     timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+        default_factory=now_iso
     )
 
 

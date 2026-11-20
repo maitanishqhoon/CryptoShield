@@ -128,7 +128,7 @@ class ForensicAggregator:
         dossier = ForensicDossier(
             report_id=report_id,
             incident_id=incident.incident_id,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
             incident_status=incident.status,
             threat_score=incident.threat_score,
             severity=incident.severity,
@@ -636,7 +636,7 @@ class ForensicAggregator:
         )
 
         summary = (
-            f"On {incident.first_detected_at[:19]} UTC, CryptoShield detected an automated double-extortion "
+            f"On {incident.first_detected_at[:19]} IST, CryptoShield detected an automated double-extortion "
             f"ransomware attack pattern ({reasons_str}). Threat assessment reached a peak score of {incident.threat_score}/100 "
             f"({incident.severity}). Active containment was {containment_str}, halting further writes to the lab environment. "
             f"Simultaneously, the {dlp_str}. Post-incident cryptographic recovery {recovery_str}, achieving an overall "
@@ -674,7 +674,7 @@ class ForensicAggregator:
         return ChainOfCustodyRecord(
             record_id=record_id,
             incident_id=incident.incident_id,
-            sealed_at=datetime.now(timezone.utc).isoformat(),
+            sealed_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
             manifest_sha256=manifest_hash,
             quarantined_evidence_hashes=quarantine_hashes,
             dossier_sha256="",  # Sealed by caller
@@ -684,13 +684,16 @@ class ForensicAggregator:
         )
 
     def _parse_iso_ts(self, ts_str: Optional[str]) -> datetime:
-        """Parse ISO-8601 UTC timestamp safely."""
+        """Parse ISO-8601 timestamp safely, normalizing to Indian Standard Time (IST)."""
         if not ts_str:
-            return datetime.now(timezone.utc)
+            return datetime.now(CONFIG.TIMEZONE)
         try:
-            dt = datetime.fromisoformat(ts_str)
+            clean_ts = ts_str.replace("Z", "+00:00")
+            dt = datetime.fromisoformat(clean_ts)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=CONFIG.TIMEZONE)
+            else:
+                dt = dt.astimezone(CONFIG.TIMEZONE)
             return dt
         except Exception:
-            return datetime.now(timezone.utc)
+            return datetime.now(CONFIG.TIMEZONE)

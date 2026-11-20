@@ -86,7 +86,7 @@ class SnapshotVerifier:
         7. Compute overall outcome: FULLY_VERIFIED, PARTIALLY_VERIFIED, or VERIFICATION_FAILED.
         """
         start_t = time.perf_counter()
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
         snapshot_dir = self.vault_dir / snapshot_id
 
         if not snapshot_dir.exists():

@@ -16,7 +16,7 @@ import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from app.config import CONFIG
 from app.core.logger import get_logger
@@ -208,7 +208,7 @@ class RecoveryWorkspaceManager:
 
         # Write safety marker
         workspace_uuid = str(uuid.uuid4())
-        created_at = datetime.now(timezone.utc).isoformat()
+        created_at = datetime.now(CONFIG.TIMEZONE).isoformat()
         host_platform = platform.platform()
         authorized_root = str(workspace_dir.resolve())
 

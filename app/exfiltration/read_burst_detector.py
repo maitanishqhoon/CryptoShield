@@ -185,7 +185,7 @@ class ReadBurstDetector:
 
         return ReadBurstEvent(
             burst_id=f"BURST-{uuid.uuid4().hex[:8].upper()}",
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             read_count=len(self._window),
             duration_seconds=duration,
             department_counts=dept_counts,

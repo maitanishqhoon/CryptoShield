@@ -83,7 +83,7 @@ class StagingDetector:
         with self._lock:
             event = StagingEvent(
                 staging_id=f"STAGE-{uuid.uuid4().hex[:8].upper()}",
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 staging_path=staging_path,
                 staging_type=staging_type.value if isinstance(staging_type, StagingType) else str(staging_type),
                 staged_files_count=len(source_paths),
@@ -126,7 +126,7 @@ class StagingDetector:
 
             staging_event = StagingEvent(
                 staging_id=f"STAGE-{uuid.uuid4().hex[:8].upper()}",
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 staging_path=rel_path,
                 staging_type=staging_type,
                 staged_files_count=1,

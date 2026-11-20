@@ -52,7 +52,7 @@ class RecoveryReporter:
             rec_id = report.recovery_id
         elif isinstance(report, dict):
             data = report
-            rec_id = str(data.get("recovery_id", f"REC-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"))
+            rec_id = str(data.get("recovery_id", f"REC-{datetime.now(CONFIG.TIMEZONE).strftime('%Y%m%d%H%M%S')}"))
         else:
             raise RecoveryError(f"Unsupported report type: {type(report)}")
 

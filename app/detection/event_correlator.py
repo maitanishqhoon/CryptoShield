@@ -145,11 +145,11 @@ class EventCorrelator:
                 logger.info("EventCorrelator stopped and unsubscribed.")
 
     def _parse_timestamp(self, ts_str: str) -> float:
-        """Parse ISO-8601 UTC timestamp to epoch float."""
+        """Parse ISO-8601 timestamp to epoch float."""
         try:
-            dt = datetime.fromisoformat(ts_str)
+            dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=CONFIG.TIMEZONE)
             return dt.timestamp()
         except Exception:
             return time.time()
@@ -274,8 +274,8 @@ class EventCorrelator:
         )
         start_time_epoch = ref_time - win_sec
 
-        start_iso = datetime.fromtimestamp(start_time_epoch, tz=timezone.utc).isoformat()
-        end_iso = datetime.fromtimestamp(ref_time, tz=timezone.utc).isoformat()
+        start_iso = datetime.fromtimestamp(start_time_epoch, tz=CONFIG.TIMEZONE).isoformat()
+        end_iso = datetime.fromtimestamp(ref_time, tz=CONFIG.TIMEZONE).isoformat()
 
         summary = WindowActivitySummary(
             window_seconds=win_sec,

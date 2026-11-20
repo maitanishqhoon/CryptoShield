@@ -49,7 +49,7 @@ class DLPAuditLogger:
         with self._lock:
             record = DLPAuditRecord(
                 record_id=f"AUD-{uuid.uuid4().hex[:8].upper()}",
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 event_type=event_type,
                 action=action,
                 rule_id=rule_id,

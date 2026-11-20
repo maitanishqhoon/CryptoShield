@@ -235,7 +235,7 @@ class SnapshotManager:
                     total_encrypted_bytes += rec.encrypted_size_bytes
 
                 # 7. Build SnapshotManifest
-                now_iso = datetime.now(timezone.utc).isoformat()
+                now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
                 snap_manifest = SnapshotManifest(
                     snapshot_id=snapshot_id,
                     format_version=str(CONFIG.VAULT_FORMAT_VERSION),

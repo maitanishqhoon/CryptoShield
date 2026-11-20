@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import psutil
 
+from app.config import CONFIG
 from app.core.logger import get_logger
 from app.core.models import ControlledProcessRecord, ProcessLifecycleStatus
 
@@ -84,7 +85,7 @@ class ControlledProcessRegistry:
                 proc = psutil.Process(pid)
                 create_time_raw = proc.create_time()
                 create_time_iso = datetime.fromtimestamp(
-                    create_time_raw, tz=timezone.utc
+                    create_time_raw, tz=CONFIG.TIMEZONE
                 ).isoformat()
                 exe_path = proc.exe() or "unknown"
                 parent_pid = proc.ppid() or os.getpid()
@@ -92,7 +93,7 @@ class ControlledProcessRegistry:
             except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
                 # If process was launched and exited before registration completed
                 if hasattr(process_handle, "poll") and process_handle.poll() is not None:
-                    create_time_iso = datetime.now(timezone.utc).isoformat()
+                    create_time_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
                     exe_path = "unknown"
                     parent_pid = os.getpid()
                     lifecycle = ProcessLifecycleStatus.EXITED.value
@@ -101,7 +102,7 @@ class ControlledProcessRegistry:
                         f"Cannot register PID {pid}: Process is not accessible or does not exist: {e}"
                     )
 
-            now_iso = datetime.now(timezone.utc).isoformat()
+            now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
 
             record = ControlledProcessRecord(
                 simulation_run_id=simulation_run_id,
@@ -157,9 +158,9 @@ class ControlledProcessRegistry:
             try:
                 curr_create_raw = proc.create_time()
                 curr_create_iso = datetime.fromtimestamp(
-                    curr_create_raw, tz=timezone.utc
+                    curr_create_raw, tz=CONFIG.TIMEZONE
                 ).isoformat()
-                curr_create_dt = datetime.fromtimestamp(curr_create_raw, tz=timezone.utc)
+                curr_create_dt = datetime.fromtimestamp(curr_create_raw, tz=CONFIG.TIMEZONE)
                 rec_create_dt = datetime.fromisoformat(record.process_creation_time)
                 diff = abs((curr_create_dt - rec_create_dt).total_seconds())
 

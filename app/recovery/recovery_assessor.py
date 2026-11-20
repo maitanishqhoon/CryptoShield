@@ -311,7 +311,7 @@ class RecoveryAssessor:
             assessment_id=f"ASSESS-{uuid.uuid4().hex[:8].upper()}",
             workspace_id=workspace_id,
             snapshot_id=manifest.snapshot_id,
-            assessed_at=datetime.now(timezone.utc).isoformat(),
+            assessed_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
             total_manifest_files=len(scoped_manifest_entries),
             total_workspace_files_scanned=len(discovered_disk_paths),
             intact_count=intact_count,

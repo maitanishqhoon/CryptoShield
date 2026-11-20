@@ -249,7 +249,7 @@ class LabWriteGate:
     ) -> None:
         """Internal audit recording for rejected operations."""
         rejection_entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
             "simulation_run_id": simulation_run_id,
             "operation": operation_name,
             "target_path": target_path,

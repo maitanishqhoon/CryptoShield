@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app.config import CONFIG
 from app.core.event_bus import Event
 from app.ui.theme import ThemeColors
 
@@ -109,8 +110,12 @@ class EventTable(QWidget):
         ts = event.timestamp
         if "T" in ts:
             try:
-                # Format to HH:MM:SS.mmm
+                # Format to HH:MM:SS.mmm in Indian Standard Time (IST)
                 dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if dt.tzinfo is not None:
+                    dt = dt.astimezone(CONFIG.TIMEZONE)
+                else:
+                    dt = dt.replace(tzinfo=CONFIG.TIMEZONE)
                 ts_str = dt.strftime("%H:%M:%S.%f")[:-3]
             except Exception:
                 ts_str = ts[-12:]

@@ -94,7 +94,7 @@ class RestorationManager:
 
         # Build evidence quarantine path with microsecond ISO timestamp
         quarantine_root = workspace_root / CONFIG.RECOVERY_EVIDENCE_DIRNAME
-        timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        timestamp_str = datetime.now(CONFIG.TIMEZONE).strftime("%Y%m%dT%H%M%S_IST")
         
         # Preserve directory structure inside evidence quarantine
         rel_obj = Path(relative_path)
@@ -158,7 +158,7 @@ class RestorationManager:
             RecoveryOperationReport detailing execution metrics, outcomes, and audit results.
         """
         start_time = time.perf_counter()
-        started_at = datetime.now(timezone.utc).isoformat()
+        started_at = datetime.now(CONFIG.TIMEZONE).isoformat()
         recovery_id = f"REC-{uuid.uuid4().hex[:8].upper()}"
 
         # 1. Authorization & Policy Gate Check
@@ -491,7 +491,7 @@ class RestorationManager:
                 self.recovery_engine.cleanup_staging_session(staging_dir_to_clean)
 
         duration = time.perf_counter() - start_time
-        completed_at = datetime.now(timezone.utc).isoformat()
+        completed_at = datetime.now(CONFIG.TIMEZONE).isoformat()
 
         report = RecoveryOperationReport(
             recovery_id=recovery_id,

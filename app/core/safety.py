@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Optional, Set, Union
 
 from app.core.models import LabMarker
+from app.core.time import IST
 
 
 DEFAULT_MARKER_FILENAME = ".cryptoshield_lab_marker"
@@ -46,7 +47,7 @@ def generate_lab_marker(base_lab_dir: Optional[Path] = None) -> LabMarker:
     """Create a new authenticated laboratory marker instance."""
     root_path = (base_lab_dir or _get_default_lab_dir()).resolve()
     lab_id = str(uuid.uuid4())
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(IST).isoformat()
     hostname = socket.gethostname()
     platform_name = platform.platform()
     sig = _compute_marker_signature(lab_id, str(root_path))

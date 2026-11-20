@@ -1784,7 +1784,7 @@ def cmd_report(args: argparse.Namespace) -> int:
             print("No forensic incident reports found in runtime/reports/.")
             print("Run 'python -m app.main report demo' or 'python -m app.main report generate <INCIDENT_ID>'.\n")
             return 0
-        header = f"{'Report ID':<14} | {'Incident ID':<14} | {'Severity':<9} | {'Score':<5} | {'Affected':<8} | {'Restored':<8} | {'SHA-256 Seal':<16} | {'Generated (UTC)'}"
+        header = f"{'Report ID':<14} | {'Incident ID':<14} | {'Severity':<9} | {'Score':<5} | {'Affected':<8} | {'Restored':<8} | {'SHA-256 Seal':<16} | {'Generated (IST)'}"
         print(header)
         print("-" * len(header))
         for r in reports:

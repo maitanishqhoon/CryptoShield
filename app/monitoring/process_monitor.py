@@ -121,7 +121,7 @@ class ProcessMonitor:
         if create_time_raw:
             try:
                 create_time_iso = datetime.fromtimestamp(
-                    create_time_raw, tz=timezone.utc
+                    create_time_raw, tz=CONFIG.TIMEZONE
                 ).isoformat()
             except Exception:
                 pass

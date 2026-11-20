@@ -60,7 +60,7 @@ class ContainmentPolicy:
         Returns an explainable ContainmentDecision.
         """
         decision_id = f"DEC-{uuid.uuid4().hex[:8].upper()}"
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
         score = detection.threat_score
         severity = detection.severity
         reasons = list(detection.reasons)
@@ -303,7 +303,7 @@ class ContainmentPolicy:
         Evaluate an immediate SecurityAlert (such as canary trip) from Phase 3.
         """
         decision_id = f"DEC-{uuid.uuid4().hex[:8].upper()}"
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
         is_tampering = alert.alert_type == "CANARY_TAMPERING_BREACH"
 
         if is_tampering:

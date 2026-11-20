@@ -237,7 +237,7 @@ class ReportExporter:
             "---",
             "",
             "## 8. Unified Chronological Attack & Defense Timeline",
-            "| Timestamp (UTC) | Subsystem | Action | Description |",
+            "| Timestamp (IST) | Subsystem | Action | Description |",
             "| :--- | :---: | :--- | :--- |",
         ])
 
@@ -510,7 +510,7 @@ class ReportExporter:
                 <span><strong>Incident ID:</strong> {dossier.incident_id}</span>
                 <span><strong>Status:</strong> <span class="badge" style="background-color: #3b82f6;">{dossier.incident_status}</span></span>
                 <span><strong>Threat Level:</strong> <span class="badge" style="background-color: {sev_color};">{dossier.severity} ({dossier.threat_score}/100)</span></span>
-                <span><strong>Sealed:</strong> {dossier.generated_at[:19]} UTC</span>
+                <span><strong>Sealed:</strong> {dossier.generated_at[:19]} IST</span>
             </div>
         </header>
 
@@ -564,7 +564,7 @@ class ReportExporter:
             <table>
                 <thead>
                     <tr>
-                        <th>Time (UTC)</th>
+                        <th>Time (IST)</th>
                         <th>Subsystem</th>
                         <th>Action</th>
                         <th>Description</th>

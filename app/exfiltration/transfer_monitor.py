@@ -74,7 +74,7 @@ class TransferMonitor:
         with self._lock:
             record = OutboundTransferRecord(
                 transfer_id=f"XFER-{uuid.uuid4().hex[:8].upper()}",
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 destination_endpoint=destination_endpoint,
                 protocol=protocol.value if isinstance(protocol, TransferProtocol) else str(protocol),
                 bytes_transferred=bytes_transferred,

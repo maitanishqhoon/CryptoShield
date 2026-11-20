@@ -186,7 +186,7 @@ class KeyManager:
             "envelope_version": CONFIG.KEY_ENVELOPE_VERSION,
             "key_id": key_id,
             "algorithm": "RSA-OAEP-SHA256",
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(CONFIG.TIMEZONE).isoformat(),
             "kdf": kdf_params,
             "passphrase_verifier": {
                 "algorithm": "HMAC-SHA256",
@@ -288,7 +288,7 @@ class KeyManager:
                     "fingerprint": fingerprint,
                     "algorithm": "RSA-OAEP-SHA256",
                     "key_size_bits": key_size,
-                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_at": datetime.now(CONFIG.TIMEZONE).isoformat(),
                     "public_exponent": CONFIG.RSA_PUBLIC_EXPONENT,
                     "private_key_file": self.private_key_path.name,
                     "public_key_file": self.public_key_path.name,
@@ -543,7 +543,7 @@ class KeyManager:
             meta["private_key_protection"] = "Argon2id-AES256GCM"
             meta["private_key_kdf"] = new_envelope["kdf"]
             meta["private_key_cipher"] = new_envelope["encryption"]["cipher"]
-            meta["migrated_at"] = datetime.now(timezone.utc).isoformat()
+            meta["migrated_at"] = datetime.now(CONFIG.TIMEZONE).isoformat()
             temp_meta = self.key_metadata_path.with_suffix(".tmp")
             try:
                 with open(temp_meta, "w", encoding="utf-8") as f:

@@ -24,7 +24,7 @@ The user interface is split into three main regions:
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │ [1] TOP OPERATIONAL STATUS RIBBON                                                       │
-│     Brand Logo | UTC Clock | Lab Marker | Write Gate | Threat Score | DLP Posture       │
+│     Brand Logo | IST Clock | Lab Marker | Write Gate | Threat Score | DLP Posture       │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
 │ [2] CENTRAL TABBED OPERATOR CONSOLE (8 Dedicated Tabs)                                  │
 │     1. Dashboard & Telemetry          5. Recovery & Restoration                         │

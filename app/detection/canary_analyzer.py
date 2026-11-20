@@ -199,7 +199,7 @@ class CanaryAnalyzer:
 
                     alert = SecurityAlert(
                         alert_id=str(uuid.uuid4()),
-                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
                         priority=alert_priority,
                         alert_type=alert_type,
                         message=alert_msg,

@@ -16,6 +16,8 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from app.core.time import IST
+
 # ANSI colors for console output
 _COLORS = {
     logging.DEBUG: "\033[36m",     # Cyan
@@ -33,7 +35,7 @@ class ColoredConsoleFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         color = _COLORS.get(record.levelno, "")
-        timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S")
+        timestamp = datetime.fromtimestamp(record.created, tz=IST).strftime("%H:%M:%S")
         level_label = f"{color}{_BOLD}[{record.levelname:<8}]{_RESET}"
         name_label = f"\033[90m{record.name}\033[0m"
         message = record.getMessage()
@@ -54,7 +56,7 @@ class JsonLineFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: Dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(record.created, tz=IST).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),

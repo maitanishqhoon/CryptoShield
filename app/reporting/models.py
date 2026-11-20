@@ -52,7 +52,7 @@ class ForensicTimelineEntry:
     Standardized chronological entry in the unified forensic attack-and-defense timeline.
     Normalizes timestamps and actions across all CryptoShield subsystems.
     """
-    timestamp: str                                    # ISO 8601 UTC
+    timestamp: str                                    # ISO 8601 IST
     subsystem: str                                    # ForensicSubsystem string
     action: str                                       # Normalized action token
     description: str                                  # Human-readable contextual description
@@ -387,7 +387,7 @@ class ForensicDossier:
     """
     report_id: str                                    # REP-<8-hex>
     incident_id: str                                  # INC-<8-hex>
-    generated_at: str                                 # ISO 8601 UTC
+    generated_at: str                                 # ISO 8601 IST
     incident_status: str                              # OPEN, INVESTIGATING, RESOLVED
     threat_score: int                                 # 0 to 100
     severity: str                                     # LOW, MEDIUM, HIGH, CRITICAL

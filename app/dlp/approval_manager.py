@@ -70,7 +70,7 @@ class DLPApprovalManager:
             req = DLPApprovalRequest(
                 approval_token=token,
                 evaluation_id=evaluation.evaluation_id,
-                requested_at=datetime.now(timezone.utc).isoformat(),
+                requested_at=datetime.now(CONFIG.TIMEZONE).isoformat(),
                 status=DLPApprovalStatus.PENDING.value,
                 transfer_details=details,
             )
@@ -111,7 +111,7 @@ class DLPApprovalManager:
                 return False, req
 
             req.status = DLPApprovalStatus.APPROVED.value
-            req.decided_at = datetime.now(timezone.utc).isoformat()
+            req.decided_at = datetime.now(CONFIG.TIMEZONE).isoformat()
             req.decided_by = decided_by
             req.decision_reason = reason
 
@@ -144,7 +144,7 @@ class DLPApprovalManager:
                 return False, req
 
             req.status = DLPApprovalStatus.REJECTED.value
-            req.decided_at = datetime.now(timezone.utc).isoformat()
+            req.decided_at = datetime.now(CONFIG.TIMEZONE).isoformat()
             req.decided_by = decided_by
             req.decision_reason = reason
 
@@ -192,7 +192,7 @@ class DLPApprovalManager:
                         req_epoch = datetime.fromisoformat(req.requested_at).timestamp()
                         if now_epoch - req_epoch > limit:
                             req.status = DLPApprovalStatus.EXPIRED.value
-                            req.decided_at = datetime.now(timezone.utc).isoformat()
+                            req.decided_at = datetime.now(CONFIG.TIMEZONE).isoformat()
                             req.decision_reason = f"Expired after {limit}s without decision"
                             expired_count += 1
                     except Exception:

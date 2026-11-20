@@ -221,7 +221,7 @@ class ExfiltrationCorrelator:
 
         assessment = ExfiltrationAssessment(
             assessment_id=f"EXFIL-{uuid.uuid4().hex[:8].upper()}",
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             threat_score=threat_score,
             risk_tier=risk_tier,
             indicators=indicators,

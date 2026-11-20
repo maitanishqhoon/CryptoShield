@@ -140,7 +140,7 @@ class ThreatScorer:
 
         return DetectionResult(
             detection_id=str(uuid.uuid4()),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(CONFIG.TIMEZONE).isoformat(),
             threat_score=final_score,
             severity=severity,
             assessment=assessment,

@@ -95,7 +95,7 @@ flowchart TD
   - `event_type`: Strongly typed string token.
   - `data`: Dict of arbitrary payload data.
   - `source`: Identifier string (e.g., `"monitoring"`, `"detection"`, `"recovery"`).
-  - `timestamp`: ISO-8601 UTC timestamp.
+  - `timestamp`: ISO-8601 Indian Standard Time (IST, UTC+05:30) timestamp.
 - **Active Event Type Tokens:**
   - Filesystem: `FILE_CREATED`, `FILE_MODIFIED`, `FILE_DELETED`, `FILE_MOVED`, `DIR_CREATED`, `DIR_DELETED`, `DIR_MOVED`
   - Access / Canary: `FILE_READ`, `FILE_OPEN`, `FILE_ACCESS`, `CANARY_ACCESS`

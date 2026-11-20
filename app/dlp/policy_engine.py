@@ -201,7 +201,7 @@ class DLPPolicyEngine:
         """
         with self._lock:
             eval_id = f"DLP-EVAL-{uuid.uuid4().hex[:8].upper()}"
-            now_iso = datetime.now(timezone.utc).isoformat()
+            now_iso = datetime.now(CONFIG.TIMEZONE).isoformat()
 
             sorted_rules = sorted(
                 [r for r in self._rules.values() if r.enabled],
@@ -322,7 +322,7 @@ class DLPPolicyEngine:
             path.parent.mkdir(parents=True, exist_ok=True)
             data = {
                 "profile": self._profile.value,
-                "saved_at": datetime.now(timezone.utc).isoformat(),
+                "saved_at": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "rules": [r.to_dict() for r in self.get_rules()],
             }
             path.write_text(json.dumps(data, indent=2), encoding="utf-8")

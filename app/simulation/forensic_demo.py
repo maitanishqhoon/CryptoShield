@@ -91,7 +91,7 @@ class ControlledForensicDemo:
             # -----------------------------------------------------------------
             # Stage 1 & 2: Attack Simulation & Incident Creation
             # -----------------------------------------------------------------
-            ts_now = datetime.now(timezone.utc).isoformat()
+            ts_now = datetime.now(CONFIG.TIMEZONE).isoformat()
             det_id = f"DET-{uuid.uuid4().hex[:8].upper()}"
 
             canary_event = MonitoringEvent(
@@ -149,8 +149,8 @@ class ControlledForensicDemo:
             cont_data = {
                 "containment_id": cont_id,
                 "incident_id": incident.incident_id,
-                "start_timestamp": datetime.now(timezone.utc).isoformat(),
-                "completion_timestamp": datetime.now(timezone.utc).isoformat(),
+                "start_timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
+                "completion_timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "final_status": "CONTAINED",
                 "shutdown_method": "COOPERATIVE",
                 "write_gate_status": "CLOSED",
@@ -168,7 +168,7 @@ class ControlledForensicDemo:
 
             incident.metadata["containment_id"] = cont_id
             incident.timeline.append({
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "action": "CONTAINMENT_ENFORCED",
                 "description": f"Automated containment {cont_id} executed. Lab write-gate locked; process 9999 terminated.",
             })
@@ -195,7 +195,7 @@ class ControlledForensicDemo:
                 "blocked_bytes": 1048576,
             }
             incident.timeline.append({
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "action": "DLP_TRANSFER_BLOCKED",
                 "description": "DLP policy intercepted 2 unauthorized exfiltration attempts (1,048,576 bytes blocked; 0 bytes leaked).",
             })
@@ -209,8 +209,8 @@ class ControlledForensicDemo:
                 "workspace_id": "WS-FORENSIC-DEMO",
                 "snapshot_id": "SNAP-4D51E01B",
                 "mode": "FULL_WORKSPACE",
-                "started_at": datetime.now(timezone.utc).isoformat(),
-                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "started_at": datetime.now(CONFIG.TIMEZONE).isoformat(),
+                "completed_at": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "duration_seconds": 1.42,
                 "total_evaluated": 5,
                 "restored_count": 4,
@@ -226,7 +226,7 @@ class ControlledForensicDemo:
 
             incident.metadata["recovery_id"] = rec_id
             incident.timeline.append({
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(CONFIG.TIMEZONE).isoformat(),
                 "action": "RECOVERY_COMMITTED",
                 "description": f"Authenticated restoration {rec_id} complete. 4 files restored, 100% SHA-256 match.",
             })

@@ -145,8 +145,8 @@ class CryptoShieldMainWindow(QMainWindow):
         self.badge_dlp = create_status_badge("DLP: DEFAULT", ThemeColors.BLUE, ThemeColors.BLUE_BG)
         layout.addWidget(self.badge_dlp)
 
-        # Clock
-        self.lbl_clock = QLabel("UTC: --:--:--")
+        # Clock (Indian Standard Time - IST)
+        self.lbl_clock = QLabel("IST: --:--:--")
         self.lbl_clock.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-family: monospace; font-size: 11px;")
         layout.addWidget(self.lbl_clock)
 
@@ -166,8 +166,8 @@ class CryptoShieldMainWindow(QMainWindow):
         sb.addPermanentWidget(self.lbl_sb_bus)
 
     def _update_clock(self) -> None:
-        """Update the top ribbon UTC clock display."""
-        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        """Update the top ribbon IST clock display."""
+        now_str = datetime.now(CONFIG.TIMEZONE).strftime("%Y-%m-%d %H:%M:%S IST")
         self.lbl_clock.setText(now_str)
 
     def _connect_bridge(self) -> None:
