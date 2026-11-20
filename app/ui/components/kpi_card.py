@@ -29,30 +29,31 @@ class KPICard(QFrame):
 
         self.setObjectName("kpi-card")
         self.setFrameShape(QFrame.StyledPanel)
-        self.setMinimumHeight(105)
+        self.setMinimumHeight(85)
+        self.setMaximumHeight(110)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
-        layout.setSpacing(4)
+        layout.setContentsMargins(14, 10, 14, 10)
+        layout.setSpacing(2)
 
         # Title / Metric Category
         self.lbl_title = QLabel(title.upper())
         self.lbl_title.setStyleSheet(f"""
             QLabel {{
                 color: {ThemeColors.TEXT_SECONDARY};
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
             }}
         """)
         layout.addWidget(self.lbl_title)
 
-        # Primary Large Value
+        # Primary Value
         self.lbl_value = QLabel(initial_value)
         self.lbl_value.setStyleSheet(f"""
             QLabel {{
                 color: {ThemeColors.TEXT_PRIMARY};
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: 800;
                 font-family: "Segoe UI", sans-serif;
             }}
@@ -64,7 +65,7 @@ class KPICard(QFrame):
         self.lbl_subtitle.setStyleSheet(f"""
             QLabel {{
                 color: {ThemeColors.TEXT_MUTED};
-                font-size: 11px;
+                font-size: 10px;
             }}
         """)
         layout.addWidget(self.lbl_subtitle)
@@ -75,7 +76,7 @@ class KPICard(QFrame):
         """Applies dynamic border color styling based on accent_color."""
         self.setStyleSheet(f"""
             QFrame#kpi-card {{
-                background-color: {ThemeColors.BG_CARD};
+                background-color: {ThemeColors.BG_CARD_ALT};
                 border: 1px solid {ThemeColors.BORDER_DEFAULT};
                 border-left: 4px solid {self.accent_color};
                 border-radius: 6px;

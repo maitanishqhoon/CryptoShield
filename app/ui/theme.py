@@ -200,7 +200,7 @@ QComboBox QAbstractItemView {{
 }}
 
 /* Tables */
-QTableWidget {{
+QTableWidget, QTableView {{
     background-color: {ThemeColors.BG_CARD};
     alternate-background-color: {ThemeColors.BG_CARD_ALT};
     border: 1px solid {ThemeColors.BORDER_DEFAULT};
@@ -211,11 +211,27 @@ QTableWidget {{
     selection-color: {ThemeColors.TEXT_PRIMARY};
 }}
 
+QTableWidget::item, QTableView::item {{
+    padding: 6px 10px;
+    border: none;
+}}
+
+QTableWidget::item:selected, QTableView::item:selected {{
+    background-color: {ThemeColors.BG_HOVER};
+    color: {ThemeColors.TEXT_PRIMARY};
+}}
+
+QTableWidget::item:hover, QTableView::item:hover {{
+    background-color: rgba(56, 189, 248, 0.08);
+}}
+
 QHeaderView::section {{
     background-color: {ThemeColors.BG_ROOT};
     color: {ThemeColors.TEXT_SECONDARY};
-    padding: 6px;
+    padding: 8px 10px;
     font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
     border: none;
     border-bottom: 2px solid {ThemeColors.BORDER_DEFAULT};
     border-right: 1px solid {ThemeColors.BORDER_MUTED};

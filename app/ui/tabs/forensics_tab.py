@@ -7,7 +7,7 @@ chronological multi-subsystem attack timelines, and academic evaluation metrics.
 import json
 from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -66,9 +66,12 @@ class ForensicsTab(QWidget):
 
         # Splitter: Reports Catalog (Top) | Dossier Inspector (Bottom)
         splitter = QSplitter(Qt.Vertical)
+        splitter.setChildrenCollapsible(False)
         splitter.addWidget(self._build_catalog_panel())
         splitter.addWidget(self._build_inspector_panel())
-        splitter.setSizes([320, 480])
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 2)
+        splitter.setSizes([260, 480])
 
         main_layout.addWidget(splitter, 1)
 
@@ -87,7 +90,7 @@ class ForensicsTab(QWidget):
 
         self.input_inc_id = QLineEdit()
         self.input_inc_id.setPlaceholderText("Enter Incident ID (e.g. INC-XXXXXXXX)...")
-        self.input_inc_id.setFixedWidth(220)
+        self.input_inc_id.setFixedWidth(240)
         btn_row.addWidget(self.input_inc_id)
 
         self.btn_generate = QPushButton("Compile Report")
@@ -108,6 +111,20 @@ class ForensicsTab(QWidget):
 
         layout.addLayout(btn_row)
 
+        # Status & Audit Feedback Banner (Opaque, dedicated container between controls and catalog)
+        self.status_banner = QFrame()
+        self.status_banner.setObjectName("status-banner")
+        self.status_banner.setFixedHeight(32)
+        banner_layout = QHBoxLayout(self.status_banner)
+        banner_layout.setContentsMargins(12, 0, 12, 0)
+        banner_layout.setSpacing(6)
+
+        self.lbl_verify_status = QLabel("Ready. Select a report to inspect or audit cryptographic chain-of-custody seal.")
+        banner_layout.addWidget(self.lbl_verify_status)
+
+        layout.addWidget(self.status_banner)
+        self._update_banner_style("info")
+
         # Table of reports
         self.table_reports = QTableWidget()
         self.table_reports.setColumnCount(5)
@@ -118,22 +135,27 @@ class ForensicsTab(QWidget):
             "Chain of Custody SHA-256 Seal",
             "Available Formats",
         ])
-        self.table_reports.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.table_reports.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.table_reports.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        self.table_reports.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
-        self.table_reports.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        header = self.table_reports.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.Interactive)
+        header.setSectionResizeMode(2, QHeaderView.Interactive)
+        header.setSectionResizeMode(3, QHeaderView.Stretch)
+        header.setSectionResizeMode(4, QHeaderView.Interactive)
+        self.table_reports.setColumnWidth(0, 150)
+        self.table_reports.setColumnWidth(1, 150)
+        self.table_reports.setColumnWidth(2, 170)
+        self.table_reports.setColumnWidth(4, 180)
         self.table_reports.verticalHeader().setVisible(False)
+        self.table_reports.verticalHeader().setDefaultSectionSize(36)
+        self.table_reports.verticalHeader().setMinimumSectionSize(30)
+        self.table_reports.setMinimumHeight(160)
+        self.table_reports.setShowGrid(True)
         self.table_reports.setSelectionBehavior(QTableWidget.SelectRows)
         self.table_reports.setAlternatingRowColors(True)
         self.table_reports.cellClicked.connect(self._on_report_selected)
-        layout.addWidget(self.table_reports)
+        layout.addWidget(self.table_reports, 1)
 
-        # Verification Status Label
-        self.lbl_verify_status = QLabel("Select a report and click 'Cryptographically Verify Seal' to audit integrity.")
-        self.lbl_verify_status.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-size: 11px;")
-        layout.addWidget(self.lbl_verify_status)
-
+        group.setMinimumHeight(240)
         return group
 
     def _build_inspector_panel(self) -> QGroupBox:
@@ -148,7 +170,13 @@ class ForensicsTab(QWidget):
         # Tab 1: Academic KPIs
         self.tab_kpis = QWidget()
         kpi_layout = QVBoxLayout(self.tab_kpis)
+        kpi_layout.setContentsMargins(14, 14, 14, 14)
+        kpi_layout.setSpacing(12)
+
         kpi_grid = QGridLayout()
+        kpi_grid.setHorizontalSpacing(14)
+        kpi_grid.setVerticalSpacing(14)
+        kpi_grid.setContentsMargins(0, 0, 0, 0)
 
         self.kpi_latency = KPICard("Detection Latency", "—", "Time to first detection", ThemeColors.CYAN)
         kpi_grid.addWidget(self.kpi_latency, 0, 0)
@@ -169,6 +197,7 @@ class ForensicsTab(QWidget):
         kpi_grid.addWidget(self.kpi_hash_match, 1, 2)
 
         kpi_layout.addLayout(kpi_grid)
+        kpi_layout.addStretch(1)
         self.tabs_inspector.addTab(self.tab_kpis, "Academic KPIs")
 
         # Tab 2: Chronological Timeline
@@ -182,6 +211,8 @@ class ForensicsTab(QWidget):
         self.table_timeline.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.table_timeline.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         self.table_timeline.verticalHeader().setVisible(False)
+        self.table_timeline.verticalHeader().setDefaultSectionSize(32)
+        self.table_timeline.setShowGrid(True)
         self.table_timeline.setAlternatingRowColors(True)
         time_layout.addWidget(self.table_timeline)
         self.tabs_inspector.addTab(self.tab_timeline, "Chronological Attack Timeline")
@@ -217,16 +248,25 @@ class ForensicsTab(QWidget):
                 else:
                     formats = "JSON, MD, CSV, HTML"
                 seal = r.dossier_sha256 if r.dossier_sha256 else "UNSEALED"
+                gen_time = str(r.generated_at)[:19].replace("T", " ")
 
                 items = [
                     QTableWidgetItem(str(r.report_id)),
                     QTableWidgetItem(str(r.incident_id)),
-                    QTableWidgetItem(str(r.generated_at)[:19]),
+                    QTableWidgetItem(gen_time),
                     QTableWidgetItem(str(seal)),
                     QTableWidgetItem(str(formats)),
                 ]
                 items[0].setForeground(QColor(ThemeColors.CYAN))
-                items[3].setForeground(QColor(ThemeColors.PURPLE))
+                items[3].setForeground(QColor(ThemeColors.TEXT_ACCENT))
+
+                font = QFont("Consolas", 9)
+                font.setStyleHint(QFont.Monospace)
+                items[3].setFont(font)
+
+                items[0].setToolTip(f"Report ID: {r.report_id}")
+                items[1].setToolTip(f"Incident ID: {r.incident_id}")
+                items[3].setToolTip(f"Chain of Custody SHA-256 Digest:\n{seal}")
 
                 for col, itm in enumerate(items):
                     itm.setFlags(itm.flags() & ~Qt.ItemIsEditable)
@@ -236,7 +276,7 @@ class ForensicsTab(QWidget):
                 self.table_reports.selectRow(0)
                 self._load_dossier(self._reports_meta[0].report_id)
         except Exception as e:
-            self.lbl_verify_status.setText(f"[-] Failed to load reports: {e}")
+            self._update_banner_style("error", f"[-] Failed to load reports: {e}")
 
     def _on_report_selected(self, row: int, col: int) -> None:
         """User clicked a row in the catalog table."""
@@ -266,8 +306,9 @@ class ForensicsTab(QWidget):
             for row, t in enumerate(dossier.timeline):
                 sub = t.subsystem.value if hasattr(t.subsystem, "value") else str(t.subsystem)
                 action_name = getattr(t, "action", getattr(t, "event_type", "EVENT"))
+                ts_str = str(t.timestamp)[:19].replace("T", " ")
                 items = [
-                    QTableWidgetItem(str(t.timestamp)[:19]),
+                    QTableWidgetItem(ts_str),
                     QTableWidgetItem(str(sub)),
                     QTableWidgetItem(str(action_name)),
                     QTableWidgetItem(str(t.description)),
@@ -299,38 +340,69 @@ class ForensicsTab(QWidget):
             self.txt_json.setPlainText(json.dumps(data, indent=2))
 
         except Exception as e:
-            self.lbl_verify_status.setText(f"[-] Error loading dossier: {e}")
+            self._update_banner_style("error", f"[-] Error loading dossier: {e}")
+
+    def _update_banner_style(self, status_type: str = "info", message: Optional[str] = None) -> None:
+        """Updates the status banner styling and text."""
+        if message is not None:
+            self.lbl_verify_status.setText(message)
+
+        if status_type == "success":
+            color = ThemeColors.GREEN
+            border_left = f"3px solid {ThemeColors.GREEN}"
+            bg = ThemeColors.BG_CARD_ALT
+        elif status_type == "error":
+            color = ThemeColors.RED
+            border_left = f"3px solid {ThemeColors.RED}"
+            bg = "#251217"
+        else:
+            color = ThemeColors.TEXT_MUTED
+            border_left = f"3px solid {ThemeColors.BORDER_DEFAULT}"
+            bg = ThemeColors.BG_CARD_ALT
+
+        self.status_banner.setStyleSheet(f"""
+            QFrame#status-banner {{
+                background-color: {bg};
+                border: 1px solid {ThemeColors.BORDER_DEFAULT};
+                border-left: {border_left};
+                border-radius: 4px;
+            }}
+        """)
+        self.lbl_verify_status.setStyleSheet(
+            f"color: {color}; font-size: 11px; font-weight: {'700' if status_type != 'info' else '400'};"
+        )
 
     def _verify_seal(self) -> None:
         """Verifies SHA-256 chain-of-custody seal on the selected report."""
         row = self.table_reports.currentRow()
         if row < 0 or row >= len(self._reports_meta):
-            self.lbl_verify_status.setText("[-] Please select a report from the table above.")
+            self._update_banner_style("error", "[-] Please select a report from the table above.")
             return
 
         rep_id = self._reports_meta[row].report_id
         valid, msg = self.coordinator.verify_report(rep_id)
 
-        color = ThemeColors.GREEN if valid else ThemeColors.RED
-        self.lbl_verify_status.setText(f"Audit Result: {msg}")
-        self.lbl_verify_status.setStyleSheet(f"color: {color}; font-weight: 700;")
+        status_type = "success" if valid else "error"
+        self._update_banner_style(status_type, f"Audit Result: {msg}")
 
     def _generate_report(self) -> None:
         """Generates a new forensic report for an incident ID."""
         inc_id = self.input_inc_id.text().strip()
         if not inc_id:
-            self.lbl_verify_status.setText("[-] Enter an Incident ID (e.g. INC-XXXXXXXX) to compile report.")
+            self._update_banner_style("error", "[-] Enter an Incident ID (e.g. INC-XXXXXXXX) to compile report.")
             return
 
         try:
-            dossier, paths = self.coordinator.generate_report(inc_id)
-            self.lbl_verify_status.setText(f"[+] Successfully compiled report {dossier.report_id} across 4 formats!")
-            self.lbl_verify_status.setStyleSheet(f"color: {ThemeColors.GREEN}; font-weight: 700;")
+            dossier = self.coordinator.generate_report(inc_id)
+            formats_count = len(dossier.export_files) if hasattr(dossier, "export_files") and dossier.export_files else 4
+            self._update_banner_style(
+                "success",
+                f"[+] Successfully compiled report {dossier.report_id} across {formats_count} formats (JSON, MD, CSV, HTML)!"
+            )
             self.refresh_catalog()
             self._load_dossier(dossier.report_id)
         except Exception as e:
-            self.lbl_verify_status.setText(f"[-] Failed to generate report: {e}")
-            self.lbl_verify_status.setStyleSheet(f"color: {ThemeColors.RED};")
+            self._update_banner_style("error", f"[-] Failed to generate report: {e}")
 
     def _on_bridge_incident_resolved(self, incident_id: str, notes: str) -> None:
         """Auto-populate incident ID input and refresh catalog upon incident resolution."""

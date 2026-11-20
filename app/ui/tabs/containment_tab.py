@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -75,9 +75,14 @@ class ContainmentTab(QWidget):
 
         # 2. Main Content Splitter (Process Registry & Containment History)
         splitter = QSplitter(Qt.Vertical)
+        splitter.setChildrenCollapsible(False)
         splitter.addWidget(self._build_process_panel())
         splitter.addWidget(self._build_history_panel())
-        splitter.setSizes([260, 340])
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([300, 300])
         main_layout.addWidget(splitter, 1)
 
         # Connect Bridge signals if available
@@ -90,9 +95,9 @@ class ContainmentTab(QWidget):
 
     def _build_gate_panel(self) -> QGroupBox:
         """LabWriteGate emergency controls and active state indicator."""
-        group = QGroupBox("LAB WRITE GATE CONTROL & ENFORCEMENT POSTURE")
+        group = QGroupBox("LAB WRITE GATE CONTROL && ENFORCEMENT POSTURE")
         layout = QVBoxLayout(group)
-        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(10)
 
         top_row = QHBoxLayout()
@@ -108,6 +113,7 @@ class ContainmentTab(QWidget):
         # Emergency Lock Button
         self.btn_lock = QPushButton("Emergency Lock Gate")
         self.btn_lock.setObjectName("btn-danger")
+        self.btn_lock.setFixedHeight(34)
         self.btn_lock.setStyleSheet(f"""
             QPushButton {{
                 background-color: {ThemeColors.RED_BG};
@@ -128,6 +134,7 @@ class ContainmentTab(QWidget):
         # Unlock Button
         self.btn_unlock = QPushButton("Unlock Gate")
         self.btn_unlock.setObjectName("btn-success")
+        self.btn_unlock.setFixedHeight(34)
         self.btn_unlock.setStyleSheet(f"""
             QPushButton {{
                 background-color: {ThemeColors.GREEN_BG};
@@ -148,22 +155,35 @@ class ContainmentTab(QWidget):
         top_row.addStretch()
         layout.addLayout(top_row)
 
-        # Gate details grid
-        grid = QGridLayout()
-        grid.setSpacing(6)
+        # Gate details row: Active State File & Containment Target in a clean horizontal flow
+        details_layout = QHBoxLayout()
+        details_layout.setSpacing(28)
 
-        grid.addWidget(QLabel("Active State File:"), 0, 0)
+        state_box = QHBoxLayout()
+        state_box.setSpacing(8)
+        lbl_state_title = QLabel("Active State File:")
+        lbl_state_title.setStyleSheet(f"color: {ThemeColors.TEXT_SECONDARY}; font-weight: 600; font-size: 11px;")
+        state_box.addWidget(lbl_state_title)
+
         state_dir = getattr(CONFIG, "containment_dir", getattr(CONFIG, "CONTAINMENT_DIR", CONFIG.LAB_DIR))
         self.lbl_gate_file = QLabel(str(state_dir / ".write_gate_state"))
-        self.lbl_gate_file.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-family: monospace; font-size: 11px;")
-        grid.addWidget(self.lbl_gate_file, 0, 1)
+        self.lbl_gate_file.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-family: 'Consolas', monospace; font-size: 11px;")
+        state_box.addWidget(self.lbl_gate_file)
+        details_layout.addLayout(state_box)
 
-        grid.addWidget(QLabel("Containment Target:"), 1, 0)
+        target_box = QHBoxLayout()
+        target_box.setSpacing(8)
+        lbl_target_title = QLabel("Containment Target:")
+        lbl_target_title.setStyleSheet(f"color: {ThemeColors.TEXT_SECONDARY}; font-weight: 600; font-size: 11px;")
+        target_box.addWidget(lbl_target_title)
+
         self.lbl_lab_dir = QLabel(str(CONFIG.LAB_DIR))
-        self.lbl_lab_dir.setStyleSheet(f"color: {ThemeColors.TEXT_ACCENT}; font-family: monospace; font-size: 11px;")
-        grid.addWidget(self.lbl_lab_dir, 1, 1)
+        self.lbl_lab_dir.setStyleSheet(f"color: {ThemeColors.TEXT_ACCENT}; font-family: 'Consolas', monospace; font-size: 11px;")
+        target_box.addWidget(self.lbl_lab_dir)
+        details_layout.addLayout(target_box)
 
-        layout.addLayout(grid)
+        details_layout.addStretch()
+        layout.addLayout(details_layout)
 
         # Safety boundary note
         lbl_safety = QLabel(
@@ -208,18 +228,33 @@ class ContainmentTab(QWidget):
             "Executable Path",
             "Registered At",
         ])
-        self.table_processes.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.table_processes.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch)
+        header = self.table_processes.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.Interactive)
+        header.setSectionResizeMode(2, QHeaderView.Interactive)
+        header.setSectionResizeMode(3, QHeaderView.Interactive)
+        header.setSectionResizeMode(4, QHeaderView.Stretch)
+        header.setSectionResizeMode(5, QHeaderView.Interactive)
+        self.table_processes.setColumnWidth(0, 80)
+        self.table_processes.setColumnWidth(1, 150)
+        self.table_processes.setColumnWidth(2, 160)
+        self.table_processes.setColumnWidth(3, 130)
+        self.table_processes.setColumnWidth(5, 170)
         self.table_processes.verticalHeader().setVisible(False)
+        self.table_processes.verticalHeader().setDefaultSectionSize(34)
+        self.table_processes.verticalHeader().setMinimumSectionSize(28)
+        self.table_processes.setMinimumHeight(130)
+        self.table_processes.setShowGrid(True)
         self.table_processes.setSelectionBehavior(QTableWidget.SelectRows)
         self.table_processes.setAlternatingRowColors(True)
-        layout.addWidget(self.table_processes)
+        layout.addWidget(self.table_processes, 1)
 
+        group.setMinimumHeight(190)
         return group
 
     def _build_history_panel(self) -> QGroupBox:
         """Recorded containment actions and JSON audit dossiers."""
-        group = QGroupBox("RECORDED CONTAINMENT OPERATIONS & AUDIT DOSSIERS")
+        group = QGroupBox("RECORDED CONTAINMENT OPERATIONS && AUDIT DOSSIERS")
         layout = QVBoxLayout(group)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
@@ -237,6 +272,8 @@ class ContainmentTab(QWidget):
 
         # Horizontal Splitter between History Table and Dossier Viewer
         h_splitter = QSplitter(Qt.Horizontal)
+        h_splitter.setChildrenCollapsible(False)
+        h_splitter.setMinimumHeight(120)
 
         # History table
         self.table_history = QTableWidget()
@@ -249,9 +286,23 @@ class ContainmentTab(QWidget):
             "Final Status",
             "Start Timestamp",
         ])
-        self.table_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.table_history.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        h_header = self.table_history.horizontalHeader()
+        h_header.setSectionResizeMode(0, QHeaderView.Interactive)
+        h_header.setSectionResizeMode(1, QHeaderView.Interactive)
+        h_header.setSectionResizeMode(2, QHeaderView.Stretch)
+        h_header.setSectionResizeMode(3, QHeaderView.Interactive)
+        h_header.setSectionResizeMode(4, QHeaderView.Interactive)
+        h_header.setSectionResizeMode(5, QHeaderView.Interactive)
+        self.table_history.setColumnWidth(0, 140)
+        self.table_history.setColumnWidth(1, 140)
+        self.table_history.setColumnWidth(3, 140)
+        self.table_history.setColumnWidth(4, 120)
+        self.table_history.setColumnWidth(5, 170)
         self.table_history.verticalHeader().setVisible(False)
+        self.table_history.verticalHeader().setDefaultSectionSize(34)
+        self.table_history.verticalHeader().setMinimumSectionSize(28)
+        self.table_history.setMinimumHeight(120)
+        self.table_history.setShowGrid(True)
         self.table_history.setSelectionBehavior(QTableWidget.SelectRows)
         self.table_history.setAlternatingRowColors(True)
         self.table_history.itemSelectionChanged.connect(self._on_history_selected)
@@ -260,21 +311,24 @@ class ContainmentTab(QWidget):
         # JSON Dossier viewer
         self.txt_dossier = QTextEdit()
         self.txt_dossier.setReadOnly(True)
+        self.txt_dossier.setMinimumHeight(120)
         self.txt_dossier.setPlaceholderText("Select a containment record from the table to view complete JSON audit dossier...")
         self.txt_dossier.setStyleSheet(f"""
             QTextEdit {{
                 background-color: {ThemeColors.BG_INPUT};
                 color: {ThemeColors.TEXT_PRIMARY};
-                font-family: monospace;
+                font-family: "Consolas", monospace;
                 font-size: 11px;
                 border: 1px solid {ThemeColors.BORDER_DEFAULT};
                 border-radius: 4px;
+                padding: 6px;
             }}
         """)
         h_splitter.addWidget(self.txt_dossier)
         h_splitter.setSizes([550, 450])
 
         layout.addWidget(h_splitter, 1)
+        group.setMinimumHeight(180)
         return group
 
     def _lock_gate(self) -> None:
@@ -328,13 +382,14 @@ class ContainmentTab(QWidget):
             self.table_processes.setRowCount(len(records))
             for row, rec in enumerate(records):
                 status_str = str(rec.lifecycle_status)
+                reg_time = str(rec.registered_at)[:19].replace("T", " ")
                 items = [
                     QTableWidgetItem(str(rec.pid)),
                     QTableWidgetItem(str(rec.simulation_run_id)),
                     QTableWidgetItem(str(rec.expected_identity)),
                     QTableWidgetItem(status_str),
                     QTableWidgetItem(str(rec.executable_path)),
-                    QTableWidgetItem(str(rec.registered_at)[:19]),
+                    QTableWidgetItem(reg_time),
                 ]
 
                 # Color code status
@@ -347,6 +402,9 @@ class ContainmentTab(QWidget):
 
                 items[0].setForeground(QColor(ThemeColors.CYAN))
                 items[1].setForeground(QColor(ThemeColors.PURPLE))
+
+                items[0].setToolTip(f"Process PID: {rec.pid}")
+                items[4].setToolTip(str(rec.executable_path))
 
                 for col, itm in enumerate(items):
                     itm.setFlags(itm.flags() & ~Qt.ItemIsEditable)
@@ -368,17 +426,20 @@ class ContainmentTab(QWidget):
                 actions_str = ", ".join(rec.actions_taken) if rec.actions_taken else "NONE"
                 status_str = str(rec.final_status)
                 score_str = f"{rec.initial_threat_score} ({rec.severity})"
+                start_time = str(rec.start_timestamp)[:19].replace("T", " ")
                 items = [
                     QTableWidgetItem(str(rec.containment_id)),
                     QTableWidgetItem(str(rec.simulation_run_id or "N/A")),
                     QTableWidgetItem(actions_str),
                     QTableWidgetItem(score_str),
                     QTableWidgetItem(status_str),
-                    QTableWidgetItem(str(rec.start_timestamp)[:19]),
+                    QTableWidgetItem(start_time),
                 ]
 
                 # Colors
                 items[0].setForeground(QColor(ThemeColors.PURPLE))
+                items[0].setToolTip(f"Containment ID: {rec.containment_id}")
+                items[2].setToolTip(actions_str)
                 if status_str == "CONTAINED":
                     items[4].setForeground(QColor(ThemeColors.GREEN))
                 elif status_str == "FAILED":
