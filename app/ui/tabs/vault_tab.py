@@ -8,12 +8,15 @@ from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
+    QApplication,
     QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
+    QInputDialog,
     QLabel,
+    QLineEdit,
     QProgressBar,
     QPushButton,
     QTableWidget,
@@ -118,6 +121,17 @@ class VaultTab(QWidget):
         self.btn_verify.setObjectName("btn-success")
         self.btn_verify.clicked.connect(self._verify_selected)
         btn_row.addWidget(self.btn_verify)
+
+        # Passphrase input for cryptographic verification & envelope access
+        lbl_pass = QLabel("Passphrase:")
+        lbl_pass.setStyleSheet(f"color: {ThemeColors.TEXT_SECONDARY}; font-weight: 600; font-size: 11px;")
+        btn_row.addWidget(lbl_pass)
+
+        self.input_passphrase = QLineEdit()
+        self.input_passphrase.setEchoMode(QLineEdit.Password)
+        self.input_passphrase.setPlaceholderText("Enter vault passphrase...")
+        self.input_passphrase.setFixedWidth(200)
+        btn_row.addWidget(self.input_passphrase)
 
         btn_row.addStretch()
         layout.addLayout(btn_row)
@@ -291,6 +305,26 @@ class VaultTab(QWidget):
         snap = self._snapshots[row]
         snap_id = snap.snapshot_id
 
+        # Retrieve passphrase
+        passphrase = self.input_passphrase.text().strip()
+        if not passphrase and QApplication.platformName() != "offscreen":
+            dialog_pass, ok = QInputDialog.getText(
+                self,
+                "Cryptographic Verification Authorization",
+                f"Enter RSA-3072 Private Key Passphrase to audit snapshot '{snap_id}':",
+                QLineEdit.Password,
+            )
+            if ok and dialog_pass.strip():
+                passphrase = dialog_pass.strip()
+                self.input_passphrase.setText(passphrase)
+
+        if not passphrase:
+            self.txt_console.setPlainText(
+                "[-] Verification aborted: RSA-3072 private-key passphrase is required to unwrap snapshot manifest.\n"
+                "    Please enter the vault passphrase in the Passphrase field or dialog."
+            )
+            return
+
         self.btn_verify.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
@@ -303,7 +337,7 @@ class VaultTab(QWidget):
                     pct = int((cur / tot) * 100) if tot > 0 else 0
                     progress(pct, 100, f"Verifying AES-GCM tags: {cur:,}/{tot:,}...")
 
-            res = verifier.verify_snapshot(snap_id, progress_callback=local_cb)
+            res = verifier.verify_snapshot(snap_id, passphrase=passphrase, progress_callback=local_cb)
             return res
 
         self.active_worker = AsyncWorker(verify_payload)
@@ -315,16 +349,23 @@ class VaultTab(QWidget):
     def _on_verify_finished(self, res) -> None:
         self.btn_verify.setEnabled(True)
         self.progress_bar.setValue(100)
-        status_str = "[PASS] VALID & INTACT" if res.is_valid else "[FAIL] CORRUPTED/TAMPERED"
-        color_str = "GREEN" if res.is_valid else "RED"
+        is_valid = getattr(res, "is_valid", getattr(res, "outcome", "") == "FULLY_VERIFIED")
+        status_str = "[PASS] VALID & INTACT" if is_valid else f"[FAIL] {getattr(res, 'outcome', 'FAILED')}"
+
+        total_obs = getattr(res, "total_manifest_objects", getattr(res, "total_objects", 0))
+        valid_obs = getattr(res, "verified_objects", getattr(res, "valid_objects", 0))
+        failed_obs = getattr(res, "failed_objects", 0)
+        tampered_obs = len(getattr(res, "tampered_objects", getattr(res, "corrupted_objects", [])))
+        missing_obs = len(getattr(res, "missing_objects", []))
 
         self.txt_console.setPlainText(
             f"[+] Cryptographic Audit Result: {status_str}\n"
             f"    - Snapshot ID       : {res.snapshot_id}\n"
-            f"    - Objects Verified  : {res.total_objects:,}\n"
-            f"    - Valid Containers  : {res.valid_objects:,}\n"
-            f"    - Corrupted Objects : {len(res.corrupted_objects):,}\n"
-            f"    - Missing Objects   : {len(res.missing_objects):,}\n"
+            f"    - Objects Verified  : {valid_obs:,} / {total_obs:,}\n"
+            f"    - Valid Containers  : {valid_obs:,}\n"
+            f"    - Tampered Objects  : {tampered_obs:,}\n"
+            f"    - Missing Objects   : {missing_obs:,}\n"
+            f"    - Failed Objects    : {failed_obs:,}\n"
             f"    - Audit Duration    : {res.duration_seconds:.2f}s"
         )
 

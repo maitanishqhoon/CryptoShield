@@ -144,3 +144,8 @@ def test_vault_tab(qapp):
     vault.table_snaps.selectRow(0)
     vault._inspect_selected()
     assert "snapshot_id" in vault.txt_console.toPlainText()
+
+    # Passphrase prompt and verification validation
+    assert hasattr(vault, "input_passphrase")
+    vault._verify_selected()
+    assert "Verification aborted: RSA-3072 private-key passphrase is required" in vault.txt_console.toPlainText()

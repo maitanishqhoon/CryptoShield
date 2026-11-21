@@ -205,6 +205,22 @@ class SnapshotVerificationReport:
     details: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     summary: str = ""
 
+    @property
+    def is_valid(self) -> bool:
+        return self.outcome == SnapshotVerificationOutcome.FULLY_VERIFIED.value
+
+    @property
+    def total_objects(self) -> int:
+        return self.total_manifest_objects
+
+    @property
+    def valid_objects(self) -> int:
+        return self.verified_objects
+
+    @property
+    def corrupted_objects(self) -> List[str]:
+        return self.tampered_objects
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
