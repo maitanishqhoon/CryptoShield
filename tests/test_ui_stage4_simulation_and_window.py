@@ -127,6 +127,15 @@ def test_crypto_shield_main_window(qapp):
     qapp.processEvents()
     assert "UNLOCKED" in window.badge_gate.text()
 
+    # Test DLP posture badge update
+    bridge.dlp_profile_changed.emit("STRICT")
+    qapp.processEvents()
+    assert "DLP: STRICT" in window.badge_dlp.text()
+
+    bridge.dlp_profile_changed.emit("DEFAULT")
+    qapp.processEvents()
+    assert "DLP: DEFAULT" in window.badge_dlp.text()
+
     # Test status bar
     assert window.statusBar() is not None
     assert "ONLINE" in window.lbl_sb_bus.text()

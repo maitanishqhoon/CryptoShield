@@ -29,6 +29,7 @@ class EventBusBridge(QObject):
     containment_triggered = Signal(dict)    # Containment details dict
     write_gate_changed = Signal(bool)       # (is_locked: bool)
     dlp_interception = Signal(dict)         # DLP evaluation / interception dict
+    dlp_profile_changed = Signal(str)       # Active security posture profile name
     recovery_progress = Signal(str, int, int) # (status_text, current, total)
     log_emitted = Signal(str)               # Formatted human-readable message
 
@@ -100,6 +101,11 @@ class EventBusBridge(QObject):
                 self.dlp_interception.emit(data)
                 action = data.get("action", "EVALUATE")
                 self.log_emitted.emit(f"[DLP] Transfer {action} - Policy rule matched")
+
+            elif et == "DLP_PROFILE_CHANGED":
+                profile_name = str(data.get("profile", data.get("new_profile", "DEFAULT")))
+                self.dlp_profile_changed.emit(profile_name)
+                self.log_emitted.emit(f"[DLP] Security posture profile switched to {profile_name}")
 
         except Exception as e:
             logger.error(f"Error dispatching bus event through bridge: {e}")

@@ -327,7 +327,7 @@ class SimulationTab(QWidget):
         def dlp_payload():
             sim = ControlledDLPSimulator()
             t0 = time.perf_counter()
-            res = sim.run_demonstration()
+            res = sim.run_demonstration(auto_approve=False)
             elapsed = time.perf_counter() - t0
             sim.cleanup()
             return res, elapsed
@@ -348,9 +348,16 @@ class SimulationTab(QWidget):
         self.kpi_elapsed.set_value(f"{elapsed:.2f}s", ThemeColors.CYAN)
 
         self._append_log(f"[+] DLP multi-tier enforcement demonstration completed in {elapsed:.2f}s!")
-        for step in res.step_results:
+        steps = getattr(res, "steps", getattr(res, "step_results", []))
+        for step in steps:
+            action_val = getattr(step, "dlp_action", getattr(step, "action", ""))
+            if hasattr(action_val, "value"):
+                action_val = action_val.value
+            target_class = getattr(step, "target_classification", getattr(step, "classification", ""))
+            bytes_val = getattr(step, "bytes_transferred", getattr(step, "bytes_transmitted", 0))
+            reason_val = getattr(step, "reason", getattr(step, "message", ""))
             self._append_log(
-                f"    - {step.classification:<12} -> {step.action.value:<16} | Bytes: {step.bytes_transmitted} | Result: {step.message}"
+                f"    - {target_class:<12} -> {str(action_val):<16} | Bytes: {bytes_val} | Result: {reason_val}"
             )
 
     # -------------------------------------------------------------------------

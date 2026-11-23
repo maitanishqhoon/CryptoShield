@@ -90,7 +90,8 @@ class ControlledDLPSimulator:
         self.target_dir = self.lab_dir / f"dlp_demo_{self.run_id}"
         self.bus = event_bus or BUS
 
-        self.dlp_coordinator = dlp_coordinator or DLPCoordinator(event_bus=self.bus)
+        from app.dlp.dlp_coordinator import DLP_COORDINATOR
+        self.dlp_coordinator = dlp_coordinator or DLP_COORDINATOR
         self.mock_receiver = mock_receiver
         self.transfer_monitor = transfer_monitor or TransferMonitor(
             event_bus=self.bus,
@@ -153,6 +154,7 @@ class ControlledDLPSimulator:
         self,
         mock_host: str = "127.0.0.1",
         mock_port: int = CONFIG.EXFILTRATION_MOCK_PORT,
+        auto_approve: bool = True,
     ) -> DLPSimulationResult:
         """
         Executes the 4-tier DLP demonstration:
@@ -232,7 +234,7 @@ class ControlledDLPSimulator:
         )
 
         approval_token = rec_conf.metadata.get("approval_token")
-        if approval_token:
+        if approval_token and auto_approve:
             # Demonstrate operator authorization: approve the pending token
             ok, approved_req = self.dlp_coordinator.approve_transfer(
                 approval_token=approval_token,

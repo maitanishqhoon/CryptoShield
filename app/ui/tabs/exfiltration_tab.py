@@ -177,6 +177,12 @@ class ExfiltrationTab(QWidget):
 
         # Action Buttons
         btn_row = QHBoxLayout()
+        self.btn_stage_test = QPushButton("Simulate Sensitive Transfer")
+        self.btn_stage_test.setObjectName("btn-primary")
+        self.btn_stage_test.setToolTip("Queue an outbound transfer of CONFIDENTIAL records to test the quarantine gate")
+        self.btn_stage_test.clicked.connect(self._stage_test_transfer)
+        btn_row.addWidget(self.btn_stage_test)
+
         self.btn_approve = QPushButton("Approve Selected Transfer")
         self.btn_approve.setObjectName("btn-success")
         self.btn_approve.clicked.connect(self._approve_transfer)
@@ -321,6 +327,20 @@ class ExfiltrationTab(QWidget):
         profile = DLPProfile[prof_name]
         self.dlp_coord.set_profile(profile)
         self.refresh_profile_and_rules()
+
+    def _stage_test_transfer(self) -> None:
+        """Simulate an outbound transfer of CONFIDENTIAL data to test the DLP gate & approval queue."""
+        sample_payload = b'{"employee_records": [{"id": 101, "name": "Alice Smith", "salary": 145000}]}'
+        self.dlp_coord.evaluate_transfer(
+            destination_endpoint="127.0.0.1:8999",
+            payload_bytes=sample_payload,
+            file_count=1,
+            classifications=["CONFIDENTIAL"],
+            departments=["Finance"],
+            contains_canary=False,
+        )
+        self.refresh_approvals()
+        self.refresh_audit_log()
 
     def _approve_transfer(self) -> None:
         """Approve selected quarantined transfer request."""

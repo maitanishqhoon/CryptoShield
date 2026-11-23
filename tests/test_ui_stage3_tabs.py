@@ -145,6 +145,11 @@ def test_exfiltration_tab(qapp):
     tab._reject_transfer()
     assert tab.table_approvals.item(row_req2, 4).text() == "REJECTED"
 
+    # Test direct simulated sensitive transfer staging
+    initial_approvals = tab.table_approvals.rowCount()
+    tab._stage_test_transfer()
+    assert tab.table_approvals.rowCount() == initial_approvals + 1
+
     # 4. Test bridge DLP interception signals
     bridge.dlp_interception.emit({"action": "BLOCK", "rule_id": "DLP-001"})
     dlp_bus_ev = Event(

@@ -95,6 +95,13 @@ class DLPCoordinator:
                 rule_id=None,
                 details={"new_profile": profile.value},
             )
+            self.bus.publish(
+                Event(
+                    event_type="DLP_PROFILE_CHANGED",
+                    data={"profile": profile.value, "new_profile": profile.value},
+                    source="dlp_coordinator",
+                )
+            )
 
     def evaluate_transfer(
         self,

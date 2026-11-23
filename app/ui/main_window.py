@@ -174,6 +174,8 @@ class CryptoShieldMainWindow(QMainWindow):
         """Listen to EventBusBridge signals for top ribbon updates."""
         self.bridge.threat_updated.connect(self._on_threat_updated)
         self.bridge.write_gate_changed.connect(self._on_gate_changed)
+        if hasattr(self.bridge, "dlp_profile_changed"):
+            self.bridge.dlp_profile_changed.connect(self._on_dlp_profile_changed)
 
     def _on_threat_updated(self, score: int, severity: str) -> None:
         """Update top threat badge."""
@@ -220,12 +222,52 @@ class CryptoShieldMainWindow(QMainWindow):
                 }}
             """)
 
+    def _on_dlp_profile_changed(self, profile: str) -> None:
+        """Update top DLP posture badge."""
+        prof_upper = profile.upper()
+        if prof_upper == "STRICT":
+            color = ThemeColors.RED
+            bg = ThemeColors.RED_BG
+        elif prof_upper == "AUDIT_ONLY":
+            color = ThemeColors.AMBER
+            bg = ThemeColors.AMBER_BG
+        elif prof_upper == "PERMISSIVE":
+            color = ThemeColors.GREEN
+            bg = ThemeColors.GREEN_BG
+        else:
+            color = ThemeColors.BLUE
+            bg = ThemeColors.BLUE_BG
+
+        self.badge_dlp.setText(f"DLP: {prof_upper}")
+        self.badge_dlp.setStyleSheet(f"""
+            QLabel {{
+                color: {color};
+                background-color: {bg};
+                border: 1px solid {color};
+                border-radius: 10px;
+                padding: 3px 10px;
+                font-size: 11px;
+                font-weight: 700;
+            }}
+        """)
+
     def refresh_ribbon_status(self) -> None:
         """Synchronize top ribbon badges with physical runtime state."""
         # 1. Marker
         is_valid, _ = self.lab_mgr.validate_lab()
         if is_valid:
             self.badge_marker.setText("LAB: VALID")
+            self.badge_marker.setStyleSheet(f"""
+                QLabel {{
+                    color: {ThemeColors.GREEN};
+                    background-color: {ThemeColors.GREEN_BG};
+                    border: 1px solid {ThemeColors.GREEN};
+                    border-radius: 10px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 700;
+                }}
+            """)
         else:
             self.badge_marker.setText("LAB: UNINITIALIZED")
             self.badge_marker.setStyleSheet(f"color: {ThemeColors.AMBER}; border: 1px solid {ThemeColors.AMBER};")
@@ -233,8 +275,17 @@ class CryptoShieldMainWindow(QMainWindow):
         # 2. Gate
         self._on_gate_changed(self.write_gate.is_locked())
 
+        # 3. DLP Posture
+        try:
+            from app.dlp.dlp_coordinator import DLP_COORDINATOR
+            active_prof = DLP_COORDINATOR.get_status().get("profile", "DEFAULT")
+            self._on_dlp_profile_changed(active_prof)
+        except Exception:
+            pass
+
     def _on_tab_changed(self, index: int) -> None:
         """Refresh tab contents when switched into view."""
+        self.refresh_ribbon_status()
         if index == 0:
             self.tab_dashboard.refresh_state()
         elif index == 1:
