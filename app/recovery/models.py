@@ -187,6 +187,10 @@ class WorkspaceMetadata:
     source_snapshot_id: Optional[str]
     marker_valid: bool
 
+    @property
+    def is_marker_valid(self) -> bool:
+        return self.marker_valid
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "workspace_id": self.workspace_id,
@@ -276,6 +280,10 @@ class WorkspaceAssessmentSummary:
     canary_affected_count: int
     duration_seconds: float
     records: Dict[str, FileAssessmentRecord] = field(default_factory=dict)
+
+    @property
+    def total_files(self) -> int:
+        return self.total_workspace_files_scanned or self.total_manifest_files
 
     def to_dict(self) -> Dict[str, Any]:
         return {

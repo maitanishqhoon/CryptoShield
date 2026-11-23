@@ -6,7 +6,7 @@ two-stage authenticated file restoration, evidence quarantine, and SHA-256 valid
 
 from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -113,6 +113,7 @@ class RecoveryTab(QWidget):
         self.table_ws.verticalHeader().setVisible(False)
         self.table_ws.setSelectionBehavior(QTableWidget.SelectRows)
         self.table_ws.setAlternatingRowColors(True)
+        self.table_ws.itemSelectionChanged.connect(self._on_ws_selection_changed)
         ws_layout.addWidget(self.table_ws)
 
         ws_btn_row = QHBoxLayout()
@@ -165,8 +166,21 @@ class RecoveryTab(QWidget):
             "UNTRACKED",
         ])
         self.table_assessment.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_assessment.horizontalHeader().setFixedHeight(38)
         self.table_assessment.verticalHeader().setVisible(False)
-        self.table_assessment.setFixedHeight(65)
+        self.table_assessment.verticalHeader().setDefaultSectionSize(54)
+        self.table_assessment.setFixedHeight(105)
+        self.table_assessment.setRowCount(1)
+        self.table_assessment.setRowHeight(0, 54)
+        init_font = QFont("Segoe UI", 13)
+        init_font.setBold(True)
+        for col in range(5):
+            itm = QTableWidgetItem("0")
+            itm.setTextAlignment(Qt.AlignCenter)
+            itm.setFont(init_font)
+            itm.setForeground(QColor(ThemeColors.TEXT_MUTED))
+            itm.setFlags(itm.flags() & ~Qt.ItemIsEditable)
+            self.table_assessment.setItem(0, col, itm)
         assess_layout.addWidget(self.table_assessment)
 
         self.lbl_assess_status = QLabel("Select workspace and snapshot, then click assessment.")
@@ -237,24 +251,41 @@ class RecoveryTab(QWidget):
         try:
             workspaces = self.workspace_mgr.list_workspaces()
             self.table_ws.setRowCount(len(workspaces))
+            current_selected = self.combo_ws.currentText()
             self.combo_ws.clear()
 
             for row, ws in enumerate(workspaces):
                 ws_id = ws.workspace_id
                 self.combo_ws.addItem(ws_id)
+                marker_valid = getattr(ws, "is_marker_valid", getattr(ws, "marker_valid", False))
 
                 items = [
                     QTableWidgetItem(str(ws_id)),
                     QTableWidgetItem(str(ws.created_at)[:19]),
                     QTableWidgetItem(f"{ws.seeded_file_count:,}"),
-                    QTableWidgetItem("VALID [PASS]" if ws.is_marker_valid else "INVALID"),
+                    QTableWidgetItem("VALID [PASS]" if marker_valid else "INVALID"),
                 ]
-                items[3].setForeground(QColor(ThemeColors.GREEN if ws.is_marker_valid else ThemeColors.RED))
+                items[3].setForeground(QColor(ThemeColors.GREEN if marker_valid else ThemeColors.RED))
                 for col, itm in enumerate(items):
                     itm.setFlags(itm.flags() & ~Qt.ItemIsEditable)
                     self.table_ws.setItem(row, col, itm)
+
+            if current_selected:
+                idx = self.combo_ws.findText(current_selected)
+                if idx >= 0:
+                    self.combo_ws.setCurrentIndex(idx)
         except Exception as e:
             self.txt_audit.setPlainText(f"[-] Failed to refresh workspaces: {e}")
+
+    def _on_ws_selection_changed(self) -> None:
+        """Synchronize dropdown selection with table row clicks."""
+        row = self.table_ws.currentRow()
+        if 0 <= row < self.table_ws.rowCount():
+            item = self.table_ws.item(row, 0)
+            if item:
+                idx = self.combo_ws.findText(item.text())
+                if idx >= 0:
+                    self.combo_ws.setCurrentIndex(idx)
 
     def refresh_snapshots_combo(self) -> None:
         """Query available snapshots to populate snapshot dropdown."""
@@ -272,6 +303,14 @@ class RecoveryTab(QWidget):
             meta = self.workspace_mgr.create_workspace()
             self.txt_audit.setPlainText(f"[+] Created recovery workspace: {meta.workspace_id}")
             self.refresh_workspaces()
+            idx = self.combo_ws.findText(meta.workspace_id)
+            if idx >= 0:
+                self.combo_ws.setCurrentIndex(idx)
+                for r in range(self.table_ws.rowCount()):
+                    itm = self.table_ws.item(r, 0)
+                    if itm and itm.text() == meta.workspace_id:
+                        self.table_ws.selectRow(r)
+                        break
         except Exception as e:
             self.txt_audit.setPlainText(f"[-] Workspace creation error: {e}")
 
@@ -329,14 +368,16 @@ class RecoveryTab(QWidget):
 
     def _on_assess_finished(self, summary) -> None:
         self.btn_assess.setEnabled(True)
+        total_files = getattr(summary, "total_files", getattr(summary, "total_workspace_files_scanned", 0))
         self.lbl_assess_status.setText(
-            f"[PASS] Assessed {summary.total_files:,} files in {summary.duration_seconds:.2f}s "
+            f"[PASS] Assessed {total_files:,} files in {summary.duration_seconds:.2f}s "
             f"({summary.modified_count} modified, {summary.missing_count} missing)."
         )
         self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.GREEN}; font-weight: 700;")
 
         # Populate Assessment Table
         self.table_assessment.setRowCount(1)
+        self.table_assessment.setRowHeight(0, 54)
         items = [
             QTableWidgetItem(f"{summary.intact_count:,}"),
             QTableWidgetItem(f"{summary.modified_count:,}"),
@@ -344,6 +385,9 @@ class RecoveryTab(QWidget):
             QTableWidgetItem(f"{summary.unreadable_count:,}"),
             QTableWidgetItem(f"{summary.untracked_count:,}"),
         ]
+
+        font = QFont("Segoe UI", 13)
+        font.setBold(True)
 
         items[0].setForeground(QColor(ThemeColors.GREEN))
         items[1].setForeground(QColor(ThemeColors.RED if summary.modified_count else ThemeColors.TEXT_MUTED))
@@ -353,6 +397,7 @@ class RecoveryTab(QWidget):
 
         for col, itm in enumerate(items):
             itm.setTextAlignment(Qt.AlignCenter)
+            itm.setFont(font)
             itm.setFlags(itm.flags() & ~Qt.ItemIsEditable)
             self.table_assessment.setItem(0, col, itm)
 
@@ -424,6 +469,8 @@ class RecoveryTab(QWidget):
                 snapshot_id=snap_id,
                 passphrase=passphrase,
                 overwrite_modified=overwrite,
+                authorize=True,
+                dry_run=False,
                 progress_callback=local_cb,
             )
             return report

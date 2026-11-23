@@ -46,11 +46,25 @@ def test_recovery_tab(qapp):
     assert tab.table_ws.rowCount() >= 1
     new_ws_id = tab.combo_ws.currentText()
     assert new_ws_id.startswith("WKSP-")
+    found_row = [r for r in range(tab.table_ws.rowCount()) if tab.table_ws.item(r, 0).text() == new_ws_id]
+    assert len(found_row) == 1
+    row_idx = found_row[0]
+    assert "VALID" in tab.table_ws.item(row_idx, 3).text()
+
+    # Seed workspace
+    tab._seed_workspace()
+    assert "Successfully seeded" in tab.txt_audit.toPlainText()
+    assert int(tab.table_ws.item(row_idx, 2).text()) > 0
 
     # Preview restoration
     tab.input_passphrase.setText("CryptoShieldVaultPassphrase2026!")
     tab._preview_restoration()
     assert "Restoration Plan Preview" in tab.txt_audit.toPlainText()
+
+    # Test restoration authorization gate
+    tab.chk_authorize.setChecked(False)
+    tab._execute_restoration()
+    assert "Restoration requires explicit authorization" in tab.txt_audit.toPlainText()
 
     # Clean up workspace
     tab._delete_workspace()

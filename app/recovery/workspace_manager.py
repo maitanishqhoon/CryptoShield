@@ -250,6 +250,123 @@ class RecoveryWorkspaceManager:
             marker_valid=True,
         )
 
+    def seed_from_lab(
+        self,
+        workspace_id: str,
+        max_files: Optional[int] = 100,
+    ) -> int:
+        """
+        Seed an existing isolated recovery workspace with baseline files from runtime/lab/.
+        Copies files prioritizing canaries first, and updates the cryptographic safety marker.
+        """
+        self._validate_workspace_id(workspace_id)
+        marker = self.verify_workspace_marker(workspace_id)
+        workspace_dir = (self.workspaces_root / workspace_id).resolve()
+        self._check_not_lab(workspace_dir)
+
+        # Verify laboratory safety marker in strictly read-only mode
+        verify_lab_marker(self.lab_dir)
+
+        canary_rel_paths: List[str] = []
+        normal_rel_paths: List[str] = []
+
+        manifest_path = self.lab_dir / CONFIG.MANIFEST_FILENAME
+        if manifest_path.exists():
+            try:
+                with open(manifest_path, "r", encoding="utf-8") as f:
+                    manifest_data = json.load(f)
+                entries = manifest_data.get("entries", {})
+                for rel, ent in entries.items():
+                    src = self.lab_dir / rel
+                    if src.is_file():
+                        if ent.get("is_canary"):
+                            canary_rel_paths.append(rel)
+                        else:
+                            normal_rel_paths.append(rel)
+            except Exception as e:
+                logger.warning(f"Failed to read manifest for seeding: {e}. Falling back to disk scan.")
+                canary_rel_paths.clear()
+                normal_rel_paths.clear()
+
+        # Fallback if manifest not present or empty
+        if not canary_rel_paths and not normal_rel_paths:
+            for root, dirs, files in os.walk(self.lab_dir):
+                for fn in files:
+                    if fn in {CONFIG.LAB_MARKER_FILENAME, CONFIG.MANIFEST_FILENAME, ".gitkeep"}:
+                        continue
+                    src = Path(root) / fn
+                    rel = src.relative_to(self.lab_dir).as_posix()
+                    if "canary" in rel.lower():
+                        canary_rel_paths.append(rel)
+                    else:
+                        normal_rel_paths.append(rel)
+
+        canary_rel_paths.sort()
+        normal_rel_paths.sort()
+        total_available = len(canary_rel_paths) + len(normal_rel_paths)
+
+        if max_files is None or max_files >= total_available:
+            selected_paths = sorted(canary_rel_paths + normal_rel_paths)
+        else:
+            if max_files <= 20:
+                target_canaries = min(len(canary_rel_paths), max(2, max_files // 2))
+            else:
+                target_canaries = min(len(canary_rel_paths), max(10, max_files // 10))
+
+            target_canaries = min(target_canaries, max_files)
+            target_normal = max_files - target_canaries
+            selected_paths = sorted(canary_rel_paths[:target_canaries] + normal_rel_paths[:target_normal])
+
+        seeded_file_count = 0
+        for rel in selected_paths:
+            src = self.lab_dir / rel
+            dst = workspace_dir / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            seeded_file_count += 1
+
+        # For partial seeded workspaces (< total lab files), persist scope for accurate assessment
+        if max_files is not None and len(selected_paths) < total_available:
+            scope_file = workspace_dir / ".cryptoshield_seeded_scope.json"
+            seeded_canaries = [p for p in selected_paths if p in canary_rel_paths]
+            scope_payload = {
+                "paths": selected_paths,
+                "canary_paths": seeded_canaries,
+            }
+            with open(scope_file, "w", encoding="utf-8") as f:
+                json.dump(scope_payload, f, indent=2)
+
+        # Update and re-sign safety marker with updated seeded file count
+        signature = compute_workspace_marker_signature(
+            workspace_id=marker.workspace_id,
+            workspace_uuid=marker.workspace_uuid,
+            authorized_root=marker.authorized_root,
+            source_snapshot_id=marker.source_snapshot_id,
+            seeded_file_count=seeded_file_count,
+            created_at=marker.created_at,
+            host_platform=marker.host_platform,
+        )
+
+        updated_marker = RecoveryWorkspaceMarker(
+            workspace_id=marker.workspace_id,
+            workspace_uuid=marker.workspace_uuid,
+            authorized_root=marker.authorized_root,
+            source_snapshot_id=marker.source_snapshot_id,
+            seeded_file_count=seeded_file_count,
+            created_at=marker.created_at,
+            host_platform=marker.host_platform,
+            signature=signature,
+        )
+
+        marker_file = workspace_dir / CONFIG.RECOVERY_MARKER_FILENAME
+        with open(marker_file, "w", encoding="utf-8") as f:
+            json.dump(updated_marker.to_dict(), f, indent=2)
+
+        logger.info(
+            f"Seeded {seeded_file_count} files into recovery workspace '{workspace_id}' and updated safety marker."
+        )
+        return seeded_file_count
+
     def verify_workspace_marker(
         self,
         workspace_id_or_path: Union[str, Path],
