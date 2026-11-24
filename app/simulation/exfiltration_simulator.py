@@ -24,7 +24,7 @@ import os
 from pathlib import Path
 import shutil
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import zipfile
 
@@ -146,6 +146,8 @@ class ControlledExfiltrationSimulator:
         self,
         mock_host: str = "127.0.0.1",
         mock_port: int = CONFIG.EXFILTRATION_MOCK_PORT,
+        step_delay: float = 0.0,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> ExfiltrationSimulationResult:
         """
         Executes the end-to-end exfiltration workflow:
@@ -159,7 +161,11 @@ class ControlledExfiltrationSimulator:
         canaries_read_count = 0
         harvested_contents: List[Tuple[str, bytes]] = []
 
+        if progress_callback:
+            progress_callback(10, 100, "Stage 1/4: Harvesting sensitive files across departments...")
+
         # Step 1: Read harvesting
+        per_file_delay = (step_delay / max(len(self._files_created), 1)) if step_delay > 0 else 0.0
         for fpath in self._files_created:
             try:
                 rel_path = str(fpath.relative_to(self.lab_dir)).replace("\\", "/")
@@ -171,8 +177,16 @@ class ControlledExfiltrationSimulator:
                 )
                 harvested_contents.append((rel_path, content.encode("utf-8")))
                 files_read_count += 1
+                if per_file_delay > 0:
+                    time.sleep(per_file_delay)
             except Exception as e:
                 logger.error("Failed to read fixture %s: %s", fpath, e)
+
+        if step_delay > 0:
+            time.sleep(step_delay * 0.5)
+
+        if progress_callback:
+            progress_callback(35, 100, "Stage 2/4: Accessing deceptive canary honeypot credentials...")
 
         # Step 2: Honeypot canary reading
         for cpath in self._canary_files:
@@ -189,8 +203,16 @@ class ControlledExfiltrationSimulator:
                 content = cpath.read_bytes()
                 harvested_contents.append((rel_path, content))
                 canaries_read_count += 1
+                if step_delay > 0:
+                    time.sleep(step_delay * 0.3)
             except Exception as e:
                 logger.error("Failed to read canary %s: %s", cpath, e)
+
+        if step_delay > 0:
+            time.sleep(step_delay * 0.5)
+
+        if progress_callback:
+            progress_callback(60, 100, "Stage 3/4: Creating local staging archive (.zip)...")
 
         # Step 3: Local staging archive creation
         staging_dir = self.target_dir / ".staging"
@@ -205,6 +227,12 @@ class ControlledExfiltrationSimulator:
         staged_bytes = archive_buffer.getvalue()
         self._staging_archive.write_bytes(staged_bytes)
 
+        if step_delay > 0:
+            time.sleep(step_delay)
+
+        if progress_callback:
+            progress_callback(85, 100, "Stage 4/4: Transmitting payload to local loopback socket (127.0.0.1)...")
+
         # Step 4: Simulated outbound transfer to local mock receiver
         transfer_record = self.transfer_monitor.transmit_to_mock_endpoint(
             target_host=mock_host,
@@ -217,6 +245,12 @@ class ControlledExfiltrationSimulator:
             departments=["Finance", "Legal", "Human Resources", "IT"],
             contains_canary=canaries_read_count > 0,
         )
+
+        if step_delay > 0:
+            time.sleep(step_delay * 0.5)
+
+        if progress_callback:
+            progress_callback(100, 100, "Exfiltration workflow completed.")
 
         duration = round(time.time() - start_time, 3)
 

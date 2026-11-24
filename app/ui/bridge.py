@@ -107,5 +107,12 @@ class EventBusBridge(QObject):
                 self.dlp_profile_changed.emit(profile_name)
                 self.log_emitted.emit(f"[DLP] Security posture profile switched to {profile_name}")
 
+            # Recovery events
+            elif et in ("RECOVERY_PROGRESS", "RECOVERY_STEP"):
+                status_msg = str(data.get("status", data.get("stage", "Restoring...")))
+                cur = int(data.get("current", 0))
+                tot = int(data.get("total", 100))
+                self.recovery_progress.emit(status_msg, cur, tot)
+
         except Exception as e:
             logger.error(f"Error dispatching bus event through bridge: {e}")

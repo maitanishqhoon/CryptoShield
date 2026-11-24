@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 import shutil
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import zipfile
 
@@ -155,6 +155,8 @@ class ControlledDLPSimulator:
         mock_host: str = "127.0.0.1",
         mock_port: int = CONFIG.EXFILTRATION_MOCK_PORT,
         auto_approve: bool = True,
+        step_delay: float = 0.0,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> DLPSimulationResult:
         """
         Executes the 4-tier DLP demonstration:
@@ -172,6 +174,11 @@ class ControlledDLPSimulator:
         blocked_count = 0
 
         # Tier 1: PUBLIC -> ALLOW
+        if progress_callback:
+            progress_callback(15, 100, "Tier 1/4: Evaluating PUBLIC document transfer policy...")
+        if step_delay > 0:
+            time.sleep(step_delay)
+
         pub_payload = b"CryptoShield Open Architecture Whitepaper Press Release."
         rec_pub = self.transfer_monitor.transmit_to_mock_endpoint(
             target_host=mock_host,
@@ -197,6 +204,11 @@ class ControlledDLPSimulator:
         allowed_count += 1
 
         # Tier 2: INTERNAL -> ALERT
+        if progress_callback:
+            progress_callback(40, 100, "Tier 2/4: Evaluating INTERNAL operational document transfer policy...")
+        if step_delay > 0:
+            time.sleep(step_delay)
+
         internal_payload = b"day,shift,lead\nMonday,Day,Alice\nTuesday,Night,Bob\n"
         rec_internal = self.transfer_monitor.transmit_to_mock_endpoint(
             target_host=mock_host,
@@ -222,6 +234,11 @@ class ControlledDLPSimulator:
         alerted_count += 1
 
         # Tier 3: CONFIDENTIAL -> REQUIRE_APPROVAL (Quarantine & Operator Approval Workflow)
+        if progress_callback:
+            progress_callback(65, 100, "Tier 3/4: Quarantining CONFIDENTIAL payroll transfer (Awaiting Approval)...")
+        if step_delay > 0:
+            time.sleep(step_delay)
+
         conf_payload = b'{"payroll": [{"name": "Executive A", "compensation": 250000}]}'
         rec_conf = self.transfer_monitor.transmit_to_mock_endpoint(
             target_host=mock_host,
@@ -235,6 +252,8 @@ class ControlledDLPSimulator:
 
         approval_token = rec_conf.metadata.get("approval_token")
         if approval_token and auto_approve:
+            if step_delay > 0:
+                time.sleep(step_delay * 0.5)
             # Demonstrate operator authorization: approve the pending token
             ok, approved_req = self.dlp_coordinator.approve_transfer(
                 approval_token=approval_token,
@@ -259,6 +278,11 @@ class ControlledDLPSimulator:
         )
 
         # Tier 4: RESTRICTED & CANARY HONEYPOT -> BLOCK (Active Interception)
+        if progress_callback:
+            progress_callback(85, 100, "Tier 4/4: Intercepting RESTRICTED Canary Honeypot exfiltration (0 Bytes Leaked)...")
+        if step_delay > 0:
+            time.sleep(step_delay)
+
         canary_payload = b'{"account": "root_domain_admin", "token": "CANARY-HONEYPOT-TOKEN"}'
         rec_block = self.transfer_monitor.transmit_to_mock_endpoint(
             target_host=mock_host,

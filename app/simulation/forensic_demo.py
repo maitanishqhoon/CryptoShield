@@ -17,10 +17,11 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from app.config import CONFIG
-from app.core.event_bus import BUS, EventBus
+from app.containment.lab_write_gate import LabWriteGate
+from app.core.event_bus import BUS, Event, EventBus
 from app.core.models import (
     DetectionResult,
     IncidentStatus,
@@ -69,7 +70,11 @@ class ControlledForensicDemo:
         self.coordinator = coordinator or FORENSIC_COORDINATOR
         self.demo_dir = (CONFIG.LAB_DIR / "forensic_demo_workspace").resolve()
 
-    def run_demo(self) -> ForensicDemoResult:
+    def run_demo(
+        self,
+        stage_delay: float = 0.0,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
+    ) -> ForensicDemoResult:
         """
         Executes the 6-stage end-to-end double-extortion and forensic reporting flow:
         1. Attack Simulation: Rapid reads & decoy canary honeypot interaction.
@@ -91,6 +96,9 @@ class ControlledForensicDemo:
             # -----------------------------------------------------------------
             # Stage 1 & 2: Attack Simulation & Incident Creation
             # -----------------------------------------------------------------
+            if progress_callback:
+                progress_callback(15, 100, "Stage 1/6: Simulating attack write bursts & canary honeypot breach...")
+
             ts_now = datetime.now(CONFIG.TIMEZONE).isoformat()
             det_id = f"DET-{uuid.uuid4().hex[:8].upper()}"
 
@@ -109,6 +117,21 @@ class ControlledForensicDemo:
                 priority="HIGH",
                 metadata={"department": "Finance", "classification": "RESTRICTED"},
             )
+
+            # Publish live canary access event to bus so Dashboard & Exfiltration tabs update
+            try:
+                self.bus.publish(
+                    Event(
+                        event_type="CANARY_ACCESS",
+                        data={"path": "Finance/canary_accounts_receivable.csv", "is_canary": True},
+                        source="forensic_demo",
+                    )
+                )
+            except Exception:
+                pass
+
+            if stage_delay > 0:
+                time.sleep(stage_delay * 0.6)
 
             detection = DetectionResult(
                 detection_id=det_id,
@@ -136,15 +159,35 @@ class ControlledForensicDemo:
                 process_name="ransomware_simulator.py",
             )
 
+            try:
+                self.bus.publish(
+                    Event(
+                        event_type="DETECTION_RESULT",
+                        data={"score": 95, "severity": "CRITICAL", "threat_score": 95},
+                        source="forensic_demo",
+                    )
+                )
+            except Exception:
+                pass
+
+            if progress_callback:
+                progress_callback(30, 100, "Stage 2/6: Behavioral heuristics triggered; opening security incident dossier...")
+
             incident = incident_mgr.process_detection(detection, source_events=[canary_event])
             if not incident:
                 raise RuntimeError("Failed to open SecurityIncident for demonstration.")
 
             logger.info(f"[STAGE 1 & 2] Incident created: {incident.incident_id} (Score: {incident.threat_score})")
 
+            if stage_delay > 0:
+                time.sleep(stage_delay)
+
             # -----------------------------------------------------------------
             # Stage 3: Containment Intervention Record
             # -----------------------------------------------------------------
+            if progress_callback:
+                progress_callback(50, 100, "Stage 3/6: Executing automated containment & locking LabWriteGate...")
+
             cont_id = f"CONT-{uuid.uuid4().hex[:8].upper()}"
             cont_data = {
                 "containment_id": cont_id,
@@ -173,9 +216,28 @@ class ControlledForensicDemo:
                 "description": f"Automated containment {cont_id} executed. Lab write-gate locked; process 9999 terminated.",
             })
 
+            # Publish containment and write-gate events
+            try:
+                LabWriteGate.get_instance().lock(f"Containment for incident {incident.incident_id}")
+                self.bus.publish(
+                    Event(
+                        event_type="CONTAINMENT_TRIGGERED",
+                        data=cont_data,
+                        source="forensic_demo",
+                    )
+                )
+            except Exception:
+                pass
+
+            if stage_delay > 0:
+                time.sleep(stage_delay)
+
             # -----------------------------------------------------------------
             # Stage 4: DLP & Exfiltration Telemetry
             # -----------------------------------------------------------------
+            if progress_callback:
+                progress_callback(70, 100, "Stage 4/6: DLP Gate intercepting unauthorized outbound transfers (0 bytes leaked)...")
+
             incident.metadata["exfiltration_assessment"] = {
                 "assessment_id": f"EXF-{uuid.uuid4().hex[:8].upper()}",
                 "risk_tier": "CRITICAL",
@@ -200,9 +262,30 @@ class ControlledForensicDemo:
                 "description": "DLP policy intercepted 2 unauthorized exfiltration attempts (1,048,576 bytes blocked; 0 bytes leaked).",
             })
 
+            try:
+                self.bus.publish(
+                    Event(
+                        event_type="DLP_TRANSFER_BLOCKED",
+                        data={
+                            "action": "BLOCK",
+                            "reason": "Restricted file exfiltration attempt intercepted at DLP transfer gate",
+                            "bytes_transferred": 0,
+                        },
+                        source="forensic_demo",
+                    )
+                )
+            except Exception:
+                pass
+
+            if stage_delay > 0:
+                time.sleep(stage_delay)
+
             # -----------------------------------------------------------------
             # Stage 5: Cryptographic Recovery Record
             # -----------------------------------------------------------------
+            if progress_callback:
+                progress_callback(85, 100, "Stage 5/6: Restoring damaged files from authenticated cryptographic snapshot...")
+
             rec_id = f"REC-{uuid.uuid4().hex[:8].upper()}"
             rec_data = {
                 "recovery_id": rec_id,
@@ -231,14 +314,37 @@ class ControlledForensicDemo:
                 "description": f"Authenticated restoration {rec_id} complete. 4 files restored, 100% SHA-256 match.",
             })
 
+            try:
+                self.bus.publish(
+                    Event(
+                        event_type="RECOVERY_PROGRESS",
+                        data={"status": "Restoring files with SHA-256 verification...", "current": 4, "total": 4},
+                        source="forensic_demo",
+                    )
+                )
+            except Exception:
+                pass
+
+            if stage_delay > 0:
+                time.sleep(stage_delay)
+
             # -----------------------------------------------------------------
             # Stage 6: Incident Resolution & Forensic Dossier Export
             # -----------------------------------------------------------------
+            if progress_callback:
+                progress_callback(95, 100, "Stage 6/6: Resolving incident, sealing forensic dossier & calculating SHA-256...")
+
             incident_mgr.resolve_incident(
                 incident.incident_id,
                 resolution_notes="Controlled double-extortion defense demonstration completed successfully.",
                 resolver="CryptoShield Demo Coordinator",
             )
+
+            # Unlock LabWriteGate upon clean demonstration resolution
+            try:
+                LabWriteGate.get_instance().unlock()
+            except Exception:
+                pass
 
             # Generate multi-format reports
             dossier = self.coordinator.generate_report(
@@ -253,6 +359,9 @@ class ControlledForensicDemo:
             # -----------------------------------------------------------------
             is_valid, msg = self.coordinator.verify_report(dossier.report_id)
             logger.info(f"[STAGE 7] Chain of custody verification: {msg}")
+
+            if progress_callback:
+                progress_callback(100, 100, "Double-extortion forensic demonstration completed successfully!")
 
             # Collect export paths
             rep_files = {

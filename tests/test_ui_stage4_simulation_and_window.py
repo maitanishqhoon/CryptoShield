@@ -36,6 +36,21 @@ def test_simulation_tab_all_scenarios(qapp):
     assert tab.btn_s3 is not None
     assert tab.btn_s4 is not None
     assert tab.btn_s5 is not None
+    assert tab.combo_pacing is not None
+    assert tab.combo_pacing.count() == 3
+
+    # Verify pacing profiles
+    p_rapid = tab._get_pacing_parameters()
+    assert p_rapid["mode"] == "rapid"
+    tab.combo_pacing.setCurrentIndex(0)
+    p_demo = tab._get_pacing_parameters()
+    assert p_demo["mode"] == "demo"
+    assert p_demo["containment_pre_delay"] > p_rapid["containment_pre_delay"]
+    tab.combo_pacing.setCurrentIndex(1)
+    p_ext = tab._get_pacing_parameters()
+    assert p_ext["mode"] == "extended"
+    assert p_ext["stage_delay"] > p_demo["stage_delay"]
+    tab.combo_pacing.setCurrentIndex(2)  # Return to rapid for fast test execution
 
     # Test bridge telemetry log stream
     bridge.log_emitted.emit("Unit test telemetry beacon")

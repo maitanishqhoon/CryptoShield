@@ -255,6 +255,8 @@ class RecoveryCoordinator:
         snapshot_id: Optional[str] = None,
         passphrase: Optional[str] = None,
         cleanup: bool = False,
+        pacing_delay: float = 0.0,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> Dict[str, Any]:
         """
         Execute an automated, end-to-end cryptographic recovery demonstration.
@@ -274,6 +276,9 @@ class RecoveryCoordinator:
         demo_start = time.perf_counter()
         logger.info(f"Starting recovery demo: file_count={file_count:,}, cleanup={cleanup}")
 
+        if progress_callback:
+            progress_callback(5, 100, "Initializing cryptographic recovery testbed...")
+
         # 1. Resolve Snapshot ID
         if not snapshot_id:
             sm = SnapshotManager()
@@ -288,6 +293,11 @@ class RecoveryCoordinator:
         # 3. Create Isolated Seeded Recovery Workspace
         demo_ws_id = f"demo_rec_{file_count}_{uuid.uuid4().hex[:6]}"
         logger.info(f"Provisioning demo workspace '{demo_ws_id}' seeded with up to {file_count} files...")
+        if progress_callback:
+            progress_callback(15, 100, f"Provisioning recovery workspace '{demo_ws_id}' with safety marker...")
+        if pacing_delay > 0:
+            time.sleep(pacing_delay)
+
         ws_meta = self.workspace_manager.create_workspace(
             workspace_id=demo_ws_id,
             source_snapshot_id=snapshot_id,
@@ -297,6 +307,11 @@ class RecoveryCoordinator:
 
         try:
             # 4. Simulate Controlled Damage
+            if progress_callback:
+                progress_callback(30, 100, "Simulating controlled ransomware damage (modifications, deletions, canary)...")
+            if pacing_delay > 0:
+                time.sleep(pacing_delay)
+
             modify_cnt = max(1, min(50, file_count // 20))
             delete_cnt = max(1, min(50, file_count // 20))
             untracked_cnt = max(1, min(10, file_count // 50))
@@ -309,6 +324,11 @@ class RecoveryCoordinator:
             )
 
             # 5. Damage Assessment
+            if progress_callback:
+                progress_callback(50, 100, "Executing multithreaded integrity assessment against snapshot baseline...")
+            if pacing_delay > 0:
+                time.sleep(pacing_delay)
+
             t_assess = time.perf_counter()
             assessment = self.assess(
                 workspace_id=demo_ws_id,
@@ -319,6 +339,11 @@ class RecoveryCoordinator:
             assess_time = time.perf_counter() - t_assess
 
             # 6. Preview (Dry-Run)
+            if progress_callback:
+                progress_callback(65, 100, f"Generating dry-run preview ({assessment.modified_count} mod, {assessment.missing_count} del)...")
+            if pacing_delay > 0:
+                time.sleep(pacing_delay)
+
             t_prev = time.perf_counter()
             preview_report = self.preview(
                 workspace_id=demo_ws_id,
@@ -329,6 +354,11 @@ class RecoveryCoordinator:
             preview_time = time.perf_counter() - t_prev
 
             # 7. Live Restoration (Authorized)
+            if progress_callback:
+                progress_callback(80, 100, "Executing authorized two-stage restoration (AES-256-GCM + SHA-256 verification)...")
+            if pacing_delay > 0:
+                time.sleep(pacing_delay)
+
             t_rest = time.perf_counter()
             restore_report = self.restore(
                 workspace_id=demo_ws_id,
@@ -341,6 +371,11 @@ class RecoveryCoordinator:
             restore_time = time.perf_counter() - t_rest
 
             # 8. Post-Recovery Integrity Audit
+            if progress_callback:
+                progress_callback(95, 100, "Performing post-recovery cryptographic audit and SHA-256 verification...")
+            if pacing_delay > 0:
+                time.sleep(pacing_delay)
+
             t_post = time.perf_counter()
             post_audit = self.verify_workspace_integrity(
                 workspace_id=demo_ws_id,
@@ -348,6 +383,9 @@ class RecoveryCoordinator:
                 passphrase=resolved_passphrase,
             )
             post_time = time.perf_counter() - t_post
+
+            if progress_callback:
+                progress_callback(100, 100, "Restoration complete: 100% SHA-256 baseline match verified.")
 
             total_elapsed = time.perf_counter() - demo_start
             throughput = (
