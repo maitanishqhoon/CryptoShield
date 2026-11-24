@@ -30,6 +30,7 @@ class EventBusBridge(QObject):
     write_gate_changed = Signal(bool)       # (is_locked: bool)
     dlp_interception = Signal(dict)         # DLP evaluation / interception dict
     dlp_profile_changed = Signal(str)       # Active security posture profile name
+    exfiltration_activity = Signal(dict)    # Outbound transfer and exfiltration telemetry
     recovery_progress = Signal(str, int, int) # (status_text, current, total)
     log_emitted = Signal(str)               # Formatted human-readable message
 
@@ -97,10 +98,27 @@ class EventBusBridge(QObject):
                 self.log_emitted.emit(f"[CONTAINMENT] Containment action executed: {data.get('action', 'LOCK')}")
 
             # DLP events
-            elif et in ("DLP_TRANSFER_BLOCKED", "DLP_ACTION_EVALUATED", "DLP_TRANSFER_QUARANTINED"):
+            elif et in ("DLP_TRANSFER_BLOCKED", "DLP_ACTION_EVALUATED", "DLP_TRANSFER_QUARANTINED", "DLP_APPROVAL_REQUIRED", "DLP_ALERT_TRIGGERED", "DLP_TRANSFER_ALLOWED"):
                 self.dlp_interception.emit(data)
+                self.exfiltration_activity.emit({"event_type": et, **data})
                 action = data.get("action", "EVALUATE")
                 self.log_emitted.emit(f"[DLP] Transfer {action} - Policy rule matched")
+
+            elif et in (
+                "EXFILTRATION_TRANSFER_COMPLETED",
+                "EXFILTRATION_TRANSFER_BLOCKED",
+                "EXFILTRATION_TRANSFER_FAILED",
+                "STAGING_ARCHIVE_CREATED",
+                "FILE_READ_BURST",
+            ):
+                self.exfiltration_activity.emit({"event_type": et, **data})
+                if "TRANSFER" in et:
+                    status_val = data.get("status", "MONITORED")
+                    dest = data.get("destination_endpoint", "127.0.0.1")
+                    b_count = data.get("bytes_transferred", 0)
+                    self.log_emitted.emit(f"[EXFILTRATION] Outbound transfer to {dest}: {b_count:,} bytes ({status_val})")
+                elif et == "STAGING_ARCHIVE_CREATED":
+                    self.log_emitted.emit(f"[EXFILTRATION] Staging archive created: {data.get('archive_path', '')}")
 
             elif et == "DLP_PROFILE_CHANGED":
                 profile_name = str(data.get("profile", data.get("new_profile", "DEFAULT")))

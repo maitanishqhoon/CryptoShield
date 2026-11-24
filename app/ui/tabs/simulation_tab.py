@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 
 from app.config import CONFIG
 from app.core.event_bus import BUS, Event
+from app.exfiltration.exfiltration_coordinator import EXFILTRATION_COORDINATOR
 from app.recovery.recovery_coordinator import RECOVERY_COORDINATOR
 from app.simulation.controlled_activity_simulator import ControlledActivitySimulator
 from app.simulation.dlp_simulator import ControlledDLPSimulator
@@ -468,7 +469,9 @@ class SimulationTab(QWidget):
         self._append_log("[*] TIP: Click '6. Exfiltration & DLP' to observe mock socket telemetry and staging detection.")
 
         def exfil_payload(progress=None):
-            sim = ControlledExfiltrationSimulator()
+            sim = ControlledExfiltrationSimulator(
+                mock_receiver=EXFILTRATION_COORDINATOR.receiver,
+            )
             try:
                 sim.prepare_fixtures(file_count=15)
                 t0 = time.perf_counter()
@@ -515,7 +518,9 @@ class SimulationTab(QWidget):
         self._append_log("[*] TIP: Click '6. Exfiltration & DLP' to inspect real-time policy decisions and approvals.")
 
         def dlp_payload(progress=None):
-            sim = ControlledDLPSimulator()
+            sim = ControlledDLPSimulator(
+                mock_receiver=EXFILTRATION_COORDINATOR.receiver,
+            )
             t0 = time.perf_counter()
             res = sim.run_demonstration(
                 auto_approve=False,

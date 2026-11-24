@@ -121,9 +121,23 @@ class TransferMonitor:
         if target_host not in ("127.0.0.1", "localhost"):
             raise ValueError(f"Security Invariant: Outbound target must be 127.0.0.1, got {target_host}")
 
+        # Resolve port if ephemeral / zero
+        if not target_port:
+            receiver_obj = self.mock_receiver
+            if not receiver_obj:
+                try:
+                    from app.exfiltration.exfiltration_coordinator import EXFILTRATION_COORDINATOR
+                    receiver_obj = EXFILTRATION_COORDINATOR.receiver
+                except Exception:
+                    receiver_obj = None
+            if receiver_obj and receiver_obj.actual_port:
+                target_port = receiver_obj.actual_port
+            else:
+                target_port = CONFIG.EXFILTRATION_MOCK_PORT or 8999
+
         endpoint_str = f"{target_host}:{target_port}"
 
-        # DLP Interception Check
+        # DLP Interception Check (if gate explicitly configured)
         if self.dlp_gate:
             evaluation = self.dlp_gate.evaluate_transfer(
                 destination_endpoint=endpoint_str,
@@ -188,7 +202,7 @@ class TransferMonitor:
                     from app.exfiltration.exfiltration_coordinator import EXFILTRATION_COORDINATOR
                     receiver = EXFILTRATION_COORDINATOR.receiver
 
-                if receiver and receiver.is_running():
+                if receiver:
                     total_sent = receiver.deliver_mock_payload(payload_bytes)
                     transfer_status = TransferStatus.COMPLETED
                     protocol_used = TransferProtocol.LOCAL_PIPE
