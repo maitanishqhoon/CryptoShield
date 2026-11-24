@@ -615,6 +615,8 @@ class ExfiltrationTab(QWidget):
         profile = DLPProfile[prof_name]
         self.dlp_coord.set_profile(profile)
         self.refresh_profile_and_rules()
+        if self.bridge and hasattr(self.bridge, "dlp_profile_changed"):
+            self.bridge.dlp_profile_changed.emit(prof_name)
 
     def _stage_test_transfer(self) -> None:
         """Simulate an outbound transfer of CONFIDENTIAL data to test the DLP gate & approval queue."""

@@ -4,7 +4,7 @@ Manages synthetic enterprise dataset generation, baseline manifests, and SHA-256
 """
 
 import time
-from typing import Optional
+from typing import Any, Optional
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
@@ -39,8 +39,9 @@ class LabTab(QWidget):
     inspecting baseline manifest metrics, and executing parallel SHA-256 integrity audits.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.lab_mgr = LabManager()
         self.manifest_mgr = ManifestManager()
         self.active_worker: Optional[AsyncWorker] = None
@@ -269,6 +270,21 @@ class LabTab(QWidget):
             f"({manifest.canary_count} canaries) in {manifest.total_size_bytes / (1024*1024):.2f} MB"
         )
         self.refresh_lab_info()
+        try:
+            from app.core.event_bus import BUS, Event
+            BUS.publish(
+                Event(
+                    event_type="DATASET_GENERATED",
+                    data={
+                        "total_files": manifest.total_files,
+                        "canary_count": manifest.canary_count,
+                        "total_bytes": manifest.total_size_bytes,
+                    },
+                    source="lab.dataset_generator",
+                )
+            )
+        except Exception:
+            pass
 
     def _on_gen_error(self, err_msg: str) -> None:
         self.btn_generate.setEnabled(True)

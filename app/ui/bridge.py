@@ -32,6 +32,9 @@ class EventBusBridge(QObject):
     dlp_profile_changed = Signal(str)       # Active security posture profile name
     exfiltration_activity = Signal(dict)    # Outbound transfer and exfiltration telemetry
     recovery_progress = Signal(str, int, int) # (status_text, current, total)
+    snapshot_created = Signal(dict)         # Snapshot metadata dict
+    report_generated = Signal(dict)         # Forensic report dossier dict
+    lab_reset = Signal(dict)                # Lab reset / dataset generated dict
     log_emitted = Signal(str)               # Formatted human-readable message
 
     def __init__(self, bus: Optional[EventBus] = None, parent: Optional[QObject] = None) -> None:
@@ -131,6 +134,23 @@ class EventBusBridge(QObject):
                 cur = int(data.get("current", 0))
                 tot = int(data.get("total", 100))
                 self.recovery_progress.emit(status_msg, cur, tot)
+
+            # Snapshot events
+            elif et in ("SNAPSHOT_CREATED", "SNAPSHOT_PUBLISHED"):
+                self.snapshot_created.emit(data)
+                snap_id = data.get("snapshot_id", "")
+                self.log_emitted.emit(f"[VAULT] Encrypted snapshot compiled: {snap_id}")
+
+            # Forensic reporting events
+            elif et in ("FORENSIC_REPORT_GENERATED", "REPORT_COMPILED"):
+                self.report_generated.emit(data)
+                rep_id = data.get("report_id", "")
+                self.log_emitted.emit(f"[FORENSICS] Forensic report sealed: {rep_id}")
+
+            # Laboratory baseline events
+            elif et in ("DATASET_GENERATED", "LAB_RESET", "LAB_INITIALIZED"):
+                self.lab_reset.emit(data)
+                self.log_emitted.emit("[LAB] Laboratory environment baseline updated")
 
         except Exception as e:
             logger.error(f"Error dispatching bus event through bridge: {e}")

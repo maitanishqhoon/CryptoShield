@@ -69,9 +69,9 @@ class CryptoShieldMainWindow(QMainWindow):
 
         # Initialize all 8 tabs
         self.tab_dashboard = DashboardTab(bridge=self.bridge)
-        self.tab_lab = LabTab()
+        self.tab_lab = LabTab(bridge=self.bridge)
         self.tab_containment = ContainmentTab(bridge=self.bridge)
-        self.tab_vault = VaultTab()
+        self.tab_vault = VaultTab(bridge=self.bridge)
         self.tab_recovery = RecoveryTab(bridge=self.bridge)
         self.tab_exfiltration = ExfiltrationTab(bridge=self.bridge)
         self.tab_forensics = ForensicsTab(bridge=self.bridge)
@@ -176,6 +176,8 @@ class CryptoShieldMainWindow(QMainWindow):
         self.bridge.write_gate_changed.connect(self._on_gate_changed)
         if hasattr(self.bridge, "dlp_profile_changed"):
             self.bridge.dlp_profile_changed.connect(self._on_dlp_profile_changed)
+        if hasattr(self.bridge, "lab_reset"):
+            self.bridge.lab_reset.connect(lambda _: self.refresh_ribbon_status())
 
     def _on_threat_updated(self, score: int, severity: str) -> None:
         """Update top threat badge."""
@@ -295,8 +297,11 @@ class CryptoShieldMainWindow(QMainWindow):
         elif index == 3:
             self.tab_vault.refresh_all()
         elif index == 4:
-            self.tab_recovery.refresh_workspaces()
+            self.tab_recovery.refresh_all()
         elif index == 5:
             self.tab_exfiltration.refresh_all()
         elif index == 6:
             self.tab_forensics.refresh_catalog()
+        elif index == 7:
+            if hasattr(self.tab_simulation, "refresh_all"):
+                self.tab_simulation.refresh_all()

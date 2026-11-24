@@ -40,12 +40,16 @@ class VaultTab(QWidget):
     Argon2id key hardening envelope, and AES-256-GCM snapshot catalog.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, bridge: Optional[Any] = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.bridge = bridge
         self.key_mgr = KeyManager()
         self.snapshot_mgr = SnapshotManager()
         self.active_worker: Optional[AsyncWorker] = None
         self._snapshots: List[Any] = []
+
+        if self.bridge and hasattr(self.bridge, "snapshot_created"):
+            self.bridge.snapshot_created.connect(self._on_bridge_snapshot_created)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -175,6 +179,10 @@ class VaultTab(QWidget):
         layout.addWidget(self.txt_console)
 
         return group
+
+    def _on_bridge_snapshot_created(self, data: Dict[str, Any]) -> None:
+        """Slot invoked when a new snapshot is created system-wide."""
+        self.refresh_snapshots()
 
     def refresh_all(self) -> None:
         """Refresh key metadata and snapshot catalog."""

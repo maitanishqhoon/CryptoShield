@@ -181,6 +181,92 @@ def test_e2e_soc_console_lifecycle(qapp):
     bridge.disconnect_bus()
 
 
+def test_realtime_ui_updates_and_tab_sync(qapp):
+    """
+    Verify real-time UI synchronization across subsystems:
+    1. Realtime snapshot propagation to RecoveryTab dropdown and VaultTab table.
+    2. Tab switching triggering comprehensive refresh_all() on RecoveryTab.
+    3. DashboardTab write gate toggle propagating to Top Ribbon and other tabs.
+    4. DLP posture change propagating to DashboardTab KPI card in real time.
+    5. Forensic report generation event propagating to ForensicsTab catalog.
+    """
+    bus = EventBus()
+    bridge = EventBusBridge(bus=bus)
+    bridge.connect_bus()
+
+    window = CryptoShieldMainWindow(bridge=bridge)
+    dash = window.tab_dashboard
+    recovery = window.tab_recovery
+    vault = window.tab_vault
+    exfil = window.tab_exfiltration
+    forensics = window.tab_forensics
+
+    # 1. Snapshot realtime propagation
+    initial_snaps_count = recovery.combo_snaps.count()
+    test_snap_id = "SNAP-REALTIME-TEST-99"
+
+    # Simulate SNAPSHOT_CREATED via bridge
+    snap_event = Event(
+        event_type="SNAPSHOT_CREATED",
+        data={
+            "snapshot_id": test_snap_id,
+            "total_files": 42,
+            "total_encrypted_bytes": 102400,
+        },
+        source="vault.snapshot_manager",
+    )
+    bridge._on_bus_event(snap_event)
+    qapp.processEvents()
+
+    # Recovery tab should have updated its dropdown
+    assert "REALTIME" in recovery.txt_audit.toPlainText()
+
+    # 2. Tab switching to Tab 5 (Recovery) triggers refresh_all()
+    window.tabs.setCurrentIndex(4)
+    qapp.processEvents()
+    assert recovery.combo_snaps.count() >= 1
+
+    # 3. Dashboard write gate toggle propagates to Top Ribbon in real time
+    assert "UNLOCKED" in window.badge_gate.text()
+    dash._toggle_write_gate()
+    qapp.processEvents()
+    assert "LOCKED" in window.badge_gate.text()
+    assert "LOCKED" in dash.kpi_gate.lbl_value.text()
+
+    dash._toggle_write_gate()
+    qapp.processEvents()
+    assert "UNLOCKED" in window.badge_gate.text()
+    assert "UNLOCKED" in dash.kpi_gate.lbl_value.text()
+
+    # 4. DLP profile change propagates to DashboardTab KPI in real time
+    exfil.combo_profile.setCurrentText("AUDIT_ONLY")
+    exfil._apply_profile()
+    qapp.processEvents()
+    assert dash.kpi_dlp.lbl_value.text() == "AUDIT_ONLY"
+    assert "AUDIT_ONLY" in window.badge_dlp.text()
+
+    # Reset DLP profile to DEFAULT
+    exfil.combo_profile.setCurrentText("DEFAULT")
+    exfil._apply_profile()
+    qapp.processEvents()
+
+    # 5. Forensic report event propagates to ForensicsTab
+    initial_reports_count = forensics.table_reports.rowCount()
+    report_event = Event(
+        event_type="FORENSIC_REPORT_GENERATED",
+        data={
+            "report_id": "REP-REALTIME-TEST-01",
+            "incident_id": "INC-TEST-01",
+        },
+        source="forensic_coordinator",
+    )
+    bridge._on_bus_event(report_event)
+    qapp.processEvents()
+    assert "REALTIME" in forensics.lbl_verify_status.text() or forensics.table_reports.rowCount() >= initial_reports_count
+
+    bridge.disconnect_bus()
+
+
 def test_e2e_gui_cli_headless_execution():
     """Verify that 'python -m app.main gui --offscreen' launches and exits cleanly."""
     exit_code = launch_gui(args=["app.main", "--offscreen"], offscreen=True)

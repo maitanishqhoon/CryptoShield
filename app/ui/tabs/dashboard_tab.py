@@ -190,6 +190,8 @@ class DashboardTab(QWidget):
         self.bridge.incident_resolved.connect(self.on_incident_resolved)
         self.bridge.write_gate_changed.connect(self.on_write_gate_changed)
         self.bridge.dlp_interception.connect(self._on_dlp_interception)
+        if hasattr(self.bridge, "dlp_profile_changed"):
+            self.bridge.dlp_profile_changed.connect(self._on_dlp_profile_changed)
 
     def _on_bridge_event(self, event: Event) -> None:
         """Process incoming EventBus event for telemetry table and canary status."""
@@ -197,6 +199,10 @@ class DashboardTab(QWidget):
         if "CANARY" in event.event_type:
             self.kpi_canaries.set_value("BREACHED", accent_color=ThemeColors.RED)
             self.kpi_canaries.set_subtitle("Honeypot tampering detected")
+
+    def _on_dlp_profile_changed(self, profile: str) -> None:
+        """Update DLP KPI card in realtime when security posture profile changes."""
+        self.kpi_dlp.set_value(profile.upper(), accent_color=ThemeColors.BLUE)
 
     def _on_dlp_interception(self, data: Dict[str, Any]) -> None:
         """Update DLP KPI on interception."""
@@ -298,13 +304,17 @@ class DashboardTab(QWidget):
         self.btn_toggle_gate.style().polish(self.btn_toggle_gate)
 
     def _toggle_write_gate(self) -> None:
-        """Toggles the state of LabWriteGate."""
+        """Toggles the state of LabWriteGate and broadcasts state change."""
         if self.write_gate.is_locked():
             self.write_gate.unlock()
             self.on_write_gate_changed(False)
+            if self.bridge and hasattr(self.bridge, "write_gate_changed"):
+                self.bridge.write_gate_changed.emit(False)
         else:
             self.write_gate.lock("Operator Emergency Lock from SOC Dashboard")
             self.on_write_gate_changed(True)
+            if self.bridge and hasattr(self.bridge, "write_gate_changed"):
+                self.bridge.write_gate_changed.emit(True)
 
     def _resolve_active_incident(self) -> None:
         """Resolves the currently open security incident."""

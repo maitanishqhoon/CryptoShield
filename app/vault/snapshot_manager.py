@@ -21,6 +21,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from app.config import CONFIG
 from app.containment.process_registry import REGISTRY, ControlledProcessRegistry
+from app.core.event_bus import BUS, Event
 from app.core.logger import get_logger
 from app.core.models import Manifest, ManifestEntry, ProcessLifecycleStatus
 from app.core.safety import SafetyViolationError, validate_lab_path, verify_lab_marker
@@ -347,6 +348,25 @@ class SnapshotManager:
                 logger.info(
                     f"Snapshot {snapshot_id} successfully created and atomically published to '{final_snapshot_dir}'!"
                 )
+
+                # Publish SNAPSHOT_CREATED event for realtime UI synchronization
+                try:
+                    BUS.publish(
+                        Event(
+                            event_type="SNAPSHOT_CREATED",
+                            data={
+                                "snapshot_id": snapshot_id,
+                                "total_files": total_files,
+                                "total_original_bytes": baseline_manifest.total_size_bytes,
+                                "total_encrypted_bytes": total_encrypted_bytes,
+                                "key_id": key_id,
+                            },
+                            source="vault.snapshot_manager",
+                        )
+                    )
+                except Exception as bus_err:
+                    logger.debug(f"Could not publish SNAPSHOT_CREATED event: {bus_err}")
+
                 return metadata
 
             except Exception as e:

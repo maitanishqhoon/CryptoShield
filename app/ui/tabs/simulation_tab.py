@@ -655,3 +655,8 @@ class SimulationTab(QWidget):
     def _on_scenario_error(self, err_msg: str) -> None:
         self._set_running_state(False, "[-] Scenario error occurred.")
         self._append_log(f"[-] Execution Error: {err_msg}")
+
+    def refresh_all(self) -> None:
+        """Synchronize simulation controls when switched into view."""
+        if not hasattr(self, "active_worker") or self.active_worker is None:
+            self._set_running_state(False, "Ready to launch scenario.")

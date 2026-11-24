@@ -51,6 +51,8 @@ class ForensicsTab(QWidget):
                 self.bridge.incident_resolved.connect(self._on_bridge_incident_resolved)
             if hasattr(self.bridge, "incident_created"):
                 self.bridge.incident_created.connect(self._on_bridge_incident_created)
+            if hasattr(self.bridge, "report_generated"):
+                self.bridge.report_generated.connect(self._on_bridge_report_generated)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -153,6 +155,7 @@ class ForensicsTab(QWidget):
         self.table_reports.setSelectionBehavior(QTableWidget.SelectRows)
         self.table_reports.setAlternatingRowColors(True)
         self.table_reports.cellClicked.connect(self._on_report_selected)
+        self.table_reports.itemSelectionChanged.connect(self._on_report_selection_changed)
         layout.addWidget(self.table_reports, 1)
 
         group.setMinimumHeight(240)
@@ -236,7 +239,7 @@ class ForensicsTab(QWidget):
         layout.addWidget(self.tabs_inspector)
         return group
 
-    def refresh_catalog(self) -> None:
+    def refresh_catalog(self, preferred_report_id: Optional[str] = None) -> None:
         """Query disk and populate reports catalog table."""
         try:
             self._reports_meta = self.coordinator.list_reports()
@@ -273,8 +276,14 @@ class ForensicsTab(QWidget):
                     self.table_reports.setItem(row, col, itm)
 
             if self._reports_meta:
-                self.table_reports.selectRow(0)
-                self._load_dossier(self._reports_meta[0].report_id)
+                target_idx = 0
+                if preferred_report_id:
+                    for idx, meta in enumerate(self._reports_meta):
+                        if meta.report_id == preferred_report_id:
+                            target_idx = idx
+                            break
+                self.table_reports.selectRow(target_idx)
+                self._load_dossier(self._reports_meta[target_idx].report_id)
         except Exception as e:
             self._update_banner_style("error", f"[-] Failed to load reports: {e}")
 
@@ -283,6 +292,18 @@ class ForensicsTab(QWidget):
         if 0 <= row < len(self._reports_meta):
             rep_id = self._reports_meta[row].report_id
             self._load_dossier(rep_id)
+
+    def _on_report_selection_changed(self) -> None:
+        """User changed report selection via click or keyboard arrow keys."""
+        row = self.table_reports.currentRow()
+        if 0 <= row < len(self._reports_meta):
+            rep_id = self._reports_meta[row].report_id
+            self._load_dossier(rep_id)
+
+    def _on_bridge_report_generated(self, data: Dict[str, Any]) -> None:
+        """Slot invoked when a new forensic report dossier is compiled and sealed."""
+        rep_id = data.get("report_id")
+        self.refresh_catalog(preferred_report_id=rep_id)
 
     def _load_dossier(self, report_id: str) -> None:
         """Loads and visualizes the full ForensicDossier."""

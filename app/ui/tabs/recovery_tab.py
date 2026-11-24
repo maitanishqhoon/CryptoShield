@@ -50,8 +50,11 @@ class RecoveryTab(QWidget):
         self.snapshot_mgr = SnapshotManager()
         self.active_worker: Optional[AsyncWorker] = None
 
-        if self.bridge and hasattr(self.bridge, "recovery_progress"):
-            self.bridge.recovery_progress.connect(self._on_bridge_recovery_progress)
+        if self.bridge:
+            if hasattr(self.bridge, "recovery_progress"):
+                self.bridge.recovery_progress.connect(self._on_bridge_recovery_progress)
+            if hasattr(self.bridge, "snapshot_created"):
+                self.bridge.snapshot_created.connect(self._on_bridge_snapshot_created)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -246,6 +249,11 @@ class RecoveryTab(QWidget):
 
         return group
 
+    def refresh_all(self) -> None:
+        """Comprehensive refresh of workspaces and snapshot baseline catalogs."""
+        self.refresh_workspaces()
+        self.refresh_snapshots_combo()
+
     def refresh_workspaces(self) -> None:
         """Query disk and populate workspaces table and dropdown."""
         try:
@@ -274,6 +282,18 @@ class RecoveryTab(QWidget):
                 idx = self.combo_ws.findText(current_selected)
                 if idx >= 0:
                     self.combo_ws.setCurrentIndex(idx)
+                elif self.combo_ws.count() > 0:
+                    self.combo_ws.setCurrentIndex(0)
+            elif self.combo_ws.count() > 0:
+                self.combo_ws.setCurrentIndex(0)
+
+            if self.combo_ws.count() > 0:
+                cur_text = self.combo_ws.currentText()
+                for r in range(self.table_ws.rowCount()):
+                    itm = self.table_ws.item(r, 0)
+                    if itm and itm.text() == cur_text:
+                        self.table_ws.selectRow(r)
+                        break
         except Exception as e:
             self.txt_audit.setPlainText(f"[-] Failed to refresh workspaces: {e}")
 
@@ -287,15 +307,32 @@ class RecoveryTab(QWidget):
                 if idx >= 0:
                     self.combo_ws.setCurrentIndex(idx)
 
-    def refresh_snapshots_combo(self) -> None:
-        """Query available snapshots to populate snapshot dropdown."""
+    def refresh_snapshots_combo(self, preferred_snap_id: Optional[str] = None) -> None:
+        """Query available snapshots to populate snapshot dropdown while preserving selection."""
         try:
+            current_selected = preferred_snap_id or self.combo_snaps.currentText()
             self.combo_snaps.clear()
             snaps = self.snapshot_mgr.list_snapshots()
             for s in snaps:
                 self.combo_snaps.addItem(s.snapshot_id)
+
+            if current_selected:
+                idx = self.combo_snaps.findText(current_selected)
+                if idx >= 0:
+                    self.combo_snaps.setCurrentIndex(idx)
+                elif self.combo_snaps.count() > 0:
+                    self.combo_snaps.setCurrentIndex(0)
+            elif self.combo_snaps.count() > 0:
+                self.combo_snaps.setCurrentIndex(0)
         except Exception:
             pass
+
+    def _on_bridge_snapshot_created(self, data: Dict[str, Any]) -> None:
+        """Slot invoked when a new snapshot is published across the subsystem."""
+        snap_id = data.get("snapshot_id")
+        self.refresh_snapshots_combo(preferred_snap_id=snap_id)
+        if snap_id:
+            self.txt_audit.append(f"[*] [REALTIME] Baseline snapshot '{snap_id}' detected & synchronized.")
 
     def _create_workspace(self) -> None:
         """Creates a fresh isolated recovery workspace."""
