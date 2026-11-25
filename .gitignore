@@ -52,8 +52,6 @@ htmlcov/
 # CryptoShield runtime outputs (large generated files & logs)
 runtime/lab/*
 !runtime/lab/.gitkeep
-!runtime/lab/.cryptoshield_lab_marker
-!runtime/lab/baseline_manifest.json
 runtime/vault/*
 !runtime/vault/.gitkeep
 runtime/keys/*
