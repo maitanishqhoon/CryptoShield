@@ -24,7 +24,7 @@ def qapp():
     return app
 
 
-def test_simulation_tab_all_scenarios(qapp):
+def test_simulation_tab_all_scenarios(qapp, isolated_runtime):
     """Test SimulationTab launcher buttons, bridge telemetry, and scenario executions."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -102,7 +102,7 @@ def test_simulation_tab_all_scenarios(qapp):
     bridge.disconnect_bus()
 
 
-def test_crypto_shield_main_window(qapp):
+def test_crypto_shield_main_window(qapp, isolated_runtime):
     """Test CryptoShieldMainWindow tab hosting, ribbon synchronization, and event signals."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -158,7 +158,7 @@ def test_crypto_shield_main_window(qapp):
     bridge.disconnect_bus()
 
 
-def test_app_launcher_headless(qapp):
+def test_app_launcher_headless(qapp, isolated_runtime):
     """Test launch_gui in headless offscreen mode."""
     exit_code = launch_gui(args=["test_runner", "--offscreen"], offscreen=True)
     assert exit_code == 0

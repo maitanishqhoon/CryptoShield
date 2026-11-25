@@ -4,14 +4,14 @@ Integration and end-to-end tests for Forensic Incident Reporting Subsystem (Phas
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
-from app.reporting.forensic_coordinator import FORENSIC_COORDINATOR
 from app.simulation.forensic_demo import ControlledForensicDemo, ForensicDemoResult
 
 
-def test_controlled_forensic_demo_end_to_end():
+def test_controlled_forensic_demo_end_to_end(isolated_runtime):
     """Verify full end-to-end simulation flow produces sealed multi-format dossier."""
     demo = ControlledForensicDemo()
     result: ForensicDemoResult = demo.run_demo()
@@ -34,13 +34,19 @@ def test_controlled_forensic_demo_end_to_end():
         assert p.stat().st_size > 0
 
 
-def test_cli_report_commands():
+def test_cli_report_commands(isolated_runtime):
     """Verify CLI report list, inspect, verify, and demo commands return code 0."""
+    env = {
+        **os.environ,
+        "CRYPTOSHIELD_RUNTIME_DIR": str(isolated_runtime["runtime_dir"]),
+    }
+
     # 1. Run demo via CLI
     p_demo = subprocess.run(
         [sys.executable, "-m", "app.main", "report", "demo"],
         capture_output=True,
         text=True,
+        env=env,
     )
     assert p_demo.returncode == 0
     assert "Demonstration Completed Successfully" in p_demo.stdout
@@ -50,12 +56,13 @@ def test_cli_report_commands():
         [sys.executable, "-m", "app.main", "report", "list"],
         capture_output=True,
         text=True,
+        env=env,
     )
     assert p_list.returncode == 0
     assert "CryptoShield Forensic Reports Catalog" in p_list.stdout
 
     # Extract first report ID from list
-    reports = FORENSIC_COORDINATOR.list_reports()
+    reports = isolated_runtime["forensic_coordinator"].list_reports()
     assert len(reports) > 0
     target_rep_id = reports[0].report_id
 
@@ -64,6 +71,7 @@ def test_cli_report_commands():
         [sys.executable, "-m", "app.main", "report", "inspect", target_rep_id],
         capture_output=True,
         text=True,
+        env=env,
     )
     assert p_inspect.returncode == 0
     assert f"FORENSIC DOSSIER: {target_rep_id}" in p_inspect.stdout
@@ -74,6 +82,7 @@ def test_cli_report_commands():
         [sys.executable, "-m", "app.main", "report", "verify", target_rep_id],
         capture_output=True,
         text=True,
+        env=env,
     )
     assert p_verify.returncode == 0
     assert "[PASS]" in p_verify.stdout

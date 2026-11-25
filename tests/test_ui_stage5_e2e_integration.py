@@ -30,7 +30,7 @@ def qapp():
     return app
 
 
-def test_e2e_soc_console_lifecycle(qapp):
+def test_e2e_soc_console_lifecycle(qapp, isolated_runtime):
     """
     Complete end-to-end multi-subsystem defensive lifecycle demonstration:
     1. Initial SOC Console baseline state verification.
@@ -181,7 +181,7 @@ def test_e2e_soc_console_lifecycle(qapp):
     bridge.disconnect_bus()
 
 
-def test_realtime_ui_updates_and_tab_sync(qapp):
+def test_realtime_ui_updates_and_tab_sync(qapp, isolated_runtime):
     """
     Verify real-time UI synchronization across subsystems:
     1. Realtime snapshot propagation to RecoveryTab dropdown and VaultTab table.
@@ -267,7 +267,7 @@ def test_realtime_ui_updates_and_tab_sync(qapp):
     bridge.disconnect_bus()
 
 
-def test_e2e_gui_cli_headless_execution():
+def test_e2e_gui_cli_headless_execution(isolated_runtime):
     """Verify that 'python -m app.main gui --offscreen' launches and exits cleanly."""
     exit_code = launch_gui(args=["app.main", "--offscreen"], offscreen=True)
     assert exit_code == 0

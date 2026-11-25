@@ -25,7 +25,7 @@ def qapp():
     return app
 
 
-def test_dashboard_tab(qapp):
+def test_dashboard_tab(qapp, isolated_runtime):
     """Test DashboardTab initialization, bridge signals, threat scoring, and incident lifecycle."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -87,11 +87,12 @@ def test_dashboard_tab(qapp):
     bridge.disconnect_bus()
 
 
-def test_lab_tab(qapp):
+def test_lab_tab(qapp, isolated_runtime):
     """Test LabTab environment validation, manifest metrics, and preset selection."""
     lab = LabTab()
     assert lab.lbl_marker_status.text() != ""
-    assert "VALID" in lab.lbl_marker_status.text()
+    assert lab.lbl_marker_status.text().startswith("VALID")
+    assert "INVALID" not in lab.lbl_marker_status.text()
     assert "files" in lab.lbl_manifest_status.text()
 
     # Preset selection
@@ -103,7 +104,7 @@ def test_lab_tab(qapp):
     assert lab.spin_files.value() == 20000
 
 
-def test_containment_tab(qapp):
+def test_containment_tab(qapp, isolated_runtime):
     """Test ContainmentTab gate toggle, process list, history loading, and bridge signals."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -132,7 +133,7 @@ def test_containment_tab(qapp):
     bridge.disconnect_bus()
 
 
-def test_vault_tab(qapp):
+def test_vault_tab(qapp, isolated_runtime):
     """Test VaultTab RSA key metadata, Argon2id parameters, and snapshot listing."""
     vault = VaultTab()
     assert vault.lbl_key_id.text().startswith("KEY-")

@@ -25,7 +25,7 @@ def qapp():
     return app
 
 
-def test_recovery_tab(qapp):
+def test_recovery_tab(qapp, isolated_runtime):
     """Test RecoveryTab workspace management, preview, bridge signals, and controls."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -57,7 +57,7 @@ def test_recovery_tab(qapp):
     assert int(tab.table_ws.item(row_idx, 2).text()) > 0
 
     # Preview restoration
-    tab.input_passphrase.setText("CryptoShieldVaultPassphrase2026!")
+    tab.input_passphrase.setText(isolated_runtime["passphrase"])
     tab._preview_restoration()
     assert "Restoration Plan Preview" in tab.txt_audit.toPlainText()
 
@@ -71,7 +71,7 @@ def test_recovery_tab(qapp):
     bridge.disconnect_bus()
 
 
-def test_exfiltration_tab(qapp):
+def test_exfiltration_tab(qapp, isolated_runtime):
     """Test ExfiltrationTab loopback receiver, posture selector, approval queue, and bridge signals."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
@@ -162,7 +162,7 @@ def test_exfiltration_tab(qapp):
     bridge.disconnect_bus()
 
 
-def test_forensics_tab(qapp):
+def test_forensics_tab(qapp, isolated_runtime):
     """Test ForensicsTab report loading, KPI metrics, timeline, seal verification, and bridge signals."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)

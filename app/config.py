@@ -26,16 +26,22 @@ class CryptoShieldConfig:
 
     # Base project paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
-    RUNTIME_DIR: Path = BASE_DIR / "runtime"
+    RUNTIME_DIR: Path = field(
+        default_factory=lambda: (
+            Path(os.environ["CRYPTOSHIELD_RUNTIME_DIR"]).resolve()
+            if os.environ.get("CRYPTOSHIELD_RUNTIME_DIR")
+            else Path(__file__).resolve().parent.parent / "runtime"
+        )
+    )
 
-    # Laboratory and subsystem directories
-    LAB_DIR: Path = RUNTIME_DIR / "lab"
-    VAULT_DIR: Path = RUNTIME_DIR / "vault"
-    KEYS_DIR: Path = RUNTIME_DIR / "keys"
-    SNAPSHOTS_DIR: Path = RUNTIME_DIR / "snapshots"
-    LOGS_DIR: Path = RUNTIME_DIR / "logs"
-    REPORTS_DIR: Path = RUNTIME_DIR / "reports"
-    INCIDENTS_DIR: Path = RUNTIME_DIR / "incidents"
+    # Laboratory and subsystem directories (derived from RUNTIME_DIR in __post_init__)
+    LAB_DIR: Path = field(init=False)
+    VAULT_DIR: Path = field(init=False)
+    KEYS_DIR: Path = field(init=False)
+    SNAPSHOTS_DIR: Path = field(init=False)
+    LOGS_DIR: Path = field(init=False)
+    REPORTS_DIR: Path = field(init=False)
+    INCIDENTS_DIR: Path = field(init=False)
 
     # Cryptographic Vault Parameters (Phase 5)
     PRIVATE_KEY_FILENAME: str = "cryptoshield_private.pem"
@@ -196,8 +202,8 @@ class CryptoShieldConfig:
     )
 
     # Threat Containment & Controlled Process Isolation Parameters (Phase 4)
-    CONTAINMENT_DIR: Path = RUNTIME_DIR / "containment"
-    CONTAINMENT_DEMO_DIR: Path = LAB_DIR / "containment_demo"
+    CONTAINMENT_DIR: Path = field(init=False)
+    CONTAINMENT_DEMO_DIR: Path = field(init=False)
     AUTO_CONTAINMENT_ENABLED: bool = True
     AUTO_CONTAINMENT_THRESHOLD: int = 80
     CONTAINMENT_HIGH_THRESHOLD: int = 60
@@ -208,16 +214,16 @@ class CryptoShieldConfig:
     SIMULATOR_MAX_OPERATIONS: int = 100
 
     # Recovery and Restoration Parameters (Phase 6)
-    RECOVERY_DIR: Path = RUNTIME_DIR / "recovery"
-    RECOVERY_WORKSPACES_DIR: Path = RECOVERY_DIR / "workspaces"
-    RECOVERY_STAGING_DIR: Path = RECOVERY_DIR / "staging"
-    RECOVERY_REPORTS_DIR: Path = RECOVERY_DIR / "reports"
+    RECOVERY_DIR: Path = field(init=False)
+    RECOVERY_WORKSPACES_DIR: Path = field(init=False)
+    RECOVERY_STAGING_DIR: Path = field(init=False)
+    RECOVERY_REPORTS_DIR: Path = field(init=False)
     RECOVERY_MARKER_FILENAME: str = ".cryptoshield_recovery_marker"
     RECOVERY_EVIDENCE_DIRNAME: str = ".evidence_quarantine"
 
     # Data Exfiltration Monitoring Parameters (Phase 7)
-    EXFILTRATION_DIR: Path = RUNTIME_DIR / "exfiltration"
-    EXFILTRATION_STAGING_DIR: Path = LAB_DIR / ".exfiltration_staging"
+    EXFILTRATION_DIR: Path = field(init=False)
+    EXFILTRATION_STAGING_DIR: Path = field(init=False)
     EXFILTRATION_MOCK_HOST: str = "127.0.0.1"
     EXFILTRATION_MOCK_PORT: int = 8999
     EXFILTRATION_READ_BURST_THRESHOLD: int = 10       # 10+ reads in window
@@ -230,7 +236,7 @@ class CryptoShieldConfig:
     EXFILTRATION_CRITICAL_THRESHOLD: int = 80
 
     # Data Loss Prevention (DLP) Parameters (Phase 8)
-    DLP_DIR: Path = RUNTIME_DIR / "dlp"
+    DLP_DIR: Path = field(init=False)
     DLP_POLICIES_FILENAME: str = "policies.json"
     DLP_AUDIT_LOG_FILENAME: str = "audit.log"
     DLP_ENABLED: bool = True
@@ -238,6 +244,29 @@ class CryptoShieldConfig:
     DLP_MAX_BURST_FILES: int = 20
     DLP_MAX_PAYLOAD_BYTES: int = 5 * 1024 * 1024  # 5 MB
     DLP_APPROVAL_TIMEOUT_SECONDS: float = 300.0   # 5 minutes
+
+    def __post_init__(self) -> None:
+        """Derive all subsystem directories from RUNTIME_DIR."""
+        rt = self.RUNTIME_DIR.resolve()
+        lab = rt / "lab"
+        rec = rt / "recovery"
+        object.__setattr__(self, "RUNTIME_DIR", rt)
+        object.__setattr__(self, "LAB_DIR", lab)
+        object.__setattr__(self, "VAULT_DIR", rt / "vault")
+        object.__setattr__(self, "KEYS_DIR", rt / "keys")
+        object.__setattr__(self, "SNAPSHOTS_DIR", rt / "snapshots")
+        object.__setattr__(self, "LOGS_DIR", rt / "logs")
+        object.__setattr__(self, "REPORTS_DIR", rt / "reports")
+        object.__setattr__(self, "INCIDENTS_DIR", rt / "incidents")
+        object.__setattr__(self, "CONTAINMENT_DIR", rt / "containment")
+        object.__setattr__(self, "CONTAINMENT_DEMO_DIR", lab / "containment_demo")
+        object.__setattr__(self, "RECOVERY_DIR", rec)
+        object.__setattr__(self, "RECOVERY_WORKSPACES_DIR", rec / "workspaces")
+        object.__setattr__(self, "RECOVERY_STAGING_DIR", rec / "staging")
+        object.__setattr__(self, "RECOVERY_REPORTS_DIR", rec / "reports")
+        object.__setattr__(self, "EXFILTRATION_DIR", rt / "exfiltration")
+        object.__setattr__(self, "EXFILTRATION_STAGING_DIR", lab / ".exfiltration_staging")
+        object.__setattr__(self, "DLP_DIR", rt / "dlp")
 
     @property
     def containment_dir(self) -> Path:

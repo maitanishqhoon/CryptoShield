@@ -323,7 +323,6 @@ class SimulationTab(QWidget):
                 # Stage 1: File activity and write burst
                 if progress:
                     progress(15, 100, f"Stage 1/4: Simulator active (PID {pid}). Rapid writes occurring... [Observe Tab 1: Dashboard]")
-                self._append_log(f"[*] [STAGE 1] Harmless file operations initiated in lab (PID {pid}). Monitoring live telemetry stream...")
 
                 pre_wait = pacing["containment_pre_delay"]
                 chunks = max(1, int(pre_wait / 0.8))
@@ -347,7 +346,6 @@ class SimulationTab(QWidget):
                 # Stage 2: Canary Honeypot Breach & Incident Trigger
                 if progress:
                     progress(40, 100, f"Stage 2/4: Canary honeypot breached! Security Incident opened. [Observe Tab 1: Threat Gauge]")
-                self._append_log(f"[*] [STAGE 2] Canary file 'Finance/canary_demo_accounts.csv' accessed! Threat score escalating to 95 [CRITICAL]...")
 
                 canary_event = MonitoringEvent(
                     event_id=f"can-{run_id}",
@@ -409,7 +407,6 @@ class SimulationTab(QWidget):
                 # Stage 3: Containment Execution & Write Gate Lock
                 if progress:
                     progress(70, 100, f"Stage 3/4: Containment enforced! LabWriteGate locked; process halted. [Observe Tab 3: Containment]")
-                self._append_log(f"[*] [STAGE 3] Containment coordinator engaging: Locking LabWriteGate and sending cooperative stop to PID {pid}...")
 
                 decision = coord.handle_detection(detection)
 
@@ -419,7 +416,6 @@ class SimulationTab(QWidget):
                 # Stage 4: Post-Containment Verification
                 if progress:
                     progress(90, 100, f"Stage 4/4: Post-containment audit passed; baseline 20,000 files intact.")
-                self._append_log(f"[*] [STAGE 4] Post-containment verification passed: write gate strictly rejected subsequent writes.")
 
                 time.sleep(pacing["stage_delay"] * 0.5)
 
