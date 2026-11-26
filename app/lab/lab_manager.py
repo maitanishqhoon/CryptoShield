@@ -36,19 +36,9 @@ class LabManager:
 
     def initialize_runtime(self) -> None:
         """Create standard runtime directory tree if not already present."""
-        for path in [
-            CONFIG.LAB_DIR,
-            CONFIG.VAULT_DIR,
-            CONFIG.KEYS_DIR,
-            CONFIG.SNAPSHOTS_DIR,
-            CONFIG.LOGS_DIR,
-            CONFIG.REPORTS_DIR,
-        ]:
-            path.mkdir(parents=True, exist_ok=True)
-            # Create a .gitkeep if empty
-            gitkeep = path / ".gitkeep"
-            if not gitkeep.exists() and not any(path.iterdir()):
-                gitkeep.touch()
+        if self.lab_dir == CONFIG.LAB_DIR.resolve():
+            CONFIG.ensure_directories()
+        self.lab_dir.mkdir(parents=True, exist_ok=True)
 
     def initialize_lab(self, force_new_marker: bool = False) -> LabMarker:
         """
@@ -125,7 +115,12 @@ class LabManager:
             for root, dirs, files in os.walk(self.lab_dir):
                 dirs_count += len(dirs)
                 for f in files:
-                    if f in {CONFIG.LAB_MARKER_FILENAME, CONFIG.MANIFEST_FILENAME}:
+                    if f in {
+                        CONFIG.LAB_MARKER_FILENAME,
+                        CONFIG.MANIFEST_FILENAME,
+                        ".write_gate_state",
+                        ".gitkeep",
+                    }:
                         continue
                     files_count += 1
                     fp = Path(root) / f

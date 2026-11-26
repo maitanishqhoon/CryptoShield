@@ -288,7 +288,11 @@ class RecoveryCoordinator:
             snapshot_id = snaps[0].snapshot_id
 
         # 2. Resolve Passphrase
-        resolved_passphrase = passphrase or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE") or "CryptoShieldVaultPassphrase2026!"
+        resolved_passphrase = passphrase or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE")
+        if not resolved_passphrase:
+            raise RecoveryError(
+                "Private-key passphrase is required. Provide 'passphrase' or set CRYPTOSHIELD_VAULT_PASSPHRASE."
+            )
 
         # 3. Create Isolated Seeded Recovery Workspace
         demo_ws_id = f"demo_rec_{file_count}_{uuid.uuid4().hex[:6]}"

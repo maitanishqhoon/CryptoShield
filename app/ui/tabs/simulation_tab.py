@@ -15,7 +15,9 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
+    QLineEdit,
     QProgressBar,
     QPushButton,
     QScrollArea,
@@ -606,6 +608,19 @@ class SimulationTab(QWidget):
     # Scenario 5: Cryptographic Recovery Demo
     # -------------------------------------------------------------------------
     def _run_recovery_demo(self) -> None:
+        passphrase = os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE")
+        if not passphrase:
+            entered, accepted = QInputDialog.getText(
+                self,
+                "Vault Passphrase Required",
+                "Enter RSA private-key passphrase for recovery demo:",
+                QLineEdit.EchoMode.Password,
+            )
+            if not accepted or not entered:
+                self._append_log("[-] Cryptographic Recovery Demo canceled: passphrase is required.")
+                return
+            passphrase = entered
+
         pacing = self._get_pacing_parameters()
         self._set_running_state(True, "Executing Cryptographic Recovery Demo... [Traverse to Tab 5: Recovery & Restoration]")
         self.txt_console.clear()
@@ -617,6 +632,7 @@ class SimulationTab(QWidget):
             t0 = time.perf_counter()
             res = RECOVERY_COORDINATOR.run_recovery_demo(
                 file_count=20,
+                passphrase=passphrase,
                 cleanup=True,
                 pacing_delay=pacing["recovery_delay"],
                 progress_callback=progress,

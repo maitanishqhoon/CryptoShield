@@ -5,13 +5,18 @@
 
 ## 1. Quick Start: Launching the Console
 
-Open a terminal (PowerShell or Command Prompt) in the repository root:
-```powershell
-# Navigate to the CryptoShield root directory
-cd C:\NFSU\AC\CryptoShield
+Open a terminal in the cloned `CryptoShield` repository root:
 
-# Launch the interactive desktop interface
-.venv\Scripts\python.exe -m app.main gui
+**Windows (PowerShell):**
+```powershell
+cd <path-to-CryptoShield>
+.\.venv\Scripts\python.exe -m app.main gui
+```
+
+**Linux / macOS (bash/zsh):**
+```bash
+cd <path-to-CryptoShield>
+./.venv/bin/python -m app.main gui
 ```
 The application will open in a high-resolution dark-themed window (recommended display resolution: 1280x800 or higher).
 

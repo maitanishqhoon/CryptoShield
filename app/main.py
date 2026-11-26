@@ -1450,7 +1450,9 @@ def cmd_recovery(args: argparse.Namespace) -> int:
         files = getattr(args, "files", 100) or 100
         snap_id = getattr(args, "snapshot", None)
         cleanup = getattr(args, "cleanup", False)
-        passphrase = getattr(args, "passphrase", None) or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE") or "CryptoShieldVaultPassphrase2026!"
+        passphrase = getattr(args, "passphrase", None) or _prompt_passphrase(
+            "Enter private-key passphrase for recovery demo: "
+        )
 
         print(f"\n================================================================================")
         print(f"             CRYPTOSHIELD AUTOMATED RECOVERY DEMONSTRATION                      ")
@@ -2156,6 +2158,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    CONFIG.ensure_directories()
     setup_logging()
     print_banner()
     parser = build_parser()

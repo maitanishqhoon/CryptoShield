@@ -11,6 +11,7 @@ from typing import List, Optional
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
+from app.config import CONFIG
 from app.core.logger import get_logger
 from app.ui.bridge import EventBusBridge
 from app.ui.main_window import CryptoShieldMainWindow
@@ -30,6 +31,7 @@ def launch_gui(args: Optional[List[str]] = None, offscreen: bool = False) -> int
     Returns:
         Exit code from the Qt application event loop.
     """
+    CONFIG.ensure_directories()
     raw_args = args or sys.argv
 
     # Support headless execution for automated testing or non-GUI environments

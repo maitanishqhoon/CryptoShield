@@ -327,5 +327,5 @@ function Draw-CryptoShieldWorkflow {
 }
 
 # Generate both PNG and JPEG formats
-Draw-CryptoShieldWorkflow -OutputFile "c:\NFSU\AC\CryptoShield\docs\CryptoShield_Workflow_Diagram.png" -Format "PNG"
-Draw-CryptoShieldWorkflow -OutputFile "c:\NFSU\AC\CryptoShield\docs\CryptoShield_Workflow_Diagram.jpg" -Format "JPEG"
+Draw-CryptoShieldWorkflow -OutputFile (Join-Path $PSScriptRoot "CryptoShield_Workflow_Diagram.png") -Format "PNG"
+Draw-CryptoShieldWorkflow -OutputFile (Join-Path $PSScriptRoot "CryptoShield_Workflow_Diagram.jpg") -Format "JPEG"
