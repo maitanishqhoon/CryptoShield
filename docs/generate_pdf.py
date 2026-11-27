@@ -347,7 +347,7 @@ class CompletePDFWriter:
         p = len(self.pages) + 1
         if p > 1:
             # Header
-            self.cur_cmds.append(f"0.4 0.45 0.5 rg BT /F4 8 Tf {self.margin_left:.2f} {self.height - 28:.2f} Td (CryptoShield - Architecture & Operational Guide (Phases 1-8)) Tj ET\n")
+            self.cur_cmds.append(f"0.4 0.45 0.5 rg BT /F4 8 Tf {self.margin_left:.2f} {self.height - 28:.2f} Td (CryptoShield - Architecture & Operational Guide (Phases 1-10)) Tj ET\n")
             self.cur_cmds.append(f"0.8 0.85 0.9 RG 0.5 w {self.margin_left:.2f} {self.height - 32:.2f} m {self.width - self.margin_right:.2f} {self.height - 32:.2f} l S\n")
 
     def check_space(self, h):
@@ -584,11 +584,11 @@ if __name__ == "__main__":
     # Document header
     pdf.add_title(
         "CryptoShield - Full Architecture & Operational Guide",
-        "Phases 1-8 Full Defensive Platform | 229 Passing Tests (100%) | NFSU Lab"
+        "Phases 1-10 Complete Defensive Platform | 280 Passing Tests (59 Modules, 100%) | NFSU Lab"
     )
     
     pdf.add_banner(
-        "Welcome to the Full CryptoShield Architecture Guide! Now that we have completed all 8 core operational phases (with 229 out of 229 automated tests passing), this document serves as the complete reference for explaining the architecture, technological concepts, testing methodology, and end-to-end security workflow to your team."
+        "Welcome to the Full CryptoShield Architecture Guide! Now that all 10 project phases are complete (with 280 out of 280 automated tests passing across 59 test modules), this document serves as the complete reference for explaining the architecture, cryptographic and forensic concepts, PySide6 SOC Console, testing methodology, and end-to-end defensive workflow to your team."
     )
     
     # 1. Plain English
@@ -605,139 +605,171 @@ if __name__ == "__main__":
     pdf.add_bullet("The Suspicion Brain (Threat Scorer):", "Distinguishes a busy accountant from a masked burglar shoving files into bags.")
     pdf.add_bullet("The Blast Doors (Containment):", "The instant a thief is spotted, steel shutters drop over the vault door, and the suspect is disarmed and frozen.")
     pdf.add_bullet("The Border Customs Checkpoint (DLP Gate):", "Even if a thief grabs documents, they cannot walk out without customs inspecting every box. Confidential files are stopped cold before a single byte leaves.")
-    pdf.add_bullet("The Underground Vault (Crypto Vault):", "A hidden, sealed backup taken earlier. Even if a fire burns down the front desk, original documents are verified, decrypted, and restored bit-for-bit.")
+    pdf.add_bullet("The Underground Vault (Crypto Vault & Recovery):", "A hidden, sealed backup taken earlier. Even if a fire burns down the front desk, original documents are decrypted in staging, verified bit-for-bit, and restored.")
+    pdf.add_bullet("The Black Box & Notary Seal (Phase 9 - Forensics):", "After an incident, an automated investigator fuses every alarm, customs record, and recovery receipt into one tamper-evident dossier sealed with a SHA-256 fingerprint.")
+    pdf.add_bullet("The Command Center Wall (Phase 10 - PySide6 SOC Console):", "A unified dark-mode console where operators watch live threat gauges, throw emergency blast-door switches, verify forensic seals, and run safe simulations on one IST clock.")
     
     # 2. Tech concepts
     pdf.add_h2("2. Technological Concepts Used (What They Mean & Why We Used Them)")
-    pdf.add_p("Here is every major computer science, cryptographic, and security concept we built into CryptoShield, explained in plain terms:")
+    pdf.add_p("Here is every major computer science, cryptographic, forensic, and desktop UI concept built into CryptoShield, explained in plain terms:")
     
-    pdf.add_h3("A. Cryptography Concepts")
+    pdf.add_h3("A. Cryptography & Forensic Integrity Concepts")
     headers_a = ["Concept", "What It Is in Plain English", "Where & Why We Use It"]
     rows_a = [
         [
             "AES-256-GCM (Symmetric Authenticated Encryption)",
-            "Think of this as an armored military lockbox. It scrambles data using a 256-bit key. GCM (Galois/Counter Mode) is special because it generates a cryptographic 'tamper-evident seal' (the Auth Tag). If an attacker changes even one single bit of the encrypted file on disk, GCM detects it immediately and refuses to open.",
-            "Used by CryptoEngine to encrypt files into .cso (CryptoShield Object) files for our backup snapshots."
+            "Think of this as an armored military lockbox. It scrambles data using a 256-bit key. GCM (Galois/Counter Mode) generates a cryptographic 'tamper-evident seal' (the 128-bit Auth Tag). If an attacker changes even one single bit on disk, GCM detects it immediately and refuses to open.",
+            "Used by CryptoEngine to encrypt files into .cso containers for snapshots, and by RestorationManager to authenticate plaintext before commit."
         ],
         [
             "RSA-3072 & RSA-OAEP (Asymmetric Public/Private Encryption)",
-            "A two-key system: a Public Key that can only lock the safe, and a Private Key that is needed to open it. OAEP is mathematical padding that prevents mathematical pattern attacks.",
-            "Used by KeyManager and SnapshotManager. Each backup snapshot gets its own random AES key, which is then wrapped (locked) using RSA. Even if someone finds the snapshot, they can't open it without the master private key."
+            "A two-key system: a Public Key that can only lock the safe, and a Private Key needed to open it. OAEP with SHA-256 prevents mathematical pattern attacks.",
+            "Used by KeyManager and SnapshotManager. Each snapshot gets its own random AES key, wrapped with RSA-OAEP so it cannot open without the master private key."
         ],
         [
             "Argon2id (Memory-Hard Key Derivation)",
-            "A password hasher that deliberately uses a huge amount of RAM (64 MB) and processor work. It makes brute-force password guessing impossible, even for supercomputers or specialized GPU mining rigs.",
-            "Used to protect the master RSA private key on disk. If an attacker steals the private key file, they cannot crack its passphrase through brute force."
+            "A password hasher that deliberately uses 64 MiB of RAM, 3 iterations, and 4 lanes. It makes brute-force password guessing impractical, even for specialized GPUs.",
+            "Used in Envelope V2 (Argon2id-AES256GCM) to protect the master RSA private key on disk against offline brute-force cracking."
         ],
         [
             "SHA-256 (Cryptographic Hash Function)",
-            "A one-way mathematical fingerprint. No matter how large a file is, it generates a unique 64-character fingerprint. Change a single comma, and the fingerprint changes completely.",
-            "Used in our Baseline Manifest (baseline_manifest.json) and Restoration Verifier to ensure every file is 100% genuine and unaltered."
+            "A one-way mathematical fingerprint. Change a single byte in a file, and its 64-character hex fingerprint changes completely.",
+            "Used in baseline_manifest.json, RecoveryAssessor, and RestorationManager to verify every restored file matches its original 100%."
         ],
         [
             "HMAC-SHA256 (Keyed-Hash Message Authentication)",
-            "A digital signature created with a secret key. It proves that a message or marker was written by CryptoShield and has not been forged or moved.",
-            "Used in .cryptoshield_lab_marker and .cryptoshield_recovery_marker. Prevents CryptoShield from accidentally or maliciously touching files outside its designated safe lab folders."
+            "A digital signature created with a secret key. It proves that a marker file was written by CryptoShield and has not been forged or moved.",
+            "Used in .cryptoshield_lab_marker and .cryptoshield_recovery_marker. Prevents touching files outside authorized lab or recovery folders."
+        ],
+        [
+            "Cryptographic Chain of Custody & Dossier Seal (Phase 9)",
+            "Freezing an entire incident dossier by computing a deterministic SHA-256 digest over canonical sorted JSON (sort_keys=True), binding the baseline manifest hash and quarantined evidence hashes.",
+            "Used by ForensicDossier (compute_dossier_hash) and ReportExporter (verify_dossier_seal). Editing one metric or timestamp breaks the seal."
         ]
     ]
     pdf.add_table(headers_a, rows_a, [28, 44, 28])
     
-    pdf.add_h3("B. Operating System & Security Concepts")
+    pdf.add_h3("B. Operating System, Forensic & Desktop UI Concepts")
     headers_b = ["Concept", "What It Is in Plain English", "Where & Why We Use It"]
     rows_b = [
         [
             "Canary Files / Honeypots",
-            "Deceptive 'bait' files (e.g., passwords.xlsx, budget_2026.docx) placed quietly in directories. Normal users never touch them. Ransomware, which blindly encrypts or reads every file alphabetically, inevitably touches them first.",
-            "Used in CanaryAnalyzer and ReadBurstDetector. Touching a canary instantly awards high threat points (+50 to +60) and triggers emergency alerts."
+            "Deceptive 'bait' files (e.g., passwords_master_backup.json, executive_salaries_2026.csv) placed quietly in directories. Normal users never touch them; ransomware inevitably hits them first.",
+            "Used in CanaryAnalyzer and ReadBurstDetector. Touching a canary awards +50 to +60 threat points and triggers emergency alerts."
         ],
         [
             "File System Telemetry (watchdog)",
-            "Hooking directly into the operating system kernel to be notified the exact millisecond a file is created, read, modified, renamed, or deleted.",
+            "Hooking into the OS filesystem notification layer to be notified the exact millisecond a file is created, modified, renamed, or deleted.",
             "Used in FilesystemMonitor to track rapid file changes across the 20,000 files in our lab."
         ],
         [
             "Process Inspection (psutil)",
-            "Looking at the OS process table to see what program is running, who launched it (parent process), its Process ID (PID), its memory usage, and its exact executable path.",
-            "Used in ProcessMonitor to track which program is responsible for disk and network activity."
+            "Inspecting the OS process table to see what program is running, who launched it, its PID, start time, and exact executable path.",
+            "Used in ProcessMonitor and ControlledProcessRegistry to attribute simulator activity accurately without guessing."
         ],
         [
             "Sliding Time Windows",
-            "Rather than looking at a single snapshot, the system evaluates activity over rolling time intervals (e.g., last 1 second, 5 seconds, 10 seconds, 30 seconds).",
-            "Used in BehaviorAnalyzer and ReadBurstDetector. 10 file edits in an hour is normal; 500 file edits in 3 seconds is an obvious ransomware outbreak."
+            "Evaluating activity over rolling intervals (1s, 5s, 10s, 30s) rather than isolated snapshots.",
+            "Used in BehaviorAnalyzer and ReadBurstDetector to distinguish normal edits from rapid ransomware bursts."
         ],
         [
             "Pub/Sub Event Bus",
-            "A central broadcasting radio station. Components don't call each other directly; they broadcast events (like FILE_MODIFIED or CANARY_ACCESS), and any interested module (Scorer, Containment, Logger) tunes in and reacts asynchronously.",
-            "Implemented in app/core/event_bus.py. Keeps code modular, thread-safe, and cleanly separated."
+            "A central thread-safe broadcasting station in app/core/event_bus.py. Subsystems emit typed events without calling each other directly.",
+            "Connects monitoring, detection, containment, exfiltration, DLP, recovery, Phase 9 auto-reporting, and Phase 10 live GUI updates."
         ],
         [
             "PID Reuse Protection",
-            "Operating systems reuse process IDs (PIDs) once a program closes. If malware PID 1234 dies, Windows might assign PID 1234 to Spotify 5 seconds later.",
-            "We built ControlledProcessRegistry, which verifies PID + process start-time + executable path before issuing any kill command, preventing accidental termination of innocent apps."
+            "Operating systems reuse PIDs once a program exits. Checking PID alone risks stopping an innocent app started later.",
+            "ControlledProcessRegistry checks PID + start-time + executable path + owned handle before ProcessController stops any simulator."
         ],
         [
             "Pre-Transmission Gate (DLP)",
-            "Intercepting data before it hits the network socket. Traditional firewalls see data after it's in motion; our pre-flight gate stops the transmission in memory before a single byte leaves.",
-            "Used in DLPTransferGate. It evaluates policies and halts or quarantines unauthorized transfers instantly."
+            "Intercepting data before it hits the network socket, enforcing ALLOW, ALERT, REQUIRE_APPROVAL, or BLOCK in memory.",
+            "Used in DLPTransferGate and DLPApprovalManager (APR-* tokens) to guarantee zero-byte leakage of restricted or canary data."
+        ],
+        [
+            "Forensic Aggregation & MITRE ATT&CK Mapping (Phase 9)",
+            "Fusing telemetry from detection, containment, recovery, DLP, and exfiltration into one chronological dossier with academic KPIs and MITRE tags (T1486, T1083, T1005, T1074, T1048).",
+            "Implemented in ForensicAggregator and ReportExporter, exporting JSON, Markdown, CSV, and HTML reports under runtime/reports/."
+        ],
+        [
+            "Thread-Safe Qt Signal Bridge & Async Workers (Phase 10)",
+            "Background threads cannot safely touch GUI widgets directly. A bridge converts EventBus events into Qt queued signals while QThread workers run heavy tasks off the UI thread.",
+            "Implemented in EventBusBridge (app/ui/bridge.py) and AsyncWorker (app/ui/workers.py), keeping the 8-tab PySide6 console responsive."
+        ],
+        [
+            "Centralized Temporal Sync (IST / UTC+05:30)",
+            "Normalizing every clock, event timestamp, log line, and dossier entry to Indian Standard Time (IST).",
+            "Implemented in app/core/time.py (now_ist, format_ist, parse_iso_to_ist) so cross-subsystem timelines align to the microsecond."
         ]
     ]
     pdf.add_table(headers_b, rows_b, [28, 44, 28])
     
     # 3. Tests
-    pdf.add_h2("3. What Are the Multiple Tests For? (229 Tests Explained)")
-    pdf.add_p("You noticed we have 47 test files with 229 total tests. In high-stakes security and cryptography software, you cannot guess or assume code works - you must prove it against edge cases, malicious attacks, and unexpected failures.")
+    pdf.add_h2("3. What Are the Multiple Tests For? (280 Tests Explained)")
+    pdf.add_p("CryptoShield includes 59 test files with 280 total automated tests (280 / 280 passing). In high-stakes security and cryptography software, you cannot guess or assume code works - you must prove it against edge cases, tampering, concurrency bugs, and simulated attacks.")
     
-    pdf.add_bullet("1. Safety & Sandbox Invariant Tests (test_safety.py, test_config.py, test_lab_write_gate.py):", "What they test: Can an attacker escape the sandbox using directory traversal tricks (e.g. ../../Windows/System32), symlinks, or fake markers? Why it matters: Ensures CryptoShield will never accidentally delete, overwrite, or terminate files outside its lab.")
-    pdf.add_bullet("2. Cryptographic Rigor & Anti-Tampering Tests (test_vault_*.py, 43 tests):", "What they test: If an attacker flips a single byte in an encrypted .cso file, does AES-GCM reject it? (Yes, GCM tag mismatch). If an attacker swaps out a file for an older version, does the encrypted manifest catch it? (Yes, SHA-256 mismatch). Does Argon2id correctly resist wrong passwords? Why it matters: Guarantees backup vault is mathematically unhackable and tamper-evident.")
-    pdf.add_bullet("3. Detection & Heuristic Tests (test_behavior_analyzer.py, test_canary_*.py, test_threat_scorer.py):", "What they test: Does normal typing trigger a false alarm? (No, threat score stays LOW). Does renaming 50 files to .locked in 2 seconds trigger the alarm? (Yes, hits CRITICAL). Does touching a honeypot canary immediately spike the threat score? (Yes, +50 points instantly). Why it matters: Eliminates false alarms while guaranteeing zero delay during real attacks.")
-    pdf.add_bullet("4. Containment Verification Tests (test_containment_*.py, test_process_controller.py):", "What they test: When we tell the system to contain a process, does the write gate shut? Does the process actually stop running? Can it sneak in one last write after containment? Why it matters: Verifies that malware is completely neutralized and cannot continue encrypting in the background.")
-    pdf.add_bullet("5. Bit-for-Bit Recovery Tests (test_recovery_*.py, 27 tests):", "What they test: If 100 files are encrypted or deleted by malware, does the recovery engine restore them so that their SHA-256 hashes match the originals with 100.00% accuracy? Are corrupted files quarantined safely? Why it matters: A backup system is useless if it restores corrupted files.")
-    pdf.add_bullet("6. Exfiltration & DLP Tests (test_exfiltration_*.py, test_dlp_*.py, 52 tests):", "What they test: Does bulk reading across multiple departments trigger exfiltration alarms? Does creating a staging archive (.zip) get flagged? Does the DLP Gate stop RESTRICTED financial data from leaving? Does REQUIRE_APPROVAL properly hold the file in quarantine until an administrator issues an approval token? Why it matters: Guarantees complete defense against extortion and theft.")
+    pdf.add_bullet("1. Safety, Config & Lab Foundation Tests (25 tests - test_safety.py, test_config.py, test_lab_*.py, test_manifest.py, test_dataset_generator.py):", "Directory traversal rejection, symlink checks, signed markers, CRYPTOSHIELD_RUNTIME_DIR isolation, deterministic dataset synthesis, and SHA-256 baseline auditing.")
+    pdf.add_bullet("2. Monitoring, Detection & Containment Tests (85 tests - test_*monitor*.py, test_canary_*.py, test_behavior_analyzer.py, test_threat_scorer.py, test_containment_*.py):", "High-throughput telemetry, burst encryption vs. normal typing, canary scoring (+50/+60), LabWriteGate closure, PID-reuse-safe containment, and post-containment write rejection.")
+    pdf.add_bullet("3. Cryptographic Vault & Anti-Tampering Tests (43 tests - test_vault_*.py):", "Bit-flipping in .cso files (AES-GCM tag mismatch), substituted manifests, Argon2id V2 wrong-passphrase rejection, and RSA-OAEP session key wrapping.")
+    pdf.add_bullet("4. Bit-for-Bit Recovery Tests (28 tests - test_recovery_*.py):", "Multi-threaded damage assessment, isolated recovery workspace markers, staging decryption, evidence quarantine, and 100% SHA-256 hash match after restore.")
+    pdf.add_bullet("5. Exfiltration & DLP Policy Tests (52 tests - test_exfiltration_*.py, test_dlp_*.py):", "Multi-department read bursts, .zip staging detection, loopback boundaries (127.0.0.1), zero-byte BLOCK enforcement, and APR-* approval workflows.")
+    pdf.add_bullet("6. Forensic Reporting & Temporal Sync Tests (26 tests - test_forensic_*.py, test_timezone_sync.py):", "ForensicAggregator timeline fusion, MITRE ATT&CK mapping, academic KPI math, 4-format export (JSON, Markdown, CSV, HTML), verify_dossier_seal() tamper detection, ControlledForensicDemo, and IST (UTC+05:30) clock synchronization.")
+    pdf.add_bullet("7. PySide6 Desktop GUI & E2E Console Tests (21 tests - test_ui_*.py):", "Headless (--offscreen) tests covering the dark SOC theme, KPICard/ThreatGauge/EventTable widgets, EventBusBridge, AsyncWorker, all 8 operational tabs, all 5 interactive simulations, and full live multi-tab propagation (test_ui_stage5_e2e_integration.py).")
     
     # 4. Workflow
     pdf.add_h2("4. The Complete End-to-End Workflow (Step-by-Step)")
-    pdf.add_p("Here is exactly how the entire system functions in real life, from peace-time preparation to attack mitigation and recovery:")
+    pdf.add_p("Here is how CryptoShield operates end-to-end - both under the hood and live inside the PySide6 SOC Console (python -m app.main gui):")
     
     pdf.add_h4("Step 1: Peacetime Preparation (The Immune Blueprint)")
-    pdf.add_p("What happens: Before any attack, CryptoShield inventories all 20,000 files in the workspace. It calculates their SHA-256 hashes and saves them in baseline_manifest.json. It sprinkles Canary files (honeypots) throughout the folders. It takes an encrypted Vault Snapshot (SNAP-XXXX): files are encrypted using AES-256-GCM, their keys are sealed with RSA-3072, and the private key is locked with Argon2id.")
+    pdf.add_p("CryptoShield initializes runtime/lab/ with an HMAC-SHA256 .cryptoshield_lab_marker, synthesizes up to 20,000 corporate files, compiles baseline_manifest.json, plants Canary honeypots, and creates an encrypted Vault Snapshot (SNAP-XXXX). In the GUI, the top ribbon reads LAB: VALID, GATE: UNLOCKED, THREAT: 0 NORMAL, and DLP: DEFAULT.")
     
-    pdf.add_h4("Step 2: The Attack Phase 1 - Data Harvesting (The Theft)")
-    pdf.add_p("What happens: The attacker begins reading sensitive files across Engineering, HR, and Finance. How CryptoShield reacts: The ReadBurstDetector notices an abnormal spike in reads across multiple departments. The EventBus broadcasts this telemetry to the ExfiltrationCorrelator.")
+    pdf.add_h4("Step 2: Attack Phase 1 - Data Harvesting (The Theft)")
+    pdf.add_p("An attacker reads sensitive files across Engineering/Research, HR, and Finance. ReadBurstDetector flags the multi-department read spike and broadcasts telemetry over EventBus to ExfiltrationCorrelator.")
     
-    pdf.add_h4("Step 3: The Attack Phase 2 - Staging")
-    pdf.add_p("What happens: The attacker gathers stolen documents into a hidden folder and compresses them into confidential_export.zip. How CryptoShield reacts: The StagingDetector detects high-entropy archive creation in real-time and flags it as prepared exfiltration cargo.")
+    pdf.add_h4("Step 3: Attack Phase 2 - Staging")
+    pdf.add_p("Stolen documents are gathered and compressed into confidential_export.zip. StagingDetector detects the staging archive creation in real time.")
     
-    pdf.add_h4("Step 4: The Attack Phase 3 - Exfiltration Blocked by DLP")
-    pdf.add_p("What happens: The attacker attempts to stream the .zip file out to an external server. How CryptoShield reacts: The DLPTransferGate intercepts the network attempt before physical transmission. It inspects the payload, determines it contains RESTRICTED company secrets, and slams the door shut. Zero bytes leave the computer. An alert is logged to runtime/dlp/audit.log.")
+    pdf.add_h4("Step 4: Attack Phase 3 - Exfiltration Blocked by DLP")
+    pdf.add_p("The simulator attempts to stream the archive to the loopback MockReceiver (127.0.0.1). DLPTransferGate intercepts the transfer in memory before socket egress, inspects its classification/canary flags, halts it with zero bytes leaked, logs to runtime/dlp/audit.log, and updates Tab 6 (Exfiltration & DLP).")
     
-    pdf.add_h4("Step 5: The Attack Phase 4 - Ransomware Burst & Canary Tripwire")
-    pdf.add_p("What happens: Having failed to exfiltrate (or running concurrently), the ransomware begins rapidly rewriting files with encrypted garbage and touches passwords.xlsx (our canary). How CryptoShield reacts: 1. The canary tripwire snaps! CanaryAnalyzer immediately flags a high-priority breach (+50 to +60 threat score). 2. The BehaviorAnalyzer detects a massive spike in write speed and file extension modifications. 3. The ThreatScorer tallies the indicators: the score hits 100 / 100 (CRITICAL).")
+    pdf.add_h4("Step 5: Attack Phase 4 - Ransomware Burst & Canary Tripwire")
+    pdf.add_p("Ransomware rapidly scrambles files and touches a canary. CanaryAnalyzer spikes threat points (+50/+60), BehaviorAnalyzer catches the write burst, and ThreatScorer hits CRITICAL (95-100/100). On the GUI Dashboard, Canaries flip to BREACHED, ThreatGauge turns red, and the top ribbon shows THREAT: CRITICAL.")
     
     pdf.add_h4("Step 6: Instant Containment")
-    pdf.add_p("What happens: The IncidentManager triggers the ContainmentManager: 1. LabWriteGate locks immediately (.write_gate_state set to locked). 2. ProcessController looks up the malware in the ControlledProcessRegistry to ensure safe targeting, then terminates the process immediately. 3. ContainmentVerifier checks the process table to confirm the malware is dead and that no further disk writes are occurring.")
+    pdf.add_p("IncidentManager triggers ContainmentManager: LabWriteGate locks (.write_gate_state set to locked; ribbon turns red GATE: LOCKED), ProcessController verifies PID + start-time + path in ControlledProcessRegistry and stops the simulator cleanly, and ContainmentVerifier confirms zero post-containment writes.")
     
-    pdf.add_h4("Step 7: Incident Dossier Generated")
-    pdf.add_p("What happens: An official incident report (INC-XXXXXXXX.json) is created in runtime/incidents/. It documents every single event: when the canary was touched, which process was responsible, what threat score was reached, and the exact second containment occurred.")
+    pdf.add_h4("Step 7: Cryptographic Restoration (The Cure)")
+    pdf.add_p("RecoveryAssessor compares disk files against the snapshot manifest in parallel. Damaged files are quarantined as evidence. RestorationManager decrypts clean .cso objects into staging, verifies both the AES-GCM auth tag and SHA-256 digest, and atomically restores every file (tracked live on Tab 5's progress bar).")
     
-    pdf.add_h4("Step 8: Cryptographic Restoration (The Cure)")
-    pdf.add_p("What happens: Now that the attacker is dead and contained: 1. RecoveryAssessor compares every file on disk against the trusted baseline manifest. It identifies which files were modified/scrambled by the attacker. 2. Damaged files are safely moved to a quarantine folder for digital evidence preservation. 3. RestorationManager reaches into the encrypted Vault snapshot. It uses the AES-256-GCM cipher to decrypt the clean versions into a temporary staging area. 4. It checks the GCM authentication tag and SHA-256 hash. If they match the original fingerprint perfectly, it atomically moves the clean file back into its original spot.")
+    pdf.add_h4("Step 8: Automated Forensic Dossier & Chain-of-Custody Seal (Phase 9)")
+    pdf.add_p("When the incident resolves (SECURITY_INCIDENT_RESOLVED), ForensicCoordinator invokes ForensicAggregator and ReportExporter to compile a sealed ForensicDossier (REP-XXXXXXXX) under runtime/reports/ in JSON, Markdown, CSV, and HTML formats - complete with IST timelines, MITRE ATT&CK mappings, academic KPIs, and a dossier_sha256 seal.")
     
-    pdf.add_h4("Step 9: Post-Incident Verification")
-    pdf.add_p("What happens: CryptoShield re-runs its integrity audit across all 20,000 files. Result: 100% matched, 0 modified, 0 missing, 0 bytes leaked. The system is completely restored to its original state.")
+    pdf.add_h4("Step 9: Operator Audit & Verification in the SOC Console (Phase 10)")
+    pdf.add_p("In Tab 7 (Forensic Reports), the operator clicks Cryptographically Verify Seal ([PASS] VALID), reviews the Academic KPIs (0 Bytes Leaked, 100.0% SHA-256 match) and IST timeline, and runs Tab 2's Integrity Audit across all 20,000 baseline files (100% matched, 0 modified, 0 missing).")
+
+    # 5. PySide6 SOC Console Overview
+    pdf.add_h2("5. PySide6 SOC Console (8 Operational Tabs) & Key CLI Commands")
+    pdf.add_bullet("Top Ribbon & Status Bar:", "Live LAB, GATE, THREAT, and DLP badges, live IST clock, active lab directory, and EventBus Bridge: ONLINE status.")
+    pdf.add_bullet("8 Subsystem Tabs:", "(1) Dashboard & Telemetry, (2) Lab & Dataset Engine, (3) Threat Containment, (4) Cryptographic Vault, (5) Recovery & Restoration, (6) Exfiltration & DLP, (7) Forensic Reports, and (8) Simulation Testbed (5 one-click scenarios with Demonstration / Extended / Rapid pacing).")
+    pdf.add_bullet("Phase 9 & 10 CLI Entrypoints:", "python -m app.main report {list, inspect, generate, verify, demo} and python -m app.main gui [--offscreen].")
     
-    # 5. Summary Checklist Table
-    pdf.add_h2("5. Summary Checklist of Completed Phases (1 through 8)")
+    # 6. Summary Checklist Table
+    pdf.add_h2("6. Summary Checklist of All Completed Phases (1 through 10)")
     headers_c = ["Phase", "Subsystem", "Core Purpose in Simple Words", "Tests Passing"]
     rows_c = [
-        ["1", "Lab & Dataset Engine", "Builds a realistic 20,000-file corporate playground with digital fingerprints.", "21 / 21"],
-        ["2", "File Telemetry & Sentry", "Cameras and microphones recording every file read, edit, delete, and process start.", "20 / 20"],
-        ["3", "Threat Brain & Scoring", "Weighs suspicious activity and canary breaches to calculate a 0-100 threat score.", "27 / 27"],
-        ["4", "Blast Doors & Containment", "Drops the write gate and safely kills malicious processes without hurting system apps.", "21 / 21"],
-        ["5", "Cryptographic Vault", "Indestructible backups encrypted with military-grade AES-256-GCM and RSA-3072.", "43 / 43"],
-        ["6", "Two-Stage Restoration", "Medical recovery that verifies every byte before restoring damaged files.", "27 / 27"],
-        ["7", "Exfiltration Radar", "Detects mass reading, folder harvesting, and archive compression (.zip).", "25 / 25"],
+        ["1", "Lab & Dataset Engine", "Builds a realistic 20,000-file corporate playground with SHA-256 fingerprints & safety boundaries.", "25 / 25"],
+        ["2", "File Telemetry & Sentry", "Cameras and microphones recording every file read, edit, delete, and process start.", "25 / 25"],
+        ["3", "Threat Brain & Scoring", "Weighs suspicious activity and canary breaches to calculate a 0-100 threat score.", "28 / 28"],
+        ["4", "Blast Doors & Containment", "Drops LabWriteGate and safely stops registered simulators without hurting host apps.", "32 / 32"],
+        ["5", "Cryptographic Vault", "Indestructible backups encrypted with AES-256-GCM, RSA-3072, and Argon2id.", "43 / 43"],
+        ["6", "Two-Stage Restoration", "Medical recovery verifying GCM tags and SHA-256 hashes before atomic file restore.", "28 / 28"],
+        ["7", "Exfiltration Radar", "Detects mass reading, folder harvesting, archive staging (.zip), and loopback transfers.", "25 / 25"],
         ["8", "Data Loss Prevention (DLP)", "Customs gate that inspects and halts confidential data transfers before socket egress.", "27 / 27"],
-        ["Total", "Phases 1-8", "Complete Full-Spectrum Defensive Platform", "229 / 229"]
+        ["9", "Forensic Incident Reporting", "Fuses multi-subsystem timelines, MITRE ATT&CK tags, 4-format exports, and SHA-256 custody seals.", "21 / 21"],
+        ["10", "PySide6 Desktop GUI & Integration", "8-tab dark SOC console with thread-safe EventBusBridge, AsyncWorker, and 5 simulation demos.", "21 / 21"],
+        ["Sync", "Temporal Sync (IST)", "Synchronizes all event buses, logs, dossiers, and GUI clocks to Indian Standard Time (UTC+05:30).", "5 / 5"],
+        ["Total", "Phases 1-10 (59 Test Files)", "Complete End-to-End Double-Extortion Defense Platform", "280 / 280"]
     ]
     pdf.add_table(headers_c, rows_c, [10, 30, 46, 14])
     
