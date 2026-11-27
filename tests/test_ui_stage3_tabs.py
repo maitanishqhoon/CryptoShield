@@ -205,7 +205,9 @@ def test_forensics_tab(qapp, isolated_runtime):
     assert tab.table_timeline.rowCount() >= 1
 
     # Check summary and JSON views
-    assert tab.txt_summary.toPlainText() != "" or tab.txt_summary.toMarkdown() != ""
+    assert str(tab.coordinator.reports_dir) in tab.lbl_reports_dir.text()
+    assert "CryptoShield" in tab.txt_summary.toPlainText()
+    assert "Key Evaluation" in tab.txt_summary.toPlainText()
     assert tab.txt_json.toPlainText().startswith("{")
 
     bridge.disconnect_bus()

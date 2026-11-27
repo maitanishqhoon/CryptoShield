@@ -113,6 +113,13 @@ class ForensicsTab(QWidget):
 
         layout.addLayout(btn_row)
 
+        self.lbl_reports_dir = QLabel(f"Reports Directory: {self.coordinator.reports_dir}")
+        self.lbl_reports_dir.setStyleSheet(
+            f"color: {ThemeColors.TEXT_MUTED}; font-family: 'Consolas', monospace; font-size: 11px;"
+        )
+        self.lbl_reports_dir.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        layout.addWidget(self.lbl_reports_dir)
+
         # Status & Audit Feedback Banner (Opaque, dedicated container between controls and catalog)
         self.status_banner = QFrame()
         self.status_banner.setObjectName("status-banner")
@@ -349,8 +356,16 @@ class ForensicsTab(QWidget):
                     self.table_timeline.setItem(row, c, itm)
 
             # Populate Markdown Summary
-            md_path = CONFIG.REPORTS_DIR / f"{report_id}.md"
-            if md_path.exists():
+            reports_dir = self.coordinator.reports_dir
+            md_candidates = [
+                reports_dir / f"{report_id}_{dossier.incident_id}.md",
+                reports_dir / f"{report_id}.md",
+            ]
+            md_path = next((p for p in md_candidates if p.exists()), None)
+            if md_path is None:
+                md_path = next(reports_dir.glob(f"{report_id}_*.md"), None)
+
+            if md_path is not None and md_path.exists():
                 self.txt_summary.setMarkdown(md_path.read_text(encoding="utf-8"))
             else:
                 sev = getattr(dossier.detection, "peak_severity", getattr(dossier.detection, "severity", "NORMAL"))
