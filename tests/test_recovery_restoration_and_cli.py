@@ -693,3 +693,22 @@ def test_recovery_coordinator_and_cli_workflow(recovery_env):
         assert cmd_recovery(args_ws_del) == 0
     finally:
         app.recovery.RECOVERY_COORDINATOR = orig_coord
+
+
+def test_coordinator_assess_resolves_env_passphrase(recovery_env, monkeypatch):
+    """Verify RecoveryCoordinator.assess resolves CRYPTOSHIELD_VAULT_PASSPHRASE when passphrase is omitted."""
+    env = recovery_env
+    files = {"finance/q1.txt": b"Q1 numbers\n"}
+    snap_id = "SNAP-ENV-01"
+    ws_id = "ws_env_01"
+
+    _create_mock_snapshot_and_workspace(env, snap_id, files, set(), ws_id)
+    coordinator: RecoveryCoordinator = env["coordinator"]
+
+    monkeypatch.delenv("CRYPTOSHIELD_VAULT_PASSPHRASE", raising=False)
+    with pytest.raises(RecoveryAuthenticationError, match="A valid passphrase is required"):
+        coordinator.assess(workspace_id=ws_id, snapshot_id=snap_id, passphrase=None)
+
+    monkeypatch.setenv("CRYPTOSHIELD_VAULT_PASSPHRASE", env["passphrase"])
+    summary = coordinator.assess(workspace_id=ws_id, snapshot_id=snap_id, passphrase=None)
+    assert summary.intact_count == 1

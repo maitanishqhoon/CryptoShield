@@ -4,10 +4,12 @@ Manages isolated recovery workspaces, multithreaded damage assessment against sn
 two-stage authenticated file restoration, evidence quarantine, and SHA-256 validation.
 """
 
+import os
 from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
     QFrame,
@@ -15,6 +17,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QProgressBar,
@@ -70,9 +73,10 @@ class RecoveryTab(QWidget):
 
         # Splitter: Workspace Management & Assessment (Top) | Restoration & Audit Log (Bottom)
         splitter = QSplitter(Qt.Vertical)
+        splitter.setChildrenCollapsible(False)
         splitter.addWidget(self._build_top_panel())
         splitter.addWidget(self._build_bottom_panel())
-        splitter.setSizes([380, 420])
+        splitter.setSizes([410, 390])
 
         main_layout.addWidget(splitter, 1)
 
@@ -169,12 +173,14 @@ class RecoveryTab(QWidget):
             "UNTRACKED",
         ])
         self.table_assessment.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_assessment.horizontalHeader().setFixedHeight(38)
+        self.table_assessment.horizontalHeader().setFixedHeight(34)
         self.table_assessment.verticalHeader().setVisible(False)
-        self.table_assessment.verticalHeader().setDefaultSectionSize(54)
-        self.table_assessment.setFixedHeight(105)
+        self.table_assessment.verticalHeader().setDefaultSectionSize(44)
+        self.table_assessment.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table_assessment.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table_assessment.setFixedHeight(82)
         self.table_assessment.setRowCount(1)
-        self.table_assessment.setRowHeight(0, 54)
+        self.table_assessment.setRowHeight(0, 44)
         init_font = QFont("Segoe UI", 13)
         init_font.setBold(True)
         for col in range(5):
@@ -187,8 +193,12 @@ class RecoveryTab(QWidget):
         assess_layout.addWidget(self.table_assessment)
 
         self.lbl_assess_status = QLabel("Select workspace and snapshot, then click assessment.")
+        self.lbl_assess_status.setWordWrap(True)
+        self.lbl_assess_status.setMinimumHeight(32)
+        self.lbl_assess_status.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-size: 11px;")
         assess_layout.addWidget(self.lbl_assess_status)
+        assess_layout.addStretch()
 
         layout.addWidget(assess_group, 1)
         return container
@@ -378,17 +388,54 @@ class RecoveryTab(QWidget):
         except Exception as e:
             self.txt_audit.setPlainText(f"[-] Deletion error: {e}")
 
+    def _resolve_passphrase(self, snap_id: str, action_label: str) -> Optional[str]:
+        """
+        Resolve RSA-3072 private-key passphrase from the input field, environment variable,
+        or an interactive masked prompt when running with a live display.
+        """
+        passphrase = self.input_passphrase.text().strip()
+        if passphrase:
+            return passphrase
+
+        env_pass = os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE", "").strip()
+        if env_pass:
+            self.input_passphrase.setText(env_pass)
+            return env_pass
+
+        if QApplication.platformName() != "offscreen":
+            dialog_pass, ok = QInputDialog.getText(
+                self,
+                "RSA-3072 Private Key Passphrase",
+                f"Enter RSA-3072 private key passphrase to {action_label} snapshot '{snap_id}':",
+                QLineEdit.Password,
+            )
+            if ok and dialog_pass.strip():
+                passphrase = dialog_pass.strip()
+                self.input_passphrase.setText(passphrase)
+                return passphrase
+
+        return None
+
     def _run_assessment(self) -> None:
         """Runs damage assessment asynchronously."""
         ws_id = self.combo_ws.currentText()
         snap_id = self.combo_snaps.currentText()
         if not ws_id or not snap_id:
+            self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.RED}; font-size: 11px;")
             self.lbl_assess_status.setText("[-] Please select both a workspace and snapshot.")
             return
 
+        passphrase = self._resolve_passphrase(snap_id, "assess")
+        if not passphrase:
+            self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.RED}; font-size: 11px;")
+            self.lbl_assess_status.setText(
+                "[-] Assessment canceled: RSA-3072 private-key passphrase is required."
+            )
+            return
+
         self.btn_assess.setEnabled(False)
+        self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.TEXT_MUTED}; font-size: 11px;")
         self.lbl_assess_status.setText(f"Assessing damage in {ws_id} against {snap_id}...")
-        passphrase = self.input_passphrase.text().strip() or None
 
         def assess_payload():
             summary = self.coordinator.assess(
@@ -410,11 +457,11 @@ class RecoveryTab(QWidget):
             f"[PASS] Assessed {total_files:,} files in {summary.duration_seconds:.2f}s "
             f"({summary.modified_count} modified, {summary.missing_count} missing)."
         )
-        self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.GREEN}; font-weight: 700;")
+        self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.GREEN}; font-weight: 700; font-size: 11px;")
 
         # Populate Assessment Table
         self.table_assessment.setRowCount(1)
-        self.table_assessment.setRowHeight(0, 54)
+        self.table_assessment.setRowHeight(0, 44)
         items = [
             QTableWidgetItem(f"{summary.intact_count:,}"),
             QTableWidgetItem(f"{summary.modified_count:,}"),
@@ -441,7 +488,7 @@ class RecoveryTab(QWidget):
     def _on_assess_error(self, err_msg: str) -> None:
         self.btn_assess.setEnabled(True)
         self.lbl_assess_status.setText(f"[-] Assessment error: {err_msg}")
-        self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.RED};")
+        self.lbl_assess_status.setStyleSheet(f"color: {ThemeColors.RED}; font-size: 11px;")
 
     def _preview_restoration(self) -> None:
         """Previews restoration plan without committing files to disk."""
@@ -451,7 +498,13 @@ class RecoveryTab(QWidget):
             self.txt_audit.setPlainText("[-] Select workspace and snapshot first.")
             return
 
-        passphrase = self.input_passphrase.text().strip() or None
+        passphrase = self._resolve_passphrase(snap_id, "preview restoration for")
+        if not passphrase:
+            self.txt_audit.setPlainText(
+                "[-] Preview aborted: RSA-3072 private-key passphrase is required."
+            )
+            return
+
         overwrite = self.chk_overwrite.isChecked()
 
         try:
@@ -487,7 +540,13 @@ class RecoveryTab(QWidget):
             self.txt_audit.setPlainText("[-] Restoration requires explicit authorization. Check 'Authorize Live Restoration'.")
             return
 
-        passphrase = self.input_passphrase.text().strip() or None
+        passphrase = self._resolve_passphrase(snap_id, "restore")
+        if not passphrase:
+            self.txt_audit.setPlainText(
+                "[-] Restoration aborted: RSA-3072 private-key passphrase is required."
+            )
+            return
+
         overwrite = self.chk_overwrite.isChecked()
 
         self.btn_restore.setEnabled(False)

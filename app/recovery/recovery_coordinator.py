@@ -99,6 +99,14 @@ class RecoveryCoordinator:
             "staging_dir": str(self.engine.staging_dir),
         }
 
+    @staticmethod
+    def _resolve_passphrase(passphrase: Optional[str] = None) -> Optional[str]:
+        """Resolve an explicit passphrase or fall back to CRYPTOSHIELD_VAULT_PASSPHRASE."""
+        if passphrase and isinstance(passphrase, str) and passphrase.strip():
+            return passphrase
+        env_pass = os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE", "").strip()
+        return env_pass or None
+
     def assess(
         self,
         workspace_id: str,
@@ -114,9 +122,10 @@ class RecoveryCoordinator:
         Publishes 'RECOVERY_ASSESSMENT_COMPLETED' event via EventBus.
         """
         logger.info(f"Assessing workspace '{workspace_id}' against snapshot '{snapshot_id}'")
+        resolved_passphrase = self._resolve_passphrase(passphrase)
         aes_key, manifest, _ = self.engine.unlock_snapshot(
             snapshot_id=snapshot_id,
-            passphrase=passphrase,
+            passphrase=resolved_passphrase,
         )
 
         summary = self.assessor.assess_workspace(
@@ -182,9 +191,10 @@ class RecoveryCoordinator:
         Perform preview or live restoration with safety gates, two-gate staging,
         evidence preservation, atomic commits, and telemetry publishing.
         """
+        resolved_passphrase = self._resolve_passphrase(passphrase)
         aes_key, manifest, _ = self.engine.unlock_snapshot(
             snapshot_id=snapshot_id,
-            passphrase=passphrase,
+            passphrase=resolved_passphrase,
         )
 
         report = self.restoration_manager.execute_restoration(
@@ -288,7 +298,7 @@ class RecoveryCoordinator:
             snapshot_id = snaps[0].snapshot_id
 
         # 2. Resolve Passphrase
-        resolved_passphrase = passphrase or os.environ.get("CRYPTOSHIELD_VAULT_PASSPHRASE")
+        resolved_passphrase = self._resolve_passphrase(passphrase)
         if not resolved_passphrase:
             raise RecoveryError(
                 "Private-key passphrase is required. Provide 'passphrase' or set CRYPTOSHIELD_VAULT_PASSPHRASE."

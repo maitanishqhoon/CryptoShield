@@ -175,9 +175,23 @@ class RecoveryEngine:
                 passphrase=passphrase,
                 key_path=private_key_path,
             )
-        except (InvalidPassphraseError, EnvelopeTamperedError, KeyNotFoundError, KeyManagerError) as exc:
+        except KeyNotFoundError as exc:
             raise RecoveryAuthenticationError(
-                f"Private key authentication failed for snapshot '{snapshot_id}'"
+                f"Private key authentication failed for snapshot '{snapshot_id}': "
+                "Vault private key not found. Run 'python -m app.main vault init' first."
+            ) from exc
+        except InvalidPassphraseError as exc:
+            detail = (
+                "A valid passphrase is required."
+                if not passphrase
+                else "Incorrect private key passphrase."
+            )
+            raise RecoveryAuthenticationError(
+                f"Private key authentication failed for snapshot '{snapshot_id}': {detail}"
+            ) from exc
+        except (EnvelopeTamperedError, KeyManagerError) as exc:
+            raise RecoveryAuthenticationError(
+                f"Private key authentication failed for snapshot '{snapshot_id}': {exc}"
             ) from exc
         except Exception as exc:
             raise RecoveryAuthenticationError(

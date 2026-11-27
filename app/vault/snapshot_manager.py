@@ -161,7 +161,7 @@ class SnapshotManager:
             # 4. Ensure RSA keys are provisioned
             if not self.key_manager.has_keys():
                 raise SnapshotCreationError(
-                    "Cryptographic key pair not initialized. Run 'cryptoshield vault init' first."
+                    "Cryptographic key pair not initialized. Run 'python -m app.main vault init' first."
                 )
 
             public_key = self.key_manager.load_public_key()

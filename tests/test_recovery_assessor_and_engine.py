@@ -374,8 +374,21 @@ def test_engine_unlock_snapshot_wrong_passphrase_rejected(test_vault_and_lab):
     files_data = {"Finance/doc.txt": b"Some content"}
     _create_mock_snapshot_with_files(env, "SNAP-PASS-01", files_data, set())
 
-    with pytest.raises(RecoveryAuthenticationError, match="Private key authentication failed"):
+    with pytest.raises(RecoveryAuthenticationError, match="Incorrect private key passphrase"):
         engine.unlock_snapshot("SNAP-PASS-01", "WrongPassphrase123!")
+
+    with pytest.raises(RecoveryAuthenticationError, match="A valid passphrase is required"):
+        engine.unlock_snapshot("SNAP-PASS-01", "")
+
+    # Missing private key file surfaces actionable vault init guidance
+    priv_path = env["keys_dir"] / CONFIG.PRIVATE_KEY_FILENAME
+    priv_backup = priv_path.read_bytes()
+    priv_path.unlink()
+    try:
+        with pytest.raises(RecoveryAuthenticationError, match="Vault private key not found"):
+            engine.unlock_snapshot("SNAP-PASS-01", env["passphrase"])
+    finally:
+        priv_path.write_bytes(priv_backup)
 
 
 # ============================================================================

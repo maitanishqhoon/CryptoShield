@@ -25,8 +25,8 @@ def qapp():
     return app
 
 
-def test_recovery_tab(qapp, isolated_runtime):
-    """Test RecoveryTab workspace management, preview, bridge signals, and controls."""
+def test_recovery_tab(qapp, isolated_runtime, monkeypatch):
+    """Test RecoveryTab workspace management, assessment, passphrase resolution, preview, and controls."""
     bus = EventBus()
     bridge = EventBusBridge(bus=bus)
     bridge.connect_bus()
@@ -56,8 +56,22 @@ def test_recovery_tab(qapp, isolated_runtime):
     assert "Successfully seeded" in tab.txt_audit.toPlainText()
     assert int(tab.table_ws.item(row_idx, 2).text()) > 0
 
+    # Assessment without passphrase and without env var aborts cleanly in offscreen mode
+    monkeypatch.delenv("CRYPTOSHIELD_VAULT_PASSPHRASE", raising=False)
+    tab.input_passphrase.clear()
+    tab._run_assessment()
+    assert "passphrase is required" in tab.lbl_assess_status.text()
+
+    # Assessment resolves CRYPTOSHIELD_VAULT_PASSPHRASE automatically when field is empty
+    monkeypatch.setenv("CRYPTOSHIELD_VAULT_PASSPHRASE", isolated_runtime["passphrase"])
+    tab._run_assessment()
+    assert tab.active_worker is not None
+    tab.active_worker.wait(8000)
+    qapp.processEvents()
+    assert "[PASS] Assessed" in tab.lbl_assess_status.text()
+    assert tab.input_passphrase.text() == isolated_runtime["passphrase"]
+
     # Preview restoration
-    tab.input_passphrase.setText(isolated_runtime["passphrase"])
     tab._preview_restoration()
     assert "Restoration Plan Preview" in tab.txt_audit.toPlainText()
 
